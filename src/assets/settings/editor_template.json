@@ -1,4 +1,4 @@
-{
+﻿{
     "supported_components": [
         {
             "cls": "starling.display.Image", 
@@ -52,8 +52,8 @@
                     "default_value": null,
 					"disable": true, 
 					"editPropertyClass": "uieditor.editor.ui.property.TileGridTexturePopup"
-                }, 
-                {
+                },                 
+				{
                     "name": "texture", 
                     "read_only": true, 
                     "component": "popup", 
@@ -312,16 +312,6 @@
                 }, 
                 {
                     "value": ""
-                }, 
-                {
-                    "value": "SimHei", 
-                    "name": "fontName"
-                }, 
-                {
-                    "value": 12
-                }, 
-                {
-                    "value": 16777215
                 }
             ], 
             "icon": "component-text", 
@@ -725,6 +715,7 @@
                     ]
                 }
             ], 
+			"icon": "component_panel", 
             "container": true, 
             "tag": "feathers"
         }, 

@@ -16,7 +16,7 @@
     </define>
     <define append="true">
       <name>CONFIG::timeStamp</name>
-      <value>'2016-02-28'</value>
+      <value>'2016/2/29'</value>
     </define>
     <define append="true">
       <name>CONFIG::air</name>
@@ -32,20 +32,20 @@
     </define>
     <verbose-stacktraces>true</verbose-stacktraces>
     <source-path append="true">
-      <path-element>C:\github\simpleuieditor\src</path-element>
+      <path-element>D:\github\simpleuieditor\src</path-element>
       <path-element>C:\Program Files (x86)\FlashDevelop\Library\AS3\classes</path-element>
     </source-path>
     <library-path append="true">
-      <path-element>C:\github\simpleuieditor\libs</path-element>
-      <path-element>C:\github\simpleuieditor\libs\as3commons-lang-0.3.7.swc</path-element>
-      <path-element>C:\github\simpleuieditor\libs\as3commons-reflect-1.6.4.swc</path-element>
+      <path-element>D:\github\simpleuieditor\libs</path-element>
+      <path-element>D:\github\simpleuieditor\libs\as3commons-lang-0.3.7.swc</path-element>
+      <path-element>D:\github\simpleuieditor\libs\as3commons-reflect-1.6.4.swc</path-element>
     </library-path>
   </compiler>
   <file-specs>
-    <path-element>C:\github\simpleuieditor\src\uieditor\editor\SimpleUIEditor.as</path-element>
+    <path-element>D:\github\simpleuieditor\src\uieditor\editor\SimpleUIEditor.as</path-element>
   </file-specs>
-  <default-background-color>#FFFFFF</default-background-color>
-  <default-frame-rate>30</default-frame-rate>
+  <default-background-color>#CCE8CF</default-background-color>
+  <default-frame-rate>60</default-frame-rate>
   <default-size>
     <width>800</width>
     <height>600</height>

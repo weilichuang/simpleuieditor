@@ -276,6 +276,7 @@
             <filename>iconfont-alignjustify-x.png</filename>
             <filename>iconfont-alignjustify-y.png</filename>
             <filename>component_sprite3d.png</filename>
+            <filename>iconfont-window.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
