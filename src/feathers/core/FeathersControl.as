@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -8,7 +8,7 @@ accordance with the terms of the accompanying license agreement.
 package feathers.core
 {
 	import feathers.controls.text.BitmapFontTextRenderer;
-	import feathers.controls.text.StageTextTextEditor;
+	import feathers.controls.text.TextBlockTextEditor;
 	import feathers.events.FeathersEventType;
 	import feathers.layout.ILayoutData;
 	import feathers.layout.ILayoutDisplayObject;
@@ -19,13 +19,14 @@ package feathers.core
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-
+	
 	import starling.core.Starling;
 	import starling.display.DisplayObject;
 	import starling.display.Sprite;
 	import starling.events.Event;
 	import starling.utils.MatrixUtil;
-
+	import starling.utils.Pool;
+	
 	/**
 	 * Dispatched after <code>initialize()</code> has been called, but before
 	 * the first time that <code>draw()</code> has been called.
@@ -48,7 +49,7 @@ package feathers.core
 	 * @eventType feathers.events.FeathersEventType.INITIALIZE
 	 */
 	[Event(name="initialize",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched after the component has validated for the first time. Both
 	 * <code>initialize()</code> and <code>draw()</code> will have been called,
@@ -72,7 +73,7 @@ package feathers.core
 	 * @eventType feathers.events.FeathersEventType.CREATION_COMPLETE
 	 */
 	[Event(name="creationComplete",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the width or height of the control changes.
 	 *
@@ -91,10 +92,10 @@ package feathers.core
 	 *   listening for the event.</td></tr>
 	 * </table>
 	 *
-	 * @eventType feathers.events.FeathersEventType.RESIZE
+	 * @eventType starling.events.Event.RESIZE
 	 */
 	[Event(name="resize",type="starling.events.Event")]
-
+	
 	/**
 	 * Base class for all UI controls. Implements invalidation and sets up some
 	 * basic template functions like <code>initialize()</code> and
@@ -113,17 +114,17 @@ package feathers.core
 		 * @private
 		 */
 		private static const HELPER_MATRIX:Matrix = new Matrix();
-
+		
 		/**
 		 * @private
 		 */
 		private static const HELPER_POINT:Point = new Point();
-
+		
 		/**
 		 * Flag to indicate that everything is invalid and should be redrawn.
 		 */
 		public static const INVALIDATION_FLAG_ALL:String = "all";
-
+		
 		/**
 		 * Invalidation flag to indicate that the state has changed. Used by
 		 * <code>isEnabled</code>, but may be used for other control states too.
@@ -131,79 +132,79 @@ package feathers.core
 		 * @see #isEnabled
 		 */
 		public static const INVALIDATION_FLAG_STATE:String = "state";
-
+		
 		/**
 		 * Invalidation flag to indicate that the dimensions of the UI control
 		 * have changed.
 		 */
 		public static const INVALIDATION_FLAG_SIZE:String = "size";
-
+		
 		/**
 		 * Invalidation flag to indicate that the styles or visual appearance of
 		 * the UI control has changed.
 		 */
 		public static const INVALIDATION_FLAG_STYLES:String = "styles";
-
+		
 		/**
 		 * Invalidation flag to indicate that the skin of the UI control has changed.
 		 */
 		public static const INVALIDATION_FLAG_SKIN:String = "skin";
-
+		
 		/**
 		 * Invalidation flag to indicate that the layout of the UI control has
 		 * changed.
 		 */
 		public static const INVALIDATION_FLAG_LAYOUT:String = "layout";
-
+		
 		/**
 		 * Invalidation flag to indicate that the primary data displayed by the
 		 * UI control has changed.
 		 */
 		public static const INVALIDATION_FLAG_DATA:String = "data";
-
+		
 		/**
 		 * Invalidation flag to indicate that the scroll position of the UI
 		 * control has changed.
 		 */
 		public static const INVALIDATION_FLAG_SCROLL:String = "scroll";
-
+		
 		/**
 		 * Invalidation flag to indicate that the selection of the UI control
 		 * has changed.
 		 */
 		public static const INVALIDATION_FLAG_SELECTED:String = "selected";
-
+		
 		/**
 		 * Invalidation flag to indicate that the focus of the UI control has
 		 * changed.
 		 */
 		public static const INVALIDATION_FLAG_FOCUS:String = "focus";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_TEXT_RENDERER:String = "textRenderer";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_TEXT_EDITOR:String = "textEditor";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const ILLEGAL_WIDTH_ERROR:String = "A component's width cannot be NaN.";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const ILLEGAL_HEIGHT_ERROR:String = "A component's height cannot be NaN.";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const ABSTRACT_CLASS_ERROR:String = "FeathersControl is an abstract class. For a lightweight Feathers wrapper, use feathers.controls.LayoutGroup.";
-
+		
 		/**
 		 * A function used by all UI controls that support text renderers to
 		 * create an ITextRenderer instance. You may replace the default
@@ -220,7 +221,7 @@ package feathers.core
 		{
 			return new BitmapFontTextRenderer();
 		}
-
+		
 		/**
 		 * A function used by all UI controls that support text editor to
 		 * create an <code>ITextEditor</code> instance. You may replace the
@@ -235,9 +236,9 @@ package feathers.core
 		 */
 		public static var defaultTextEditorFactory:Function = function():ITextEditor
 		{
-			return new StageTextTextEditor();
+			return new TextBlockTextEditor();
 		}
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -252,12 +253,12 @@ package feathers.core
 			this.addEventListener(Event.ADDED_TO_STAGE, feathersControl_addedToStageHandler);
 			this.addEventListener(Event.REMOVED_FROM_STAGE, feathersControl_removedFromStageHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _validationQueue:ValidationQueue;
-
+		
 		/**
 		 * The concatenated <code>styleNameList</code>, with values separated
 		 * by spaces. Style names are somewhat similar to classes in CSS
@@ -282,7 +283,7 @@ package feathers.core
 		{
 			return this._styleNameList.value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -290,12 +291,12 @@ package feathers.core
 		{
 			this._styleNameList.value = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _styleNameList:TokenList = new TokenList();
-
+		
 		/**
 		 * Contains a list of all "styles" assigned to this control. Names are
 		 * like classes in CSS selectors. They are a non-unique identifier that
@@ -321,12 +322,12 @@ package feathers.core
 		{
 			return this._styleNameList;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _styleProvider:IStyleProvider;
-
+		
 		/**
 		 * When a component initializes, a style provider may be used to set
 		 * properties that affect the component's visual appearance.
@@ -346,7 +347,7 @@ package feathers.core
 		{
 			return this._styleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -358,7 +359,7 @@ package feathers.core
 				this._styleProvider.applyStyles(this);
 			}
 		}
-
+		
 		/**
 		 * When the <code>FeathersControl</code> constructor is called, the
 		 * <code>globalStyleProvider</code> property is set to this value. May be
@@ -381,12 +382,12 @@ package feathers.core
 		{
 			return null;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isQuickHitAreaEnabled:Boolean = false;
-
+		
 		/**
 		 * Similar to <code>mouseChildren</code> on the classic display list. If
 		 * <code>true</code>, children cannot dispatch touch events, but hit
@@ -404,7 +405,7 @@ package feathers.core
 		{
 			return this._isQuickHitAreaEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -412,22 +413,22 @@ package feathers.core
 		{
 			this._isQuickHitAreaEnabled = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _hitArea:Rectangle = new Rectangle();
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isInitializing:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isInitialized:Boolean = false;
-
+		
 		/**
 		 * Determines if the component has been initialized yet. The
 		 * <code>initialize()</code> function is called one time only, when the
@@ -449,29 +450,29 @@ package feathers.core
 		{
 			return this._isInitialized;
 		}
-
+		
 		/**
 		 * @private
 		 * A flag that indicates that everything is invalid. If true, no other
 		 * flags will need to be tracked.
 		 */
 		protected var _isAllInvalid:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _invalidationFlags:Object = {};
-
+		
 		/**
 		 * @private
 		 */
 		protected var _delayedInvalidationFlags:Object = {};
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isEnabled:Boolean = true;
-
+		
 		/**
 		 * Indicates whether the control is interactive or not.
 		 *
@@ -486,7 +487,7 @@ package feathers.core
 		{
 			return _isEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -499,12 +500,12 @@ package feathers.core
 			this._isEnabled = value;
 			this.invalidate(INVALIDATION_FLAG_STATE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _explicitWidth:Number = NaN;
-
+		
 		/**
 		 * The width value explicitly set by passing a value to the
 		 * <code>width</code> setter or to the <code>setSize()</code> method.
@@ -513,7 +514,7 @@ package feathers.core
 		{
 			return this._explicitWidth;
 		}
-
+		
 		/**
 		 * The final width value that should be used for layout. If the width
 		 * has been explicitly set, then that value is used. If not, the actual
@@ -522,7 +523,7 @@ package feathers.core
 		 * skin or content, including text or subcomponents.
 		 */
 		protected var actualWidth:Number = 0;
-
+		
 		/**
 		 * @private
 		 * The <code>actualWidth</code> value that accounts for
@@ -531,7 +532,7 @@ package feathers.core
 		 * the <code>width</code> getter.
 		 */
 		protected var scaledActualWidth:Number = 0;
-
+		
 		/**
 		 * The width of the component, in pixels. This could be a value that was
 		 * set explicitly, or the component will automatically resize if no
@@ -566,18 +567,22 @@ package feathers.core
 		{
 			return this.scaledActualWidth;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override public function set width(value:Number):void
 		{
-			if(this._explicitWidth == value)
+			var valueIsNaN:Boolean = value !== value; //isNaN
+			if(valueIsNaN && this._explicitWidth !== this._explicitWidth)
 			{
 				return;
 			}
-			var valueIsNaN:Boolean = value !== value; //isNaN
-			if(valueIsNaN && this._explicitWidth !== this._explicitWidth)
+			if(this.scaleX !== 1)
+			{
+				value /= this.scaleX;
+			}
+			if(this._explicitWidth == value)
 			{
 				return;
 			}
@@ -589,15 +594,19 @@ package feathers.core
 			}
 			else
 			{
-				this.setSizeInternal(value, this.actualHeight, true);
+				var result:Boolean = this.saveMeasurements(value, this.actualHeight, this.actualMinWidth, this.actualMinHeight);
+				if(result)
+				{
+					this.invalidate(INVALIDATION_FLAG_SIZE);
+				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _explicitHeight:Number = NaN;
-
+		
 		/**
 		 * The height value explicitly set by passing a value to the
 		 * <code>height</code> setter or by calling the <code>setSize()</code>
@@ -607,7 +616,7 @@ package feathers.core
 		{
 			return this._explicitHeight;
 		}
-
+		
 		/**
 		 * The final height value that should be used for layout. If the height
 		 * has been explicitly set, then that value is used. If not, the actual
@@ -616,7 +625,7 @@ package feathers.core
 		 * skin or content, including text or subcomponents.
 		 */
 		protected var actualHeight:Number = 0;
-
+		
 		/**
 		 * @private
 		 * The <code>actualHeight</code> value that accounts for
@@ -625,7 +634,7 @@ package feathers.core
 		 * the <code>height</code> getter.
 		 */
 		protected var scaledActualHeight:Number = 0;
-
+		
 		/**
 		 * The height of the component, in pixels. This could be a value that
 		 * was set explicitly, or the component will automatically resize if no
@@ -660,18 +669,22 @@ package feathers.core
 		{
 			return this.scaledActualHeight;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override public function set height(value:Number):void
 		{
-			if(this._explicitHeight == value)
+			var valueIsNaN:Boolean = value !== value; //isNaN
+			if(valueIsNaN && this._explicitHeight !== this._explicitHeight)
 			{
 				return;
 			}
-			var valueIsNaN:Boolean = value !== value; //isNaN
-			if(valueIsNaN && this._explicitHeight !== this._explicitHeight)
+			if(this.scaleY !== 1)
+			{
+				value /= this.scaleY;
+			}
+			if(this._explicitHeight == value)
 			{
 				return;
 			}
@@ -683,15 +696,19 @@ package feathers.core
 			}
 			else
 			{
-				this.setSizeInternal(this.actualWidth, value, true);
+				var result:Boolean = this.saveMeasurements(this.actualWidth, value, this.actualMinWidth, this.actualMinHeight);
+				if(result)
+				{
+					this.invalidate(INVALIDATION_FLAG_SIZE);
+				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minTouchWidth:Number = 0;
-
+		
 		/**
 		 * If using <code>isQuickHitAreaEnabled</code>, and the hit area's
 		 * width is smaller than this value, it will be expanded.
@@ -708,7 +725,7 @@ package feathers.core
 		{
 			return this._minTouchWidth;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -721,12 +738,12 @@ package feathers.core
 			this._minTouchWidth = value;
 			this.refreshHitAreaX();
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minTouchHeight:Number = 0;
-
+		
 		/**
 		 * If using <code>isQuickHitAreaEnabled</code>, and the hit area's
 		 * height is smaller than this value, it will be expanded.
@@ -743,7 +760,7 @@ package feathers.core
 		{
 			return this._minTouchHeight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -756,21 +773,24 @@ package feathers.core
 			this._minTouchHeight = value;
 			this.refreshHitAreaY();
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _explicitMinWidth:Number = NaN;
-
+		
 		/**
 		 * The minimum width value explicitly set by passing a value to the
 		 * <code>minWidth</code> setter.
+		 * 
+		 * <p>If no value has been passed to the <code>minWidth</code> setter,
+		 * this property returns <code>NaN</code>.</p>
 		 */
 		public function get explicitMinWidth():Number
 		{
 			return this._explicitMinWidth;
 		}
-
+		
 		/**
 		 * The final minimum width value that should be used for layout. If the
 		 * minimum width has been explicitly set, then that value is used. If
@@ -780,7 +800,7 @@ package feathers.core
 		 * subcomponents.
 		 */
 		protected var actualMinWidth:Number = 0;
-
+		
 		/**
 		 * @private
 		 * The <code>actualMinWidth</code> value that accounts for
@@ -789,7 +809,7 @@ package feathers.core
 		 * the <code>minWidth</code> getter.
 		 */
 		protected var scaledActualMinWidth:Number = 0;
-
+		
 		/**
 		 * The minimum recommended width to be used for self-measurement and,
 		 * optionally, by any code that is resizing this component. This value
@@ -809,47 +829,62 @@ package feathers.core
 		{
 			return this.scaledActualMinWidth;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		public function set minWidth(value:Number):void
 		{
-			if(this._explicitMinWidth == value)
-			{
-				return;
-			}
 			var valueIsNaN:Boolean = value !== value; //isNaN
 			if(valueIsNaN && this._explicitMinWidth !== this._explicitMinWidth)
 			{
 				return;
 			}
+			if(this.scaleX !== 1)
+			{
+				value /= this.scaleX;
+			}
+			if(this._explicitMinWidth == value)
+			{
+				return;
+			}
+			var oldValue:Number = this._explicitMinWidth;
 			this._explicitMinWidth = value;
 			if(valueIsNaN)
 			{
 				this.actualMinWidth = this.scaledActualMinWidth = 0;
+				this.invalidate(INVALIDATION_FLAG_SIZE);
 			}
 			else
 			{
 				this.saveMeasurements(this.actualWidth, this.actualHeight, value, this.actualMinHeight);
+				if(this._explicitWidth !== this._explicitWidth &&
+					(this.actualWidth < value || this.actualWidth === oldValue))
+				{
+					//only invalidate if this change might affect the width
+					//because everything else was handled in saveMeasurements()
+					this.invalidate(INVALIDATION_FLAG_SIZE);
+				}
 			}
-			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _explicitMinHeight:Number = NaN;
-
+		
 		/**
 		 * The minimum height value explicitly set by passing a value to the
 		 * <code>minHeight</code> setter.
+		 *
+		 * <p>If no value has been passed to the <code>minHeight</code> setter,
+		 * this property returns <code>NaN</code>.</p>
 		 */
 		public function get explicitMinHeight():Number
 		{
 			return this._explicitMinHeight;
 		}
-
+		
 		/**
 		 * The final minimum height value that should be used for layout. If the
 		 * minimum height has been explicitly set, then that value is used. If
@@ -859,7 +894,7 @@ package feathers.core
 		 * subcomponents.
 		 */
 		protected var actualMinHeight:Number = 0;
-
+		
 		/**
 		 * @private
 		 * The <code>actuaMinHeight</code> value that accounts for
@@ -868,7 +903,7 @@ package feathers.core
 		 * the <code>minHeight</code> getter.
 		 */
 		protected var scaledActualMinHeight:Number = 0;
-
+		
 		/**
 		 * The minimum recommended height to be used for self-measurement and,
 		 * optionally, by any code that is resizing this component. This value
@@ -888,38 +923,62 @@ package feathers.core
 		{
 			return this.scaledActualMinHeight;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		public function set minHeight(value:Number):void
 		{
-			if(this._explicitMinHeight == value)
-			{
-				return;
-			}
 			var valueIsNaN:Boolean = value !== value; //isNaN
 			if(valueIsNaN && this._explicitMinHeight !== this._explicitMinHeight)
 			{
 				return;
 			}
+			if(this.scaleY !== 1)
+			{
+				value /= this.scaleY;
+			}
+			if(this._explicitMinHeight == value)
+			{
+				return;
+			}
+			var oldValue:Number = this._explicitMinHeight;
 			this._explicitMinHeight = value;
 			if(valueIsNaN)
 			{
 				this.actualMinHeight = this.scaledActualMinHeight = 0;
+				this.invalidate(INVALIDATION_FLAG_SIZE);
 			}
 			else
 			{
 				this.saveMeasurements(this.actualWidth, this.actualHeight, this.actualMinWidth, value);
+				if(this._explicitHeight !== this._explicitHeight && //isNaN
+					(this.actualHeight < value || this.actualHeight === oldValue))
+				{
+					//only invalidate if this change might affect the height
+					//because everything else was handled in saveMeasurements()
+					this.invalidate(INVALIDATION_FLAG_SIZE);
+				}
 			}
-			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected var _maxWidth:Number = Number.POSITIVE_INFINITY;
-
+		protected var _explicitMaxWidth:Number = Number.POSITIVE_INFINITY;
+		
+		/**
+		 * The maximum width value explicitly set by passing a value to the
+		 * <code>maxWidth</code> setter.
+		 *
+		 * <p>If no value has been passed to the <code>maxWidth</code> setter,
+		 * this property returns <code>NaN</code>.</p>
+		 */
+		public function get explicitMaxWidth():Number
+		{
+			return this._explicitMaxWidth;
+		}
+		
 		/**
 		 * The maximum recommended width to be used for self-measurement and,
 		 * optionally, by any code that is resizing this component. This value
@@ -937,15 +996,19 @@ package feathers.core
 		 */
 		public function get maxWidth():Number
 		{
-			return this._maxWidth;
+			return this._explicitMaxWidth;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		public function set maxWidth(value:Number):void
 		{
-			if(this._maxWidth == value)
+			if(value < 0)
+			{
+				value = 0;
+			}
+			if(this._explicitMaxWidth == value)
 			{
 				return;
 			}
@@ -953,15 +1016,33 @@ package feathers.core
 			{
 				throw new ArgumentError("maxWidth cannot be NaN");
 			}
-			this._maxWidth = value;
-			this.invalidate(INVALIDATION_FLAG_SIZE);
+			var oldValue:Number = this._explicitMaxWidth;
+			this._explicitMaxWidth = value;
+			if(this._explicitWidth !== this._explicitWidth && //isNaN
+				(this.actualWidth > value || this.actualWidth === oldValue))
+			{
+				//only invalidate if this change might affect the width
+				this.invalidate(INVALIDATION_FLAG_SIZE);
+			}
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected var _maxHeight:Number = Number.POSITIVE_INFINITY;
-
+		protected var _explicitMaxHeight:Number = Number.POSITIVE_INFINITY;
+		
+		/**
+		 * The maximum height value explicitly set by passing a value to the
+		 * <code>maxHeight</code> setter.
+		 *
+		 * <p>If no value has been passed to the <code>maxHeight</code> setter,
+		 * this property returns <code>NaN</code>.</p>
+		 */
+		public function get explicitMaxHeight():Number
+		{
+			return this._explicitMaxHeight;
+		}
+		
 		/**
 		 * The maximum recommended height to be used for self-measurement and,
 		 * optionally, by any code that is resizing this component. This value
@@ -979,15 +1060,19 @@ package feathers.core
 		 */
 		public function get maxHeight():Number
 		{
-			return this._maxHeight;
+			return this._explicitMaxHeight;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		public function set maxHeight(value:Number):void
 		{
-			if(this._maxHeight == value)
+			if(value < 0)
+			{
+				value = 0;
+			}
+			if(this._explicitMaxHeight == value)
 			{
 				return;
 			}
@@ -995,33 +1080,39 @@ package feathers.core
 			{
 				throw new ArgumentError("maxHeight cannot be NaN");
 			}
-			this._maxHeight = value;
-			this.invalidate(INVALIDATION_FLAG_SIZE);
+			var oldValue:Number = this._explicitMaxHeight;
+			this._explicitMaxHeight = value;
+			if(this._explicitHeight !== this._explicitHeight && //isNaN
+				(this.actualHeight > value || this.actualHeight === oldValue))
+			{
+				//only invalidate if this change might affect the width
+				this.invalidate(INVALIDATION_FLAG_SIZE);
+			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override public function set scaleX(value:Number):void
 		{
 			super.scaleX = value;
-			this.setSizeInternal(this.actualWidth, this.actualHeight, false);
+			this.saveMeasurements(this.actualWidth, this.actualHeight, this.actualMinWidth, this.actualMinHeight);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override public function set scaleY(value:Number):void
 		{
 			super.scaleY = value;
-			this.setSizeInternal(this.actualWidth, this.actualHeight, false);
+			this.saveMeasurements(this.actualWidth, this.actualHeight, this.actualMinWidth, this.actualMinHeight);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _includeInLayout:Boolean = true;
-
+		
 		/**
 		 * @inheritDoc
 		 *
@@ -1031,7 +1122,7 @@ package feathers.core
 		{
 			return this._includeInLayout;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1044,12 +1135,12 @@ package feathers.core
 			this._includeInLayout = value;
 			this.dispatchEventWith(FeathersEventType.LAYOUT_DATA_CHANGE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _layoutData:ILayoutData;
-
+		
 		/**
 		 * @inheritDoc
 		 *
@@ -1059,7 +1150,7 @@ package feathers.core
 		{
 			return this._layoutData;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1080,12 +1171,12 @@ package feathers.core
 			}
 			this.dispatchEventWith(FeathersEventType.LAYOUT_DATA_CHANGE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _toolTip:String;
-
+		
 		/**
 		 * Text to display in a tool tip to when hovering over this component,
 		 * if the <code>ToolTipManager</code> is enabled.
@@ -1099,7 +1190,7 @@ package feathers.core
 		{
 			return this._toolTip;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1107,12 +1198,12 @@ package feathers.core
 		{
 			this._toolTip = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _focusManager:IFocusManager;
-
+		
 		/**
 		 * <p>The implementation of this property is provided for convenience,
 		 * but it cannot be used unless a subclass implements the
@@ -1128,7 +1219,7 @@ package feathers.core
 		{
 			return this._focusManager;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1154,12 +1245,12 @@ package feathers.core
 				this.removeEventListener(FeathersEventType.FOCUS_OUT, focusOutHandler);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _focusOwner:IFocusDisplayObject;
-
+		
 		/**
 		 * <p>The implementation of this property is provided for convenience,
 		 * but it cannot be used unless a subclass implements the
@@ -1175,7 +1266,7 @@ package feathers.core
 		{
 			return this._focusOwner;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1183,12 +1274,12 @@ package feathers.core
 		{
 			this._focusOwner = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isFocusEnabled:Boolean = true;
-
+		
 		/**
 		 * <p>The implementation of this property is provided for convenience,
 		 * but it cannot be used unless a subclass implements the
@@ -1204,7 +1295,7 @@ package feathers.core
 		{
 			return this._isEnabled && this._isFocusEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1220,12 +1311,12 @@ package feathers.core
 			}
 			this._isFocusEnabled = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _nextTabFocus:IFocusDisplayObject;
-
+		
 		/**
 		 * <p>The implementation of this property is provided for convenience,
 		 * but it cannot be used unless a subclass implements the
@@ -1241,7 +1332,7 @@ package feathers.core
 		{
 			return this._nextTabFocus;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1253,12 +1344,12 @@ package feathers.core
 			}
 			this._nextTabFocus = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _previousTabFocus:IFocusDisplayObject;
-
+		
 		/**
 		 * <p>The implementation of this property is provided for convenience,
 		 * but it cannot be used unless a subclass implements the
@@ -1274,7 +1365,7 @@ package feathers.core
 		{
 			return this._previousTabFocus;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1286,12 +1377,12 @@ package feathers.core
 			}
 			this._previousTabFocus = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _focusIndicatorSkin:DisplayObject;
-
+		
 		/**
 		 * If this component supports focus, this optional skin will be
 		 * displayed above the component when <code>showFocus()</code> is
@@ -1320,7 +1411,7 @@ package feathers.core
 		{
 			return this._focusIndicatorSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1361,7 +1452,7 @@ package feathers.core
 				this.invalidate(INVALIDATION_FLAG_STYLES);
 			}
 		}
-
+		
 		/**
 		 * Quickly sets all focus padding properties to the same value. The
 		 * <code>focusPadding</code> getter always returns the value of
@@ -1389,7 +1480,7 @@ package feathers.core
 		{
 			return this._focusPaddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1400,12 +1491,12 @@ package feathers.core
 			this.focusPaddingBottom = value;
 			this.focusPaddingLeft = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _focusPaddingTop:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the object's top edge and the
 		 * top edge of the focus indicator skin. A negative value may be used
@@ -1427,7 +1518,7 @@ package feathers.core
 		{
 			return this._focusPaddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1440,12 +1531,12 @@ package feathers.core
 			this._focusPaddingTop = value;
 			this.invalidate(INVALIDATION_FLAG_FOCUS);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _focusPaddingRight:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the object's right edge and the
 		 * right edge of the focus indicator skin. A negative value may be used
@@ -1467,7 +1558,7 @@ package feathers.core
 		{
 			return this._focusPaddingRight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1480,12 +1571,12 @@ package feathers.core
 			this._focusPaddingRight = value;
 			this.invalidate(INVALIDATION_FLAG_FOCUS);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _focusPaddingBottom:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the object's bottom edge and the
 		 * bottom edge of the focus indicator skin. A negative value may be used
@@ -1507,7 +1598,7 @@ package feathers.core
 		{
 			return this._focusPaddingBottom;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1520,12 +1611,12 @@ package feathers.core
 			this._focusPaddingBottom = value;
 			this.invalidate(INVALIDATION_FLAG_FOCUS);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _focusPaddingLeft:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the object's left edge and the
 		 * left edge of the focus indicator skin. A negative value may be used
@@ -1547,7 +1638,7 @@ package feathers.core
 		{
 			return this._focusPaddingLeft;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1560,29 +1651,29 @@ package feathers.core
 			this._focusPaddingLeft = value;
 			this.invalidate(INVALIDATION_FLAG_FOCUS);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _hasFocus:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _showFocus:Boolean = false;
-
+		
 		/**
 		 * @private
 		 * Flag to indicate that the control is currently validating.
 		 */
 		protected var _isValidating:Boolean = false;
-
+		
 		/**
 		 * @private
 		 * Flag to indicate that the control has validated at least once.
 		 */
 		protected var _hasValidated:Boolean = false;
-
+		
 		/**
 		 * Determines if the component has been initialized and validated for
 		 * the first time.
@@ -1603,12 +1694,12 @@ package feathers.core
 		{
 			return this._hasValidated;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _depth:int = -1;
-
+		
 		/**
 		 * @copy feathers.core.IValidating#depth
 		 */
@@ -1616,14 +1707,19 @@ package feathers.core
 		{
 			return this._depth;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _invalidateCount:int = 0;
-
+		
 		/**
-		 * @private
+		 * Feathers components use an optimized <code>getBounds()</code>
+		 * implementation that may sometimes behave differently than regular
+		 * Starling display objects. For instance, filters may need some special
+		 * customization. If a component's children appear outside of its
+		 * bounds (such as at negative dimensions), padding should be added to
+		 * the filter to account for these regions.
 		 */
 		override public function getBounds(targetSpace:DisplayObject, resultRect:Rectangle=null):Rectangle
 		{
@@ -1631,10 +1727,10 @@ package feathers.core
 			{
 				resultRect = new Rectangle();
 			}
-
+			
 			var minX:Number = Number.MAX_VALUE, maxX:Number = -Number.MAX_VALUE;
 			var minY:Number = Number.MAX_VALUE, maxY:Number = -Number.MAX_VALUE;
-
+			
 			if (targetSpace == this) // optimization
 			{
 				minX = 0;
@@ -1644,41 +1740,44 @@ package feathers.core
 			}
 			else
 			{
-				this.getTransformationMatrix(targetSpace, HELPER_MATRIX);
-
-				MatrixUtil.transformCoords(HELPER_MATRIX, 0, 0, HELPER_POINT);
+				var matrix:Matrix = Pool.getMatrix();
+				this.getTransformationMatrix(targetSpace, matrix);
+				
+				MatrixUtil.transformCoords(matrix, 0, 0, HELPER_POINT);
 				minX = minX < HELPER_POINT.x ? minX : HELPER_POINT.x;
 				maxX = maxX > HELPER_POINT.x ? maxX : HELPER_POINT.x;
 				minY = minY < HELPER_POINT.y ? minY : HELPER_POINT.y;
 				maxY = maxY > HELPER_POINT.y ? maxY : HELPER_POINT.y;
-
-				MatrixUtil.transformCoords(HELPER_MATRIX, 0, this.actualHeight, HELPER_POINT);
+				
+				MatrixUtil.transformCoords(matrix, 0, this.actualHeight, HELPER_POINT);
 				minX = minX < HELPER_POINT.x ? minX : HELPER_POINT.x;
 				maxX = maxX > HELPER_POINT.x ? maxX : HELPER_POINT.x;
 				minY = minY < HELPER_POINT.y ? minY : HELPER_POINT.y;
 				maxY = maxY > HELPER_POINT.y ? maxY : HELPER_POINT.y;
-
-				MatrixUtil.transformCoords(HELPER_MATRIX, this.actualWidth, 0, HELPER_POINT);
+				
+				MatrixUtil.transformCoords(matrix, this.actualWidth, 0, HELPER_POINT);
 				minX = minX < HELPER_POINT.x ? minX : HELPER_POINT.x;
 				maxX = maxX > HELPER_POINT.x ? maxX : HELPER_POINT.x;
 				minY = minY < HELPER_POINT.y ? minY : HELPER_POINT.y;
 				maxY = maxY > HELPER_POINT.y ? maxY : HELPER_POINT.y;
-
-				MatrixUtil.transformCoords(HELPER_MATRIX, this.actualWidth, this.actualHeight, HELPER_POINT);
+				
+				MatrixUtil.transformCoords(matrix, this.actualWidth, this.actualHeight, HELPER_POINT);
 				minX = minX < HELPER_POINT.x ? minX : HELPER_POINT.x;
 				maxX = maxX > HELPER_POINT.x ? maxX : HELPER_POINT.x;
 				minY = minY < HELPER_POINT.y ? minY : HELPER_POINT.y;
 				maxY = maxY > HELPER_POINT.y ? maxY : HELPER_POINT.y;
+				
+				Pool.putMatrix(matrix);
 			}
-
+			
 			resultRect.x = minX;
 			resultRect.y = minY;
 			resultRect.width  = maxX - minX;
 			resultRect.height = maxY - minY;
-
+			
 			return resultRect;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1698,12 +1797,12 @@ package feathers.core
 			}
 			return super.hitTest(localPoint);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isDisposed:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
@@ -1711,9 +1810,17 @@ package feathers.core
 		{
 			this._isDisposed = true;
 			this._validationQueue = null;
+			this.removeEventListener( Event.ADDED_TO_STAGE, feathersControl_addedToStageHandler );
+			this.removeEventListener( Event.REMOVED_FROM_STAGE, feathersControl_removedFromStageHandler );
+
+			if ( _styleNameList )
+			{
+				_styleNameList.removeEventListener( Event.CHANGE, styleNameList_changeHandler );
+				_styleNameList = null;
+			}
 			super.dispose();
 		}
-
+		
 		/**
 		 * Call this function to tell the UI control that a redraw is pending.
 		 * The redraw will happen immediately before Starling renders the UI
@@ -1786,7 +1893,7 @@ package feathers.core
 			this._invalidateCount = 0;
 			this._validationQueue.addControl(this, false);
 		}
-
+		
 		/**
 		 * @copy feathers.core.IValidating#validate()
 		 *
@@ -1808,7 +1915,7 @@ package feathers.core
 					//finished initializing. we'll have to wait.
 					return;
 				}
-				this.initializeInternal();
+				this.initializeNow();
 			}
 			if(!this.isInvalid())
 			{
@@ -1851,7 +1958,7 @@ package feathers.core
 				this.dispatchEventWith(FeathersEventType.CREATION_COMPLETE);
 			}
 		}
-
+		
 		/**
 		 * Indicates whether the control is pending validation or not. By
 		 * default, returns <code>true</code> if any invalidation flag has been
@@ -1876,7 +1983,7 @@ package feathers.core
 			}
 			return this._invalidationFlags[flag];
 		}
-
+		
 		/**
 		 * Sets both the width and the height of the control in a single
 		 * function call.
@@ -1898,17 +2005,21 @@ package feathers.core
 			{
 				this.actualHeight = this.scaledActualHeight = 0;
 			}
-
+			
 			if(widthIsNaN || heightIsNaN)
 			{
 				this.invalidate(INVALIDATION_FLAG_SIZE);
 			}
 			else
 			{
-				this.setSizeInternal(width, height, true);
+				var result:Boolean = this.saveMeasurements(width, height, this.actualMinWidth, this.actualMinHeight);
+				if(result)
+				{
+					this.invalidate(INVALIDATION_FLAG_SIZE);
+				}
 			}
 		}
-
+		
 		/**
 		 * Sets both the x and the y positions of the control in a single
 		 * function call.
@@ -1921,7 +2032,7 @@ package feathers.core
 			this.x = x;
 			this.y = y;
 		}
-
+		
 		/**
 		 * Resets the <code>styleProvider</code> property to its default value,
 		 * which is usually the global style provider for the component.
@@ -1933,7 +2044,7 @@ package feathers.core
 		{
 			this.styleProvider = this.defaultStyleProvider;
 		}
-
+		
 		/**
 		 * <p>The implementation of this method is provided for convenience, but
 		 * it cannot be used unless a subclass implements the
@@ -1949,11 +2060,11 @@ package feathers.core
 			{
 				return;
 			}
-
+			
 			this._showFocus = true;
 			this.invalidate(INVALIDATION_FLAG_FOCUS);
 		}
-
+		
 		/**
 		 * <p>The implementation of this method is provided for convenience, but
 		 * it cannot be used unless a subclass implements the
@@ -1969,11 +2080,45 @@ package feathers.core
 			{
 				return;
 			}
-
+			
 			this._showFocus = false;
 			this.invalidate(INVALIDATION_FLAG_FOCUS);
 		}
-
+		
+		/**
+		 * If the component has not yet initialized, initializes immediately.
+		 * The <code>initialize()</code> function will be called, and the
+		 * <code>FeathersEventType.INITIALIZE</code> event will be dispatched.
+		 * Then, if the component has a style provider, it will be applied. The
+		 * component will not validate, though. To initialize and validate
+		 * immediately, call <code>validate()</code> instead.
+		 * 
+		 * @see #isInitialized
+		 * @see #initialize()
+		 * @see #event:initialize FeathersEventType.INITIALIZE
+		 * @see #styleProvider
+		 * @see #validate()
+		 */
+		public function initializeNow():void
+		{
+			if(this._isInitialized || this._isInitializing)
+			{
+				return;
+			}
+			this._isInitializing = true;
+			this.initialize();
+			this.invalidate(); //invalidate everything
+			this._isInitializing = false;
+			this._isInitialized = true;
+			this.dispatchEventWith(FeathersEventType.INITIALIZE);
+			
+			if(this._styleProvider)
+			{
+				this._styleProvider.applyStyles(this);
+			}
+			this._styleNameList.addEventListener(Event.CHANGE, styleNameList_changeHandler);
+		}
+		
 		/**
 		 * Sets the width and height of the control, with the option of
 		 * invalidating or not. Intended to be used when the <code>width</code>
@@ -1989,9 +2134,11 @@ package feathers.core
 			}
 			return changed;
 		}
-
+		
 		/**
-		 *
+		 * Saves the dimensions and minimum dimensions calculated for the
+		 * component. Returns true if the reported values have changed and
+		 * <code>Event.RESIZE</code> was dispatched.
 		 */
 		protected function saveMeasurements(width:Number, height:Number, minWidth:Number = 0, minHeight:Number = 0):Boolean
 		{
@@ -2017,9 +2164,9 @@ package feathers.core
 				{
 					width = minWidth;
 				}
-				else if(width > this._maxWidth)
+				else if(width > this._explicitMaxWidth)
 				{
-					width = this._maxWidth;
+					width = this._explicitMaxWidth;
 				}
 			}
 			if(this._explicitHeight === this._explicitHeight) //!isNaN
@@ -2032,9 +2179,9 @@ package feathers.core
 				{
 					height = minHeight;
 				}
-				else if(height > this._maxHeight)
+				else if(height > this._explicitMaxHeight)
 				{
-					height = this._maxHeight;
+					height = this._explicitMaxHeight;
 				}
 			}
 			if(width !== width) //isNaN
@@ -2080,24 +2227,18 @@ package feathers.core
 			}
 			width = this.scaledActualWidth;
 			height = this.scaledActualHeight;
-			minWidth = this.scaledActualMinWidth;
-			minHeight = this.scaledActualMinHeight;
 			this.scaledActualWidth = this.actualWidth * scaleX;
 			this.scaledActualHeight = this.actualHeight * scaleY;
 			this.scaledActualMinWidth = this.actualMinWidth * scaleX;
 			this.scaledActualMinHeight = this.actualMinHeight * scaleY;
-			if(width !== this.scaledActualWidth || height !== this.scaledActualHeight ||
-					minWidth !== this.scaledActualMinWidth || minHeight !== this.scaledActualMinHeight)
+			if(width !== this.scaledActualWidth || height !== this.scaledActualHeight)
 			{
 				resized = true;
-			}
-			if(resized)
-			{
-				this.dispatchEventWith(FeathersEventType.RESIZE);
+				this.dispatchEventWith(Event.RESIZE);
 			}
 			return resized;
 		}
-
+		
 		/**
 		 * Called the first time that the UI control is added to the stage, and
 		 * you should override this function to customize the initialization
@@ -2109,9 +2250,9 @@ package feathers.core
 		 */
 		protected function initialize():void
 		{
-
+			
 		}
-
+		
 		/**
 		 * Override to customize layout and to adjust properties of children.
 		 * Called when the component validates, if any flags have been marked
@@ -2119,9 +2260,9 @@ package feathers.core
 		 */
 		protected function draw():void
 		{
-
+			
 		}
-
+		
 		/**
 		 * Sets an invalidation flag. This will not add the component to the
 		 * validation queue. It only sets the flag. A subclass might use
@@ -2136,7 +2277,7 @@ package feathers.core
 			}
 			this._invalidationFlags[flag] = true;
 		}
-
+		
 		/**
 		 * Clears an invalidation flag. This will not remove the component from
 		 * the validation queue. It only clears the flag. A subclass might use
@@ -2147,7 +2288,7 @@ package feathers.core
 		{
 			delete this._invalidationFlags[flag];
 		}
-
+		
 		/**
 		 * Updates the focus indicator skin by showing or hiding it and
 		 * adjusting its position and dimensions. This function is not called
@@ -2181,7 +2322,7 @@ package feathers.core
 				this._focusIndicatorSkin.height = this.actualHeight - this._focusPaddingTop - this._focusPaddingBottom;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2205,7 +2346,7 @@ package feathers.core
 				this._hitArea.x = hitAreaX;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2229,30 +2370,7 @@ package feathers.core
 				this._hitArea.y = hitAreaY;
 			}
 		}
-
-		/**
-		 * @private
-		 */
-		protected function initializeInternal():void
-		{
-			if(this._isInitialized || this._isInitializing)
-			{
-				return;
-			}
-			this._isInitializing = true;
-			this.initialize();
-			this.invalidate(); //invalidate everything
-			this._isInitializing = false;
-			this._isInitialized = true;
-			this.dispatchEventWith(FeathersEventType.INITIALIZE);
-
-			if(this._styleProvider)
-			{
-				this._styleProvider.applyStyles(this);
-			}
-			this._styleNameList.addEventListener(Event.CHANGE, styleNameList_changeHandler);
-		}
-
+		
 		/**
 		 * Default event handler for <code>FeathersEventType.FOCUS_IN</code>
 		 * that may be overridden in subclasses to perform additional actions
@@ -2263,7 +2381,7 @@ package feathers.core
 			this._hasFocus = true;
 			this.invalidate(INVALIDATION_FLAG_FOCUS);
 		}
-
+		
 		/**
 		 * Default event handler for <code>FeathersEventType.FOCUS_OUT</code>
 		 * that may be overridden in subclasses to perform additional actions
@@ -2275,7 +2393,7 @@ package feathers.core
 			this._showFocus = false;
 			this.invalidate(INVALIDATION_FLAG_FOCUS);
 		}
-
+		
 		/**
 		 * @private
 		 * Initialize the control, if it hasn't been initialized yet. Then,
@@ -2284,11 +2402,12 @@ package feathers.core
 		 */
 		protected function feathersControl_addedToStageHandler(event:Event):void
 		{
-			this._depth = getDisplayObjectDepthFromStage(this);
-			this._validationQueue = ValidationQueue.forStarling(Starling.current);
-			if(!this._isInitialized)
+			this._depth = getDisplayObjectDepthFromStage( this );
+			var starling : Starling = Starling.current;
+			this._validationQueue = ValidationQueue.forStarling( starling );
+			if ( !this._isInitialized )
 			{
-				this.initializeInternal();
+				this.initializeNow();
 			}
 			if(this.isInvalid())
 			{
@@ -2297,7 +2416,7 @@ package feathers.core
 				this._validationQueue.addControl(this, false);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2306,7 +2425,7 @@ package feathers.core
 			this._depth = -1;
 			this._validationQueue = null;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2314,7 +2433,7 @@ package feathers.core
 		{
 			this.dispatchEventWith(FeathersEventType.LAYOUT_DATA_CHANGE);
 		}
-
+		
 		/**
 		 * @private
 		 */

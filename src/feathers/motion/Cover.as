@@ -193,7 +193,7 @@ package feathers.motion
 				}
 			}
 			tween.onComplete = onComplete;
-			Starling.juggler.add(tween);
+			Starling.current.juggler.add(tween);
 		}
 	}
 }
@@ -268,7 +268,7 @@ class CoverTween extends Tween
 			this.onUpdate = this.updateNewScreen;
 		}
 		this.onComplete = this.cleanupTween;
-		Starling.juggler.add(this);
+		Starling.current.juggler.add(this);
 	}
 
 	private var _savedXOffset:Number;

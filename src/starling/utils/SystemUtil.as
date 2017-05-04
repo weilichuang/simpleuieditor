@@ -14,8 +14,10 @@ package starling.utils
     import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.system.Capabilities;
+    import flash.text.Font;
+    import flash.text.FontStyle;
     import flash.utils.getDefinitionByName;
-
+    
     import starling.errors.AbstractClassError;
 
     /** A utility class with methods related to the current platform and runtime. */
@@ -25,9 +27,12 @@ package starling.utils
         private static var sApplicationActive:Boolean = true;
         private static var sWaitingCalls:Array = [];
         private static var sPlatform:String;
+		private static var sDesktop:Boolean;
         private static var sVersion:String;
         private static var sAIR:Boolean;
         private static var sSupportsDepthAndStencil:Boolean = true;
+		private static var sSupportsRectangleTexture:Boolean = false;
+		private static var sEmbeddedFonts:Array = null;
         
         /** @private */
         public function SystemUtil() { throw new AbstractClassError(); }
@@ -41,6 +46,11 @@ package starling.utils
             sInitialized = true;
             sPlatform = Capabilities.version.substr(0, 3);
             sVersion = Capabilities.version.substr(4);
+			sDesktop = /(WIN|MAC|LNX)/.exec(sPlatform) != null;
+			
+//			var list:Array = sVersion.split(",");
+//			sSupportsRectangleTexture = parseInt(list[0]) > 11 || (parseInt(list[0]) == 11 && parseInt(list[1]) >= 8) ;
+			sSupportsRectangleTexture = false;
             
             try
             {
@@ -117,7 +127,7 @@ package starling.utils
         public static function get isDesktop():Boolean
         {
             initialize();
-            return /(WIN|MAC|LNX)/.exec(sPlatform) != null;
+			return sDesktop;
         }
         
         /** Returns the three-letter platform string of the current system. These are
@@ -136,6 +146,11 @@ package starling.utils
             initialize();
             return sVersion;
         }
+		
+		public static function get supportsRectangleTexture():Boolean
+		{
+			return sSupportsRectangleTexture;
+		}
 
         /** Returns the value of the 'initialWindow.depthAndStencil' node of the application
          *  descriptor, if this in an AIR app; otherwise always <code>true</code>. */
@@ -151,5 +166,56 @@ package starling.utils
         {
             return Context3D["supportsVideoTexture"];
         }
+		
+		/**
+		 * andywei
+		 * 
+		 */
+		public static function get supportsPackedTexture():Boolean
+		{
+//			var format:String = Context3DTextureFormat["bgrPacked565"];
+//			return format != null;
+			initialize();
+			var list:Array = sVersion.split(",");
+			return parseInt(list[0]) > 11 || (parseInt(list[0]) == 11 && parseInt(list[1]) >= 7) ;
+		}
+		
+		
+		/** Updates the list of embedded fonts. To be called when a font is loaded at runtime. */
+		public static function updateEmbeddedFonts():void
+		{
+			sEmbeddedFonts = null; // will be updated in 'isEmbeddedFont()'
+		}
+
+		/** Figures out if an embedded font with the specified style is available.
+		 *  The fonts are enumerated only once; if you load a font at runtime, be sure to call
+		 *  'updateEmbeddedFonts' before calling this method.
+		 *
+		 *  @param fontName  the name of the font
+		 *  @param bold      indicates if the font has a bold style
+		 *  @param italic    indicates if the font has an italic style
+		 *  @param fontType  the type of the font (one of the constants defined in the FontType class)
+		 */
+		public static function isEmbeddedFont( fontName : String, bold : Boolean = false, italic : Boolean = false,
+			fontType : String = "embedded" ) : Boolean
+		{
+			if (sEmbeddedFonts == null)
+				sEmbeddedFonts = Font.enumerateFonts(false);
+			
+			for each (var font:Font in sEmbeddedFonts)
+			{
+				var style:String = font.fontStyle;
+				var isBold:Boolean = style == FontStyle.BOLD || style == FontStyle.BOLD_ITALIC;
+				var isItalic:Boolean = style == FontStyle.ITALIC || style == FontStyle.BOLD_ITALIC;
+				
+				if (fontName == font.fontName && bold == isBold && italic == isItalic &&
+					fontType == font.fontType)
+				{
+					return true;
+				}
+			}
+			
+			return false;
+		}
     }
 }

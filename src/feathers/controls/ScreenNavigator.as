@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -10,10 +10,10 @@ package feathers.controls
 	import feathers.controls.supportClasses.BaseScreenNavigator;
 	import feathers.events.FeathersEventType;
 	import feathers.skins.IStyleProvider;
-
+	
 	import starling.display.DisplayObject;
 	import starling.events.Event;
-
+	
 	/**
 	 * A "view stack"-like container that supports navigation between screens
 	 * (any display object) through events.
@@ -34,19 +34,27 @@ package feathers.controls
 	public class ScreenNavigator extends BaseScreenNavigator
 	{
 		/**
-		 * The screen navigator will auto size itself to fill the entire stage.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.AutoSizeMode.STAGE</code>.
 		 *
-		 * @see #autoSizeMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const AUTO_SIZE_MODE_STAGE:String = "stage";
-
+		
 		/**
-		 * The screen navigator will auto size itself to fit its content.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.AutoSizeMode.CONTENT</code>.
 		 *
-		 * @see #autoSizeMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const AUTO_SIZE_MODE_CONTENT:String = "content";
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>ScreenNavigator</code>
 		 * components.
@@ -55,7 +63,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -63,7 +71,7 @@ package feathers.controls
 		{
 			super();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -71,12 +79,12 @@ package feathers.controls
 		{
 			return ScreenNavigator.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _transition:Function;
-
+		
 		/**
 		 * Typically used to provide some kind of animation or visual effect,
 		 * this function is called when a new screen is shown. 
@@ -127,7 +135,7 @@ package feathers.controls
 		{
 			return this._transition;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -139,12 +147,12 @@ package feathers.controls
 			}
 			this._transition = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _screenEvents:Object = {};
-
+		
 		/**
 		 * Registers a new screen with a string identifier that can be used
 		 * to reference the screen in other calls, like <code>removeScreen()</code>
@@ -156,7 +164,7 @@ package feathers.controls
 		{
 			this.addScreenInternal(id, item);
 		}
-
+		
 		/**
 		 * Removes an existing screen using the identifier assigned to it in the
 		 * call to <code>addScreen()</code>.
@@ -168,7 +176,7 @@ package feathers.controls
 		{
 			return ScreenNavigatorItem(this.removeScreenInternal(id));
 		}
-
+		
 		/**
 		 * Returns the <code>ScreenNavigatorItem</code> instance with the
 		 * specified identifier.
@@ -181,7 +189,7 @@ package feathers.controls
 			}
 			return null;
 		}
-
+		
 		/**
 		 * Displays a screen and returns a reference to it. If a previous
 		 * transition is running, the new screen will be queued, and no
@@ -194,13 +202,17 @@ package feathers.controls
 		 */
 		public function showScreen(id:String, transition:Function = null):DisplayObject
 		{
+			if(this._activeScreenID === id)
+			{
+				return this._activeScreen;
+			}
 			if(transition === null)
 			{
 				transition = this._transition;
 			}
 			return this.showScreenInternal(id, transition);
 		}
-
+		
 		/**
 		 * Removes the current screen, leaving the <code>ScreenNavigator</code>
 		 * empty.
@@ -219,7 +231,7 @@ package feathers.controls
 			this.clearScreenInternal(transition);
 			this.dispatchEventWith(FeathersEventType.CLEAR);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -269,7 +281,7 @@ package feathers.controls
 			}
 			this._screenEvents[this._activeScreenID] = savedScreenEvents;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -313,7 +325,7 @@ package feathers.controls
 			}
 			this._screenEvents[this._activeScreenID] = null;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -324,10 +336,10 @@ package feathers.controls
 			{
 				self.showScreen(screenID);
 			};
-
+			
 			return eventListener;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -349,9 +361,9 @@ package feathers.controls
 					self.showScreen(screenID);
 				};
 			}
-
+			
 			return signalListener;
 		}
 	}
-
+	
 }

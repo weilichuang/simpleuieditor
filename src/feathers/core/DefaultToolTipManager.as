@@ -130,13 +130,13 @@ package feathers.core
 		/**
 		 * @private
 		 */
-		protected var _showDelay:Number = 0.5;
+		protected var _showDelay:Number = 0.3;
 
 		/**
 		 * The delay, in seconds, before a tool tip may be displayed when the
 		 * mouse is idle over a component with a tool tip.
 		 * 
-		 * @default 0.5
+		 * @default 0.3
 		 */
 		public function get showDelay():Number
 		{
@@ -236,9 +236,9 @@ package feathers.core
 			this._root.removeEventListener(TouchEvent.TOUCH, root_touchHandler);
 			this._root = null;
 			
-			if(Starling.juggler.contains(this._delayedCall))
+			if(Starling.current.juggler.contains(this._delayedCall))
 			{
-				Starling.juggler.remove(this._delayedCall);
+				Starling.current.juggler.remove(this._delayedCall);
 				this._delayedCall = null;
 			}
 			
@@ -331,7 +331,7 @@ package feathers.core
 				touch = event.getTouch(DisplayObject(this._target), null, this._touchPointID);
 				if(!touch || touch.phase !== TouchPhase.HOVER)
 				{
-					Starling.juggler.remove(this._delayedCall);
+					Starling.current.juggler.remove(this._delayedCall);
 					this._touchPointID = -1;
 					this._target = null;
 					return;
@@ -375,7 +375,7 @@ package feathers.core
 				{
 					this._delayedCall = new DelayedCall(hoverDelayCallback, this._showDelay);
 				}
-				Starling.juggler.add(this._delayedCall);
+				Starling.current.juggler.add(this._delayedCall);
 			}
 		}
 	}

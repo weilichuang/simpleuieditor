@@ -1,8 +1,6 @@
 package uieditor.editor
 {
-	import flash.filesystem.File;
 	import flash.utils.Dictionary;
-	import starling.text.TextField;
 	
 	import feathers.controls.LayoutGroup;
 	import feathers.core.PopUpManager;
@@ -13,20 +11,19 @@ package uieditor.editor
 	import starling.display.Stage;
 	import starling.events.Event;
 	import starling.events.ResizeEvent;
+	import starling.text.TextField;
 	import starling.utils.AssetManager;
 	
 	import uieditor.editor.cursor.CursorManager;
-	import uieditor.editor.data.EmbedAsset;
 	import uieditor.editor.data.TemplateData;
 	import uieditor.editor.menu.MainMenu;
 	import uieditor.editor.model.Setting;
 	import uieditor.editor.model.SettingParams;
-	import uieditor.editor.ui.DocumentPanel;
-	import uieditor.editor.ui.ContentPanel;
-	import uieditor.editor.ui.LeftPanel;
-	import uieditor.editor.ui.RightPanel;
-	import uieditor.editor.ui.SettingPopup;
-	import uieditor.editor.ui.Toolbar;
+	import uieditor.editor.ui.main.ContentPanel;
+	import uieditor.editor.ui.main.LeftPanel;
+	import uieditor.editor.ui.main.RightPanel;
+	import uieditor.editor.ui.popup.SettingPopup;
+	import uieditor.editor.ui.main.Toolbar;
 	import uieditor.editor.util.AppUtil;
 
 	public class UIEditorScreen extends LayoutGroup
@@ -227,14 +224,11 @@ package uieditor.editor
 			return _contentPanel;
 		}
 
-		// the name container with the registered bitmap fonts
-		private static const BITMAP_FONT_DATA_NAME : String = "starling.display.TextField.BitmapFonts";
-
 		public function getBitmapFontNames() : Array
 		{
 			var array : Array = [];
 
-			var dict : Dictionary = TextField.bitmapFonts;
+			var dict:Dictionary = Starling.current.painter.sharedData[TextField.COMPOSITOR_DATA_NAME] as Dictionary;
 			for ( var name : String in dict )
 			{
 				array.push( name );

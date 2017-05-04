@@ -7,7 +7,7 @@ package uieditor.editor.ui.inspector
 		{
 			for each ( var item : Object in params )
 			{
-				if (( item.component == PropertyComponentType.TEXT_INPUT || item.component == PropertyComponentType.PICKER_LIST ) && item.name == "fontName" )
+				if (( item.component == PropertyComponentType.TEXT_INPUT || item.component == PropertyComponentType.PICKER_LIST ) && item.name == "font" )
 				{
 					item.options = fonts;
 				}

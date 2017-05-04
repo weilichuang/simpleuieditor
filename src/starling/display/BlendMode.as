@@ -10,9 +10,8 @@
 
 package starling.display
 {
+    import flash.display3D.Context3D;
     import flash.display3D.Context3DBlendFactor;
-
-    import starling.core.Starling;
 
     /** A class that provides constant values for visual blend mode effects.
      *   
@@ -34,9 +33,14 @@ package starling.display
      */
     public class BlendMode
     {
-        private var _name:String;
-        private var _sourceFactor:String;
-        private var _destinationFactor:String;
+		/** Returns the name of the blend mode. */
+		public var name:String;
+		
+		/** The source blend factor of this blend mode. */
+		public var sourceFactor:String;
+		
+		/** The destination blend factor of this blend mode. */
+		public var destinationFactor:String;
 
         private static var sBlendModes:Object;
 
@@ -44,9 +48,9 @@ package starling.display
          *  register a new blend mode using <code>BlendMode.register</code>. */
         public function BlendMode(name:String, sourceFactor:String, destinationFactor:String)
         {
-            _name = name;
-            _sourceFactor = sourceFactor;
-            _destinationFactor = destinationFactor;
+            this.name = name;
+			this.sourceFactor = sourceFactor;
+			this.destinationFactor = destinationFactor;
         }
         
         /** Inherits the blend mode from this display object's parent. */
@@ -78,16 +82,16 @@ package starling.display
         /** Draws under/below existing objects; useful especially on RenderTextures. */
         public static const BELOW:String = "below";
 
-        // static access methods
-        
-        /** Returns the blend mode with the given name.
-         *  Throws an ArgumentError if the mode does not exist. */
-        public static function get(modeName:String):BlendMode
-        {
-            if (sBlendModes == null) registerDefaults();
-            if (modeName in sBlendModes) return sBlendModes[modeName];
-            else throw new ArgumentError("Blend mode not found: " + modeName);
-        }
+		// static access methods
+
+		/** Returns the blend mode with the given name.
+		 *  Throws an ArgumentError if the mode does not exist. */
+		public static function get( modeName : String ) : BlendMode
+		{
+			if ( sBlendModes == null )
+				registerDefaults();
+			return sBlendModes[ modeName ];
+		}
         
         /** Registers a blending mode under a certain name. */
         public static function register(name:String, srcFactor:String, dstFactor:String):BlendMode
@@ -116,21 +120,12 @@ package starling.display
         // instance methods / properties
 
         /** Sets the appropriate blend factors for source and destination on the current context. */
-        public function activate():void
+        public function activate(context:Context3D):void
         {
-            Starling.context.setBlendFactors(_sourceFactor, _destinationFactor);
+            context.setBlendFactors(sourceFactor, destinationFactor);
         }
 
         /** Returns the name of the blend mode. */
-        public function toString():String { return _name; }
-
-        /** The source blend factor of this blend mode. */
-        public function get sourceFactor():String { return _sourceFactor; }
-
-        /** The destination blend factor of this blend mode. */
-        public function get destinationFactor():String { return _destinationFactor; }
-
-        /** Returns the name of the blend mode. */
-        public function get name():String { return _name; }
+        public function toString():String { return name; }
     }
 }

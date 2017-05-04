@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with TexturePacker http://www.codeandweb.com/texturepacker-->
-<!-- $TexturePacker:SmartUpdate:d23ee7eddfaeb7e5fe9e922c7d0b4b43:ab4eb39cae123b4d602ad5dd8dd0530f:0dbeed7acf6c3264861a2e70e992bcae$ -->
+<!-- $TexturePacker:SmartUpdate:162d74cee842b72ee85b4002c0a92802:86fa942d86673da438f931abc7500574:0dbeed7acf6c3264861a2e70e992bcae$ -->
 <TextureAtlas imagePath="ui.png">
     <SubTexture name="component-header" x="56" y="86" width="16" height="16" frameX="-1" frameY="-1" frameWidth="18" frameHeight="18"/>
     <SubTexture name="component-image" x="42" y="42" width="18" height="16" frameX="0" frameY="-1" frameWidth="18" frameHeight="18"/>
@@ -107,4 +107,5 @@
     <SubTexture name="iconfont-zoomin" x="52" y="104" width="14" height="14" frameX="-1" frameY="-1" frameWidth="16" frameHeight="16"/>
     <SubTexture name="iconfont-zoomout" x="36" y="96" width="14" height="14" frameX="-1" frameY="-1" frameWidth="16" frameHeight="16"/>
     <SubTexture name="iconfont-zuoduiqi" x="2" y="176" width="12" height="12" frameX="-2" frameY="-2" frameWidth="16" frameHeight="16"/>
+    <SubTexture name="space" x="122" y="2" width="1" height="1" frameX="0" frameY="0" frameWidth="2" frameHeight="2"/>
 </TextureAtlas>

@@ -300,6 +300,7 @@ package feathers.dragDrop
 			{
 				return;
 			}
+
 			if(touch.phase == TouchPhase.MOVED)
 			{
 				touch.getLocation(stage, HELPER_POINT);
@@ -310,7 +311,7 @@ package feathers.dragDrop
 				}
 				updateDropTarget(HELPER_POINT);
 			}
-			else if(touch.phase == TouchPhase.ENDED)
+			else if(touch.phase == TouchPhase.ENDED || touch.phase == TouchPhase.HOVER)
 			{
 				_touchPointID = -1;
 				var isDropped:Boolean = false;

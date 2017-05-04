@@ -1,17 +1,21 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
 */
 package feathers.controls.supportClasses
 {
+	import flash.geom.Rectangle;
+	
+	import feathers.controls.AutoSizeMode;
 	import feathers.controls.LayoutGroup;
 	import feathers.core.IValidating;
-
+	import feathers.layout.ILayoutDisplayObject;
+	
 	import starling.display.DisplayObject;
-
+	
 	/**
 	 * @private
 	 * Used internally by ScrollContainer. Not meant to be used on its own.
@@ -21,35 +25,58 @@ package feathers.controls.supportClasses
 		public function LayoutViewPort()
 		{
 		}
-
-		private var _minVisibleWidth:Number = 0;
-
+		
+		private var _actualMinVisibleWidth:Number = 0;
+		
+		private var _explicitMinVisibleWidth:Number;
+		
 		public function get minVisibleWidth():Number
 		{
-			return this._minVisibleWidth;
+			if(this._explicitMinVisibleWidth !== this._explicitMinVisibleWidth) //isNaN
+			{
+				return this._actualMinVisibleWidth;
+			}
+			return this._explicitMinVisibleWidth;
 		}
-
+		
 		public function set minVisibleWidth(value:Number):void
 		{
-			if(this._minVisibleWidth == value)
+			if(this._explicitMinVisibleWidth == value)
 			{
 				return;
 			}
-			if(value !== value) //isNaN
+			var valueIsNaN:Boolean = value !== value; //isNaN
+			if(valueIsNaN &&
+				this._explicitMinVisibleWidth !== this._explicitMinVisibleWidth) //isNaN
 			{
-				throw new ArgumentError("minVisibleWidth cannot be NaN");
+				return;
 			}
-			this._minVisibleWidth = value;
-			this.invalidate(INVALIDATION_FLAG_SIZE);
+			var oldValue:Number = this._explicitMinVisibleWidth;
+			this._explicitMinVisibleWidth = value;
+			if(valueIsNaN)
+			{
+				this._actualMinVisibleWidth = 0;
+				this.invalidate(INVALIDATION_FLAG_SIZE);
+			}
+			else
+			{
+				this._actualMinVisibleWidth = value;
+				if(this._explicitVisibleWidth !== this._explicitVisibleWidth && //isNaN
+					(this._actualVisibleWidth < value || this._actualVisibleWidth === oldValue))
+				{
+					//only invalidate if this change might affect the visibleWidth
+					this.invalidate(INVALIDATION_FLAG_SIZE);
+				}
+			}
 		}
-
+		
 		private var _maxVisibleWidth:Number = Number.POSITIVE_INFINITY;
-
+		
 		public function get maxVisibleWidth():Number
 		{
 			return this._maxVisibleWidth;
 		}
-
+		
 		public function set maxVisibleWidth(value:Number):void
 		{
 			if(this._maxVisibleWidth == value)
@@ -60,14 +87,20 @@ package feathers.controls.supportClasses
 			{
 				throw new ArgumentError("maxVisibleWidth cannot be NaN");
 			}
+			var oldValue:Number = this._maxVisibleWidth;
 			this._maxVisibleWidth = value;
-			this.invalidate(INVALIDATION_FLAG_SIZE);
+			if(this._explicitVisibleWidth !== this._explicitVisibleWidth && //isNaN
+				(this._actualVisibleWidth > value || this._actualVisibleWidth === oldValue))
+			{
+				//only invalidate if this change might affect the visibleWidth
+				this.invalidate(INVALIDATION_FLAG_SIZE);
+			}
 		}
-
+		
 		private var _actualVisibleWidth:Number = 0;
-
-		private var _explicitVisibleWidth:Number = NaN;
-
+		
+		private var _explicitVisibleWidth:Number;
+		
 		public function get visibleWidth():Number
 		{
 			if(this._explicitVisibleWidth !== this._explicitVisibleWidth) //isNaN
@@ -76,7 +109,7 @@ package feathers.controls.supportClasses
 			}
 			return this._explicitVisibleWidth;
 		}
-
+		
 		public function set visibleWidth(value:Number):void
 		{
 			if(this._explicitVisibleWidth == value ||
@@ -85,37 +118,63 @@ package feathers.controls.supportClasses
 				return;
 			}
 			this._explicitVisibleWidth = value;
-			this.invalidate(INVALIDATION_FLAG_SIZE);
+			if(this._actualVisibleWidth !== value)
+			{
+				this.invalidate(INVALIDATION_FLAG_SIZE);
+			}
 		}
-
-		private var _minVisibleHeight:Number = 0;
-
+		
+		private var _actualMinVisibleHeight:Number = 0;
+		
+		private var _explicitMinVisibleHeight:Number;
+		
 		public function get minVisibleHeight():Number
 		{
-			return this._minVisibleHeight;
+			if(this._explicitMinVisibleHeight !== this._explicitMinVisibleHeight) //isNaN
+			{
+				return this._actualMinVisibleHeight;
+			}
+			return this._explicitMinVisibleHeight;
 		}
-
+		
 		public function set minVisibleHeight(value:Number):void
 		{
-			if(this._minVisibleHeight == value)
+			if(this._explicitMinVisibleHeight == value)
 			{
 				return;
 			}
-			if(value !== value) //isNaN
+			var valueIsNaN:Boolean = value !== value; //isNaN
+			if(valueIsNaN &&
+				this._explicitMinVisibleHeight !== this._explicitMinVisibleHeight) //isNaN
 			{
-				throw new ArgumentError("minVisibleHeight cannot be NaN");
+				return;
 			}
-			this._minVisibleHeight = value;
-			this.invalidate(INVALIDATION_FLAG_SIZE);
+			var oldValue:Number = this._explicitMinVisibleHeight;
+			this._explicitMinVisibleHeight = value;
+			if(valueIsNaN)
+			{
+				this._actualMinVisibleHeight = 0;
+				this.invalidate(INVALIDATION_FLAG_SIZE);
+			}
+			else
+			{
+				this._actualMinVisibleHeight = value;
+				if(this._explicitVisibleHeight !== this._explicitVisibleHeight && //isNaN
+					(this._actualVisibleHeight < value || this._actualVisibleHeight === oldValue))
+				{
+					//only invalidate if this change might affect the visibleHeight
+					this.invalidate(INVALIDATION_FLAG_SIZE);
+				}
+			}
 		}
-
+		
 		private var _maxVisibleHeight:Number = Number.POSITIVE_INFINITY;
-
+		
 		public function get maxVisibleHeight():Number
 		{
 			return this._maxVisibleHeight;
 		}
-
+		
 		public function set maxVisibleHeight(value:Number):void
 		{
 			if(this._maxVisibleHeight == value)
@@ -126,14 +185,20 @@ package feathers.controls.supportClasses
 			{
 				throw new ArgumentError("maxVisibleHeight cannot be NaN");
 			}
+			var oldValue:Number = this._maxVisibleHeight;
 			this._maxVisibleHeight = value;
-			this.invalidate(INVALIDATION_FLAG_SIZE);
+			if(this._explicitVisibleHeight !== this._explicitVisibleHeight && //isNaN
+				(this._actualVisibleHeight > value || this._actualVisibleHeight === oldValue))
+			{
+				//only invalidate if this change might affect the visibleHeight
+				this.invalidate(INVALIDATION_FLAG_SIZE);
+			}
 		}
-
+		
 		private var _actualVisibleHeight:Number = 0;
-
-		private var _explicitVisibleHeight:Number = NaN;
-
+		
+		private var _explicitVisibleHeight:Number;
+		
 		public function get visibleHeight():Number
 		{
 			if(this._explicitVisibleHeight !== this._explicitVisibleHeight) //isNaN
@@ -142,7 +207,7 @@ package feathers.controls.supportClasses
 			}
 			return this._explicitVisibleHeight;
 		}
-
+		
 		public function set visibleHeight(value:Number):void
 		{
 			if(this._explicitVisibleHeight == value ||
@@ -151,23 +216,26 @@ package feathers.controls.supportClasses
 				return;
 			}
 			this._explicitVisibleHeight = value;
-			this.invalidate(INVALIDATION_FLAG_SIZE);
+			if(this._actualVisibleHeight !== value)
+			{
+				this.invalidate(INVALIDATION_FLAG_SIZE);
+			}
 		}
-
+		
 		private var _contentX:Number = 0;
-
+		
 		public function get contentX():Number
 		{
 			return this._contentX;
 		}
-
+		
 		private var _contentY:Number = 0;
-
+		
 		public function get contentY():Number
 		{
 			return this._contentY;
 		}
-
+		
 		public function get horizontalScrollStep():Number
 		{
 			if(this.actualWidth < this.actualHeight)
@@ -176,7 +244,7 @@ package feathers.controls.supportClasses
 			}
 			return this.actualHeight / 10;
 		}
-
+		
 		public function get verticalScrollStep():Number
 		{
 			if(this.actualWidth < this.actualHeight)
@@ -185,14 +253,14 @@ package feathers.controls.supportClasses
 			}
 			return this.actualHeight / 10;
 		}
-
+		
 		private var _horizontalScrollPosition:Number = 0;
-
+		
 		public function get horizontalScrollPosition():Number
 		{
 			return this._horizontalScrollPosition;
 		}
-
+		
 		public function set horizontalScrollPosition(value:Number):void
 		{
 			if(this._horizontalScrollPosition == value)
@@ -202,14 +270,14 @@ package feathers.controls.supportClasses
 			this._horizontalScrollPosition = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 		}
-
+		
 		private var _verticalScrollPosition:Number = 0;
-
+		
 		public function get verticalScrollPosition():Number
 		{
 			return this._verticalScrollPosition;
 		}
-
+		
 		public function set verticalScrollPosition(value:Number):void
 		{
 			if(this._verticalScrollPosition == value)
@@ -219,53 +287,118 @@ package feathers.controls.supportClasses
 			this._verticalScrollPosition = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 		}
-
+		
+		public function get requiresMeasurementOnScroll():Boolean
+		{
+			return this._layout !== null && this._layout.requiresLayoutOnScroll &&
+				(this._explicitVisibleWidth !== this._explicitVisibleWidth ||
+					this._explicitVisibleHeight !== this._explicitVisibleHeight);
+		}
+		
 		override public function dispose():void
 		{
 			this.layout = null;
 			super.dispose();
 		}
-
-		override protected function refreshViewPortBounds():void
+		
+		private static var maskRect : Rectangle = new Rectangle();
+		private static var childRect : Rectangle = new Rectangle();
+		public function refreshMask() : void
 		{
+			var mask : DisplayObject = this.mask;
+			if ( mask == null )
+				return;
+
+			if(mask.parent != null)
+				mask.getBounds( this, maskRect );
+			else
+				mask.getBounds( mask, maskRect );
+			
+			maskRect.x = mask.x;
+			maskRect.y = mask.y;
+			maskRect.width *= mask.scaleX;
+			maskRect.height *= mask.scaleY;
+
+			for ( var i : int = 0; i < this.numChildren; i++ )
+			{
+				var child : DisplayObject = this.getChildAt( i );
+				child.getBounds( this, childRect );
+				
+				childRect.x = child.x;
+				childRect.y = child.y;
+				childRect.width *= child.scaleX;
+				childRect.height *= child.scaleY;
+				
+				child.visible = childRect.intersects( maskRect );
+			}
+		}
+
+		override protected function refreshViewPortBounds() : void
+		{
+			var needsWidth : Boolean = this._explicitVisibleWidth !== this._explicitVisibleWidth; //isNaN
+			var needsHeight : Boolean = this._explicitVisibleHeight !== this._explicitVisibleHeight; //isNaN
+			var needsMinWidth : Boolean = this._explicitMinVisibleWidth !== this._explicitMinVisibleWidth; //isNaN
+			var needsMinHeight : Boolean = this._explicitMinVisibleHeight !== this._explicitMinVisibleHeight; //isNaN
 			this.viewPortBounds.x = 0;
 			this.viewPortBounds.y = 0;
 			this.viewPortBounds.scrollX = this._horizontalScrollPosition;
 			this.viewPortBounds.scrollY = this._verticalScrollPosition;
-			if(this._autoSizeMode == AUTO_SIZE_MODE_STAGE &&
-				this._explicitVisibleWidth !== this._explicitVisibleWidth)
+			if(this._autoSizeMode === AutoSizeMode.STAGE && needsWidth)
 			{
 				this.viewPortBounds.explicitWidth = this.stage.stageWidth;
 			}
 			else
 			{
+				//layouts can handle NaN for explicit dimensions
 				this.viewPortBounds.explicitWidth = this._explicitVisibleWidth;
 			}
-			if(this._autoSizeMode == AUTO_SIZE_MODE_STAGE &&
-				this._explicitVisibleHeight !== this._explicitVisibleHeight)
+			if(this._autoSizeMode === AutoSizeMode.STAGE && needsHeight)
 			{
 				this.viewPortBounds.explicitHeight = this.stage.stageHeight;
 			}
 			else
 			{
+				//layouts can handle NaN for explicit dimensions
 				this.viewPortBounds.explicitHeight = this._explicitVisibleHeight;
 			}
-			this.viewPortBounds.minWidth = this._minVisibleWidth;
-			this.viewPortBounds.minHeight = this._minVisibleHeight;
+			if(needsMinWidth)
+			{
+				//layouts don't expect NaN for minimum dimensions
+				this.viewPortBounds.minWidth = 0;
+			}
+			else
+			{
+				this.viewPortBounds.minWidth = this._explicitMinVisibleWidth;
+			}
+			if(needsMinHeight)
+			{
+				//layouts don't expect NaN for minimum dimensions
+				this.viewPortBounds.minHeight = 0;
+			}
+			else
+			{
+				this.viewPortBounds.minHeight = this._explicitMinVisibleHeight;
+			}
 			this.viewPortBounds.maxWidth = this._maxVisibleWidth;
 			this.viewPortBounds.maxHeight = this._maxVisibleHeight;
 		}
-
+		
 		override protected function handleLayoutResult():void
 		{
-			this.setSizeInternal(this._layoutResult.contentWidth,
-				this._layoutResult.contentHeight, false);
+			var contentWidth:Number = this._layoutResult.contentWidth;
+			var contentHeight:Number = this._layoutResult.contentHeight;
+			this.saveMeasurements(contentWidth, contentHeight,
+				contentWidth, contentHeight);
 			this._contentX = this._layoutResult.contentX;
 			this._contentY = this._layoutResult.contentY;
-			this._actualVisibleWidth = this._layoutResult.viewPortWidth;
-			this._actualVisibleHeight = this._layoutResult.viewPortHeight;
+			var viewPortWidth:Number = this._layoutResult.viewPortWidth;
+			var viewPortHeight:Number = this._layoutResult.viewPortHeight;
+			this._actualVisibleWidth = viewPortWidth;
+			this._actualVisibleHeight = viewPortHeight;
+			this._actualMinVisibleWidth = viewPortWidth;
+			this._actualMinVisibleHeight = viewPortHeight;
 		}
-
+		
 		override protected function handleManualLayout():void
 		{
 			var minX:Number = 0;
@@ -296,6 +429,10 @@ package feathers.controls.supportClasses
 			for(var i:int = 0; i < itemCount; i++)
 			{
 				var item:DisplayObject = this.items[i];
+				if(item is ILayoutDisplayObject && !ILayoutDisplayObject(item).includeInLayout)
+				{
+					continue;
+				}
 				if(item is IValidating)
 				{
 					IValidating(item).validate();
@@ -370,10 +507,10 @@ package feathers.controls.supportClasses
 			this._layoutResult.contentY = 0;
 			this._layoutResult.contentWidth = calculatedWidth;
 			this._layoutResult.contentHeight = calculatedHeight;
-			this._layoutResult.viewPortWidth = calculatedWidth;//this._actualVisibleWidth;
-			this._layoutResult.viewPortHeight = calculatedHeight;//this._actualVisibleHeight;
+			this._layoutResult.viewPortWidth = calculatedWidth;
+			this._layoutResult.viewPortHeight = calculatedHeight;
 		}
-
+		
 		/**
 		 * @private
 		 * This function is here to work around a bug in the Flex 4.6 SDK

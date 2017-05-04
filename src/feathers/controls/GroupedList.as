@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -23,13 +23,14 @@ package feathers.controls
 	import feathers.layout.VerticalAlign;
 	import feathers.layout.VerticalLayout;
 	import feathers.skins.IStyleProvider;
-
+	
 	import flash.geom.Point;
 	import flash.ui.Keyboard;
-
+	
 	import starling.events.Event;
 	import starling.events.KeyboardEvent;
-
+	import starling.utils.Pool;
+	
 	/**
 	 * Dispatched when the selected item changes.
 	 *
@@ -51,7 +52,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.CHANGE
 	 */
 	[Event(name="change",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the the user taps or clicks an item renderer in the list.
 	 * The touch must remain within the bounds of the item renderer on release,
@@ -76,7 +77,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.TRIGGERED
 	 */
 	[Event(name="triggered",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when an item renderer is added to the list. When the layout is
 	 * virtualized, item renderers may not exist for every item in the data
@@ -101,7 +102,7 @@ package feathers.controls
 	 * @eventType feathers.events.FeathersEventType.RENDERER_ADD
 	 */
 	[Event(name="rendererAdd",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when an item renderer is removed from the list. When the layout is
 	 * virtualized, item renderers may not exist for every item in the data
@@ -126,7 +127,7 @@ package feathers.controls
 	 * @eventType feathers.events.FeathersEventType.RENDERER_REMOVE
 	 */
 	[Event(name="rendererRemove",type="starling.events.Event")]
-
+	
 	/**
 	 * Displays a list of items divided into groups or sections. Takes a
 	 * hierarchical provider limited to two levels of hierarchy. This component
@@ -194,11 +195,6 @@ package feathers.controls
 	public class GroupedList extends Scroller implements IFocusContainer
 	{
 		/**
-		 * @private
-		 */
-		private static const HELPER_POINT:Point = new Point();
-
-		/**
 		 * The default <code>IStyleProvider</code> for all <code>GroupedList</code>
 		 * components.
 		 *
@@ -206,7 +202,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * An alternate style name to use with <code>GroupedList</code> to allow
 		 * a theme to give it an inset style. If a theme does not provide a
@@ -228,14 +224,14 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const ALTERNATE_STYLE_NAME_INSET_GROUPED_LIST:String = "feathers-inset-grouped-list";
-
+		
 		/**
 		 * The default name to use with header renderers.
 		 *
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_HEADER_RENDERER:String = "feathers-grouped-list-header-renderer";
-
+		
 		/**
 		 * An alternate name to use with header renderers to give them an inset
 		 * style. This name is usually only referenced inside themes.
@@ -249,14 +245,14 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const ALTERNATE_CHILD_STYLE_NAME_INSET_HEADER_RENDERER:String = "feathers-grouped-list-inset-header-renderer";
-
+		
 		/**
 		 * The default name to use with footer renderers.
 		 *
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_FOOTER_RENDERER:String = "feathers-grouped-list-footer-renderer";
-
+		
 		/**
 		 * An alternate name to use with footer renderers to give them an inset
 		 * style. This name is usually only referenced inside themes.
@@ -268,7 +264,7 @@ package feathers.controls
 		 * list.customFooterRendererStyleName = GroupedList.ALTERNATE_CHILD_STYLE_NAME_INSET_FOOTER_RENDERER;</listing>
 		 */
 		public static const ALTERNATE_CHILD_STYLE_NAME_INSET_FOOTER_RENDERER:String = "feathers-grouped-list-inset-footer-renderer";
-
+		
 		/**
 		 * An alternate name to use with item renderers to give them an inset
 		 * style. This name is usually only referenced inside themes.
@@ -282,7 +278,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const ALTERNATE_CHILD_STYLE_NAME_INSET_ITEM_RENDERER:String = "feathers-grouped-list-inset-item-renderer";
-
+		
 		/**
 		 * An alternate name to use for item renderers to give them an inset
 		 * style. Typically meant to be used for the renderer of the first item
@@ -297,7 +293,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const ALTERNATE_CHILD_STYLE_NAME_INSET_FIRST_ITEM_RENDERER:String = "feathers-grouped-list-inset-first-item-renderer";
-
+		
 		/**
 		 * An alternate name to use for item renderers to give them an inset
 		 * style. Typically meant to be used for the renderer of the last item
@@ -312,7 +308,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const ALTERNATE_CHILD_STYLE_NAME_INSET_LAST_ITEM_RENDERER:String = "feathers-grouped-list-inset-last-item-renderer";
-
+		
 		/**
 		 * An alternate name to use for item renderers to give them an inset
 		 * style. Typically meant to be used for the renderer of an item in a
@@ -328,7 +324,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const ALTERNATE_CHILD_STYLE_NAME_INSET_SINGLE_ITEM_RENDERER:String = "feathers-grouped-list-inset-single-item-renderer";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.AUTO</code>.
@@ -339,7 +335,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_POLICY_AUTO:String = "auto";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.ON</code>.
@@ -350,7 +346,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_POLICY_ON:String = "on";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.OFF</code>.
@@ -361,7 +357,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_POLICY_OFF:String = "off";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FLOAT</code>.
@@ -372,7 +368,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_BAR_DISPLAY_MODE_FLOAT:String = "float";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FIXED</code>.
@@ -383,7 +379,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_BAR_DISPLAY_MODE_FIXED:String = "fixed";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FIXED_FLOAT</code>.
@@ -394,7 +390,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_BAR_DISPLAY_MODE_FIXED_FLOAT:String = "fixedFloat";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.NONE</code>.
@@ -405,7 +401,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_BAR_DISPLAY_MODE_NONE:String = "none";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT</code>.
@@ -416,7 +412,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_SCROLL_BAR_POSITION_RIGHT:String = "right";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT</code>.
@@ -427,7 +423,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_SCROLL_BAR_POSITION_LEFT:String = "left";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.TOUCH</code>.
@@ -438,7 +434,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const INTERACTION_MODE_TOUCH:String = "touch";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.MOUSE</code>.
@@ -449,7 +445,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const INTERACTION_MODE_MOUSE:String = "mouse";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.TOUCH_AND_SCROLL_BARS</code>.
@@ -460,7 +456,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const INTERACTION_MODE_TOUCH_AND_SCROLL_BARS:String = "touchAndScrollBars";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.VERTICAL</code>.
@@ -471,7 +467,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const MOUSE_WHEEL_SCROLL_DIRECTION_VERTICAL:String = "vertical";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.HORIZONTAL</code>.
@@ -482,7 +478,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const MOUSE_WHEEL_SCROLL_DIRECTION_HORIZONTAL:String = "horizontal";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.DecelerationRate.NORMAL</code>.
@@ -493,7 +489,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DECELERATION_RATE_NORMAL:Number = 0.998;
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.DecelerationRate.FAST</code>.
@@ -504,7 +500,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DECELERATION_RATE_FAST:Number = 0.99;
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -512,13 +508,13 @@ package feathers.controls
 		{
 			super();
 		}
-
+		
 		/**
 		 * @private
 		 * The guts of the List's functionality. Handles layout and selection.
 		 */
 		protected var dataViewPort:GroupedListDataViewPort;
-
+		
 		/**
 		 * @private
 		 */
@@ -526,7 +522,7 @@ package feathers.controls
 		{
 			return GroupedList.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -534,14 +530,14 @@ package feathers.controls
 		{
 			return (this._isSelectable || this._minHorizontalScrollPosition != this._maxHorizontalScrollPosition ||
 				this._minVerticalScrollPosition != this._maxVerticalScrollPosition) &&
-				this._isEnabled && this._isFocusEnabled;
+					this._isEnabled && this._isFocusEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isChildFocusEnabled:Boolean = true;
-
+		
 		/**
 		 * @copy feathers.core.IFocusContainer#isChildFocusEnabled
 		 *
@@ -553,7 +549,7 @@ package feathers.controls
 		{
 			return this._isEnabled && this._isChildFocusEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -561,12 +557,12 @@ package feathers.controls
 		{
 			this._isChildFocusEnabled = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _layout:ILayout;
-
+		
 		/**
 		 * The layout algorithm used to position and, optionally, size the
 		 * list's items.
@@ -587,7 +583,7 @@ package feathers.controls
 		{
 			return this._layout;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -608,12 +604,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_LAYOUT);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _dataProvider:HierarchicalCollection;
-
+		
 		/**
 		 * The collection of data displayed by the list. Changing this property
 		 * to a new value is considered a drastic change to the list's data, so
@@ -700,7 +696,7 @@ package feathers.controls
 		{
 			return this._dataProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -727,30 +723,30 @@ package feathers.controls
 				this._dataProvider.addEventListener(CollectionEventType.RESET, dataProvider_resetHandler);
 				this._dataProvider.addEventListener(Event.CHANGE, dataProvider_changeHandler);
 			}
-
+			
 			//reset the scroll position because this is a drastic change and
 			//the data is probably completely different
 			this.horizontalScrollPosition = 0;
 			this.verticalScrollPosition = 0;
-
+			
 			//clear the selection for the same reason
 			this.setSelectedLocation(-1, -1);
-
+			
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isSelectable:Boolean = true;
-
+		
 		/**
 		 * Determines if an item in the list may be selected.
 		 *
 		 * <p>The following example disables selection:</p>
 		 *
 		 * <listing version="3.0">
-	 	 * list.isSelectable = false;</listing>
+		 * list.isSelectable = false;</listing>
 		 *
 		 * @default true
 		 */
@@ -758,7 +754,7 @@ package feathers.controls
 		{
 			return this._isSelectable;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -775,12 +771,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_SELECTED);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectedGroupIndex:int = -1;
-
+		
 		/**
 		 * The group index of the currently selected item. Returns <code>-1</code>
 		 * if no item is selected.
@@ -811,12 +807,12 @@ package feathers.controls
 		{
 			return this._selectedGroupIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectedItemIndex:int = -1;
-
+		
 		/**
 		 * The item index of the currently selected item. Returns <code>-1</code>
 		 * if no item is selected.
@@ -847,7 +843,7 @@ package feathers.controls
 		{
 			return this._selectedItemIndex;
 		}
-
+		
 		/**
 		 * The currently selected item. Returns <code>null</code> if no item is
 		 * selected.
@@ -874,7 +870,7 @@ package feathers.controls
 			}
 			return this._dataProvider.getItemAt(this._selectedGroupIndex, this._selectedItemIndex);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -895,12 +891,12 @@ package feathers.controls
 				this.setSelectedLocation(-1, -1);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _itemRendererType:Class = DefaultGroupedListItemRenderer;
-
+		
 		/**
 		 * The class used to instantiate item renderers. Must implement the
 		 * <code>IGroupedListItemRenderer</code> interface.
@@ -932,7 +928,7 @@ package feathers.controls
 		{
 			return this._itemRendererType;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -942,21 +938,21 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._itemRendererType = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _itemRendererFactories:Object;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _itemRendererFactory:Function;
-
+		
 		/**
 		 * A function called that is expected to return a new item renderer. Has
 		 * a higher priority than <code>itemRendererType</code>. Typically, you
@@ -994,7 +990,7 @@ package feathers.controls
 		{
 			return this._itemRendererFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1004,16 +1000,16 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._itemRendererFactory = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _factoryIDFunction:Function;
-
+		
 		/**
 		 * When a list requires multiple item renderer types, this function is
 		 * used to determine which type of item renderer is required for a
@@ -1060,7 +1056,7 @@ package feathers.controls
 		{
 			return this._factoryIDFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1077,12 +1073,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _typicalItem:Object = null;
-
+		
 		/**
 		 * Used to auto-size the list when a virtualized layout is used. If the
 		 * list's width or height is unknown, the list will try to automatically
@@ -1103,7 +1099,7 @@ package feathers.controls
 		{
 			return this._typicalItem;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1116,12 +1112,12 @@ package feathers.controls
 			this._typicalItem = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customItemRendererStyleName:String;
-
+		
 		/**
 		 * A style name to add to all item renderers in this list. Typically
 		 * used by a theme to provide different styles to different grouped
@@ -1149,7 +1145,7 @@ package feathers.controls
 		{
 			return this._customItemRendererStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1162,12 +1158,12 @@ package feathers.controls
 			this._customItemRendererStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _itemRendererProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for all of the list's item
 		 * renderers, and the properties will be passed down to every item
@@ -1218,7 +1214,7 @@ package feathers.controls
 			}
 			return this._itemRendererProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1252,12 +1248,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _firstItemRendererType:Class;
-
+		
 		/**
 		 * The class used to instantiate the item renderer for the first item in
 		 * a group. Must implement the <code>IGroupedListItemRenderer</code>
@@ -1279,7 +1275,7 @@ package feathers.controls
 		{
 			return this._firstItemRendererType;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1289,16 +1285,16 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._firstItemRendererType = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _firstItemRendererFactory:Function;
-
+		
 		/**
 		 * A function called that is expected to return a new item renderer for
 		 * the first item in a group. Has a higher priority than
@@ -1334,7 +1330,7 @@ package feathers.controls
 		{
 			return this._firstItemRendererFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1344,16 +1340,16 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._firstItemRendererFactory = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customFirstItemRendererStyleName:String;
-
+		
 		/**
 		 * A style name to add to all item renderers in this grouped list that
 		 * are the first item in a group. Typically used by a theme to provide
@@ -1385,7 +1381,7 @@ package feathers.controls
 		{
 			return this._customFirstItemRendererStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1398,12 +1394,12 @@ package feathers.controls
 			this._customFirstItemRendererStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _lastItemRendererType:Class;
-
+		
 		/**
 		 * The class used to instantiate the item renderer for the last item in
 		 * a group. Must implement the <code>IGroupedListItemRenderer</code>
@@ -1426,7 +1422,7 @@ package feathers.controls
 		{
 			return this._lastItemRendererType;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1436,16 +1432,16 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._lastItemRendererType = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _lastItemRendererFactory:Function;
-
+		
 		/**
 		 * A function called that is expected to return a new item renderer for
 		 * the last item in a group. Has a higher priority than
@@ -1481,7 +1477,7 @@ package feathers.controls
 		{
 			return this._lastItemRendererFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1491,16 +1487,16 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._lastItemRendererFactory = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customLastItemRendererStyleName:String;
-
+		
 		/**
 		 * A style name to add to all item renderers in this grouped list that
 		 * are the last item in a group. Typically used by a theme to provide
@@ -1532,7 +1528,7 @@ package feathers.controls
 		{
 			return this._customLastItemRendererStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1545,12 +1541,12 @@ package feathers.controls
 			this._customLastItemRendererStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _singleItemRendererType:Class;
-
+		
 		/**
 		 * The class used to instantiate the item renderer for an item in a
 		 * group with no other items. Must implement the
@@ -1573,7 +1569,7 @@ package feathers.controls
 		{
 			return this._singleItemRendererType;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1583,16 +1579,16 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._singleItemRendererType = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _singleItemRendererFactory:Function;
-
+		
 		/**
 		 * A function called that is expected to return a new item renderer for
 		 * an item in a group with no other items. Has a higher priority than
@@ -1628,7 +1624,7 @@ package feathers.controls
 		{
 			return this._singleItemRendererFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1638,16 +1634,16 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._singleItemRendererFactory = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customSingleItemRendererStyleName:String;
-
+		
 		/**
 		 * A style name to add to all item renderers in this grouped list that
 		 * are a single item in a group with no other items. Typically used by a
@@ -1679,7 +1675,7 @@ package feathers.controls
 		{
 			return this._customSingleItemRendererStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1692,12 +1688,12 @@ package feathers.controls
 			this._customSingleItemRendererStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _headerRendererType:Class = DefaultGroupedListHeaderOrFooterRenderer;
-
+		
 		/**
 		 * The class used to instantiate header renderers. Must implement the
 		 * <code>IGroupedListHeaderOrFooterRenderer</code> interface.
@@ -1716,7 +1712,7 @@ package feathers.controls
 		{
 			return this._headerRendererType;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1726,21 +1722,21 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._headerRendererType = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _headerRendererFactories:Object;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _headerRendererFactory:Function;
-
+		
 		/**
 		 * A function called that is expected to return a new header renderer.
 		 * Has a higher priority than <code>headerRendererType</code>.
@@ -1773,7 +1769,7 @@ package feathers.controls
 		{
 			return this._headerRendererFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1783,16 +1779,16 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._headerRendererFactory = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _headerFactoryIDFunction:Function;
-
+		
 		/**
 		 * When a list requires multiple header renderer types, this function is
 		 * used to determine which type of header renderer is required for a
@@ -1840,7 +1836,7 @@ package feathers.controls
 		{
 			return this._headerFactoryIDFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1857,12 +1853,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customHeaderRendererStyleName:String = DEFAULT_CHILD_STYLE_NAME_HEADER_RENDERER;
-
+		
 		/**
 		 * A style name to add to all header renderers in this grouped list.
 		 * Typically used by a theme to provide different styles to different
@@ -1887,7 +1883,7 @@ package feathers.controls
 		{
 			return this._customHeaderRendererStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1900,12 +1896,12 @@ package feathers.controls
 			this._customHeaderRendererStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _headerRendererProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for all of the list's header
 		 * renderers, and the properties will be passed down to every header
@@ -1954,7 +1950,7 @@ package feathers.controls
 			}
 			return this._headerRendererProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1988,12 +1984,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _footerRendererType:Class = DefaultGroupedListHeaderOrFooterRenderer;
-
+		
 		/**
 		 * The class used to instantiate footer renderers. Must implement the
 		 * <code>IGroupedListHeaderOrFooterRenderer</code> interface.
@@ -2012,7 +2008,7 @@ package feathers.controls
 		{
 			return this._footerRendererType;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2022,21 +2018,21 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._footerRendererType = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _footerRendererFactories:Object;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _footerRendererFactory:Function;
-
+		
 		/**
 		 * A function called that is expected to return a new footer renderer.
 		 * Has a higher priority than <code>footerRendererType</code>.
@@ -2069,7 +2065,7 @@ package feathers.controls
 		{
 			return this._footerRendererFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2079,16 +2075,16 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._footerRendererFactory = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _footerFactoryIDFunction:Function;
-
+		
 		/**
 		 * When a list requires multiple footer renderer types, this function is
 		 * used to determine which type of footer renderer is required for a
@@ -2136,7 +2132,7 @@ package feathers.controls
 		{
 			return this._footerFactoryIDFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2153,12 +2149,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customFooterRendererStyleName:String = DEFAULT_CHILD_STYLE_NAME_FOOTER_RENDERER;
-
+		
 		/**
 		 * A style name to add to all footer renderers in this grouped list.
 		 * Typically used by a theme to provide different styles to different
@@ -2183,7 +2179,7 @@ package feathers.controls
 		{
 			return this._customFooterRendererStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2196,12 +2192,12 @@ package feathers.controls
 			this._customFooterRendererStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _footerRendererProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for all of the list's footer
 		 * renderers, and the properties will be passed down to every footer
@@ -2250,7 +2246,7 @@ package feathers.controls
 			}
 			return this._footerRendererProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2284,12 +2280,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _headerField:String = "header";
-
+		
 		/**
 		 * The field in a group that contains the data for a header. If the
 		 * group does not have this field, and a <code>headerFunction</code> is
@@ -2315,7 +2311,7 @@ package feathers.controls
 		{
 			return this._headerField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2328,12 +2324,12 @@ package feathers.controls
 			this._headerField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _headerFunction:Function;
-
+		
 		/**
 		 * A function used to generate header data for a specific group. If this
 		 * function is not null, then the <code>headerField</code> will be
@@ -2364,7 +2360,7 @@ package feathers.controls
 		{
 			return this._headerFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2377,12 +2373,12 @@ package feathers.controls
 			this._headerFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _footerField:String = "footer";
-
+		
 		/**
 		 * The field in a group that contains the data for a footer. If the
 		 * group does not have this field, and a <code>footerFunction</code> is
@@ -2408,7 +2404,7 @@ package feathers.controls
 		{
 			return this._footerField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2421,12 +2417,12 @@ package feathers.controls
 			this._footerField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _footerFunction:Function;
-
+		
 		/**
 		 * A function used to generate footer data for a specific group. If this
 		 * function is not null, then the <code>footerField</code> will be
@@ -2457,7 +2453,7 @@ package feathers.controls
 		{
 			return this._footerFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2470,12 +2466,12 @@ package feathers.controls
 			this._footerFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _keyScrollDuration:Number = 0.25;
-
+		
 		/**
 		 * The duration, in seconds, of the animation when the selected item is
 		 * changed by keyboard navigation and the item scrolls into view.
@@ -2492,7 +2488,7 @@ package feathers.controls
 		{
 			return this._keyScrollDuration;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2500,21 +2496,21 @@ package feathers.controls
 		{
 			this._keyScrollDuration = value;
 		}
-
+		
 		/**
 		 * The pending group index to scroll to after validating. A value of
 		 * <code>-1</code> means that the scroller won't scroll to a group after
 		 * validating.
 		 */
 		protected var pendingGroupIndex:int = -1;
-
+		
 		/**
 		 * The pending item index to scroll to after validating. A value of
 		 * <code>-1</code> means that the scroller won't scroll to an item after
 		 * validating.
 		 */
 		protected var pendingItemIndex:int = -1;
-
+		
 		/**
 		 * @private
 		 */
@@ -2528,7 +2524,7 @@ package feathers.controls
 			this.layout = null;
 			super.dispose();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2537,7 +2533,7 @@ package feathers.controls
 			this.pendingItemIndex = -1;
 			super.scrollToPosition(horizontalScrollPosition, verticalScrollPosition, animationDuration);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2547,7 +2543,7 @@ package feathers.controls
 			this.pendingItemIndex = -1;
 			super.scrollToPageIndex(horizontalPageIndex, verticalPageIndex, animationDuration);
 		}
-
+		
 		/**
 		 * After the next validation, scrolls the list so that the specified
 		 * item is visible. If <code>animationDuration</code> is greater than
@@ -2588,7 +2584,7 @@ package feathers.controls
 			this.pendingScrollDuration = animationDuration;
 			this.invalidate(INVALIDATION_FLAG_PENDING_SCROLL);
 		}
-
+		
 		/**
 		 * Sets the selected group and item index.
 		 *
@@ -2619,11 +2615,11 @@ package feathers.controls
 			}
 			this._selectedGroupIndex = groupIndex;
 			this._selectedItemIndex = itemIndex;
-
+			
 			this.invalidate(INVALIDATION_FLAG_SELECTED);
 			this.dispatchEventWith(Event.CHANGE);
 		}
-
+		
 		/**
 		 * Returns the item renderer factory associated with a specific ID.
 		 * Returns <code>null</code> if no factory is associated with the ID.
@@ -2638,7 +2634,7 @@ package feathers.controls
 			}
 			return null;
 		}
-
+		
 		/**
 		 * Associates an item renderer factory with an ID to allow multiple
 		 * types of item renderers may be displayed in the list. A custom
@@ -2668,7 +2664,7 @@ package feathers.controls
 				delete this._itemRendererFactories[id];
 			}
 		}
-
+		
 		/**
 		 * Returns the header renderer factory associated with a specific ID.
 		 * Returns <code>null</code> if no factory is associated with the ID.
@@ -2683,7 +2679,7 @@ package feathers.controls
 			}
 			return null;
 		}
-
+		
 		/**
 		 * Associates a header renderer factory with an ID to allow multiple
 		 * types of header renderers may be displayed in the list. A custom
@@ -2713,7 +2709,7 @@ package feathers.controls
 				delete this._headerRendererFactories[id];
 			}
 		}
-
+		
 		/**
 		 * Returns the footer renderer factory associated with a specific ID.
 		 * Returns <code>null</code> if no factory is associated with the ID.
@@ -2728,7 +2724,7 @@ package feathers.controls
 			}
 			return null;
 		}
-
+		
 		/**
 		 * Associates a footer renderer factory with an ID to allow multiple
 		 * types of footer renderers may be displayed in the list. A custom
@@ -2758,7 +2754,7 @@ package feathers.controls
 				delete this._footerRendererFactories[id];
 			}
 		}
-
+		
 		/**
 		 * Extracts header data from a group object.
 		 */
@@ -2772,10 +2768,10 @@ package feathers.controls
 			{
 				return group[this._headerField];
 			}
-
+			
 			return null;
 		}
-
+		
 		/**
 		 * Extracts footer data from a group object.
 		 */
@@ -2789,10 +2785,10 @@ package feathers.controls
 			{
 				return group[this._footerField];
 			}
-
+			
 			return null;
 		}
-
+		
 		/**
 		 * Returns the current item renderer used to render a specific item. May
 		 * return <code>null</code> if an item doesn't currently have an item
@@ -2806,7 +2802,7 @@ package feathers.controls
 		{
 			return this.dataViewPort.itemToItemRenderer(item);
 		}
-
+		
 		/**
 		 * Returns the current header renderer used to render specific header
 		 * data. May return <code>null</code> if the header data doesn't
@@ -2822,7 +2818,7 @@ package feathers.controls
 		{
 			return this.dataViewPort.headerDataToHeaderRenderer(headerData);
 		}
-
+		
 		/**
 		 * Returns the current footer renderer used to render specific footer
 		 * data. May return <code>null</code> if the footer data doesn't
@@ -2838,16 +2834,16 @@ package feathers.controls
 		{
 			return this.dataViewPort.footerDataToFooterRenderer(footerData);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override protected function initialize():void
 		{
 			var hasLayout:Boolean = this._layout != null;
-
+			
 			super.initialize();
-
+			
 			if(!this.dataViewPort)
 			{
 				this.viewPort = this.dataViewPort = new GroupedListDataViewPort();
@@ -2855,7 +2851,7 @@ package feathers.controls
 				this.dataViewPort.addEventListener(Event.CHANGE, dataViewPort_changeHandler);
 				this.viewPort = this.dataViewPort;
 			}
-
+			
 			if(!hasLayout)
 			{
 				if(this._hasElasticEdges &&
@@ -2866,7 +2862,7 @@ package feathers.controls
 					//position is 0, similar to iOS.
 					this.verticalScrollPolicy = ScrollPolicy.ON;
 				}
-
+				
 				var layout:VerticalLayout = new VerticalLayout();
 				layout.useVirtualLayout = true;
 				layout.padding = 0;
@@ -2877,7 +2873,7 @@ package feathers.controls
 				this.layout = layout;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2886,7 +2882,7 @@ package feathers.controls
 			this.refreshDataViewPortProperties();
 			super.draw();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2896,43 +2892,43 @@ package feathers.controls
 			this.dataViewPort.setSelectedLocation(this._selectedGroupIndex, this._selectedItemIndex);
 			this.dataViewPort.dataProvider = this._dataProvider;
 			this.dataViewPort.typicalItem = this._typicalItem;
-
+			
 			this.dataViewPort.itemRendererType = this._itemRendererType;
 			this.dataViewPort.itemRendererFactory = this._itemRendererFactory;
 			this.dataViewPort.itemRendererFactories = this._itemRendererFactories;
 			this.dataViewPort.factoryIDFunction = this._factoryIDFunction;
 			this.dataViewPort.itemRendererProperties = this._itemRendererProperties;
 			this.dataViewPort.customItemRendererStyleName = this._customItemRendererStyleName;
-
+			
 			this.dataViewPort.firstItemRendererType = this._firstItemRendererType;
 			this.dataViewPort.firstItemRendererFactory = this._firstItemRendererFactory;
 			this.dataViewPort.customFirstItemRendererStyleName = this._customFirstItemRendererStyleName;
-
+			
 			this.dataViewPort.lastItemRendererType = this._lastItemRendererType;
 			this.dataViewPort.lastItemRendererFactory = this._lastItemRendererFactory;
 			this.dataViewPort.customLastItemRendererStyleName = this._customLastItemRendererStyleName;
-
+			
 			this.dataViewPort.singleItemRendererType = this._singleItemRendererType;
 			this.dataViewPort.singleItemRendererFactory = this._singleItemRendererFactory;
 			this.dataViewPort.customSingleItemRendererStyleName = this._customSingleItemRendererStyleName;
-
+			
 			this.dataViewPort.headerRendererType = this._headerRendererType;
 			this.dataViewPort.headerRendererFactory = this._headerRendererFactory;
 			this.dataViewPort.headerRendererFactories = this._headerRendererFactories;
 			this.dataViewPort.headerFactoryIDFunction = this._headerFactoryIDFunction;
 			this.dataViewPort.headerRendererProperties = this._headerRendererProperties;
 			this.dataViewPort.customHeaderRendererStyleName = this._customHeaderRendererStyleName;
-
+			
 			this.dataViewPort.footerRendererType = this._footerRendererType;
 			this.dataViewPort.footerRendererFactory = this._footerRendererFactory;
 			this.dataViewPort.footerRendererFactories = this._footerRendererFactories;
 			this.dataViewPort.footerFactoryIDFunction = this._footerFactoryIDFunction;
 			this.dataViewPort.footerRendererProperties = this._footerRendererProperties;
 			this.dataViewPort.customFooterRendererStyleName = this._customFooterRendererStyleName;
-
+			
 			this.dataViewPort.layout = this._layout;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2950,11 +2946,14 @@ package feathers.controls
 				}
 				if(pendingData is Object)
 				{
-					this.dataViewPort.getScrollPositionForIndex(this.pendingGroupIndex, this.pendingItemIndex, HELPER_POINT);
+					var point:Point = Pool.getPoint();
+					this.dataViewPort.getScrollPositionForIndex(this.pendingGroupIndex, this.pendingItemIndex, point);
 					this.pendingGroupIndex = -1;
 					this.pendingItemIndex = -1;
-
-					var targetHorizontalScrollPosition:Number = HELPER_POINT.x;
+					
+					var targetHorizontalScrollPosition:Number = point.x;
+					var targetVerticalScrollPosition:Number = point.y;
+					Pool.putPoint(point);
 					if(targetHorizontalScrollPosition < this._minHorizontalScrollPosition)
 					{
 						targetHorizontalScrollPosition = this._minHorizontalScrollPosition;
@@ -2963,7 +2962,6 @@ package feathers.controls
 					{
 						targetHorizontalScrollPosition = this._maxHorizontalScrollPosition;
 					}
-					var targetVerticalScrollPosition:Number = HELPER_POINT.y;
 					if(targetVerticalScrollPosition < this._minVerticalScrollPosition)
 					{
 						targetVerticalScrollPosition = this._minVerticalScrollPosition;
@@ -2977,7 +2975,7 @@ package feathers.controls
 			}
 			super.handlePendingScroll();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3073,11 +3071,13 @@ package feathers.controls
 			}
 			if(changedSelection)
 			{
-				this.dataViewPort.getNearestScrollPositionForIndex(this._selectedGroupIndex, this.selectedItemIndex, HELPER_POINT);
-				this.scrollToPosition(HELPER_POINT.x, HELPER_POINT.y, this._keyScrollDuration);
+				var point:Point = Pool.getPoint();
+				this.dataViewPort.getNearestScrollPositionForIndex(this._selectedGroupIndex, this.selectedItemIndex, point);
+				this.scrollToPosition(point.x, point.y, this._keyScrollDuration);
+				Pool.putPoint(point);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3085,7 +3085,7 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3093,11 +3093,11 @@ package feathers.controls
 		{
 			this.horizontalScrollPosition = 0;
 			this.verticalScrollPosition = 0;
-
+			
 			//the entire data provider was replaced. select no item.
 			this.setSelectedLocation(-1, -1);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3126,7 +3126,7 @@ package feathers.controls
 				this.setSelectedLocation(this._selectedGroupIndex + 1, this._selectedItemIndex);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3173,7 +3173,7 @@ package feathers.controls
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3201,7 +3201,7 @@ package feathers.controls
 				this.setSelectedLocation(-1, -1);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3209,7 +3209,7 @@ package feathers.controls
 		{
 			this.setSelectedLocation(this.dataViewPort.selectedGroupIndex, this.dataViewPort.selectedItemIndex);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3220,7 +3220,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			var scrollOffsetX:Number = scrollOffset.x;
 			this._startHorizontalScrollPosition += scrollOffsetX;
 			this._horizontalScrollPosition += scrollOffsetX;
@@ -3229,7 +3229,7 @@ package feathers.controls
 				this._targetHorizontalScrollPosition += scrollOffsetX;
 				this.throwTo(this._targetHorizontalScrollPosition, NaN, this._horizontalAutoScrollTween.totalTime - this._horizontalAutoScrollTween.currentTime);
 			}
-
+			
 			var scrollOffsetY:Number = scrollOffset.y;
 			this._startVerticalScrollPosition += scrollOffsetY;
 			this._verticalScrollPosition += scrollOffsetY;

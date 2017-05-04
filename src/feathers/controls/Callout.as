@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -9,27 +9,33 @@ package feathers.controls
 {
 	import feathers.core.FeathersControl;
 	import feathers.core.IFeathersControl;
+	import feathers.core.IMeasureDisplayObject;
 	import feathers.core.IValidating;
 	import feathers.core.PopUpManager;
 	import feathers.events.FeathersEventType;
+	import feathers.layout.HorizontalAlign;
 	import feathers.layout.RelativePosition;
+	import feathers.layout.VerticalAlign;
 	import feathers.skins.IStyleProvider;
 	import feathers.utils.display.getDisplayObjectDepthFromStage;
-
+	import feathers.utils.skins.resetFluidChildDimensionsForMeasurement;
+	
 	import flash.events.KeyboardEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.ui.Keyboard;
-
+	
 	import starling.core.Starling;
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
+	import starling.display.Stage;
 	import starling.events.EnterFrameEvent;
 	import starling.events.Event;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
-
+	import starling.utils.Pool;
+	
 	/**
 	 * Dispatched when the callout is closed.
 	 *
@@ -51,7 +57,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.CLOSE
 	 */
 	[Event(name="close",type="starling.events.Event")]
-
+	
 	/**
 	 * A pop-up container that points at (or calls out) a specific region of
 	 * the application (typically a specific control that triggered it).
@@ -87,56 +93,98 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
-		 * The callout may be positioned on any side of the origin region.
+		 * The default positions used by a callout.
+		 */
+		public static const DEFAULT_POSITIONS:Vector.<String> = new <String>
+			[
+				RelativePosition.BOTTOM,
+				RelativePosition.TOP,
+				RelativePosition.RIGHT,
+				RelativePosition.LEFT,
+			];
+		
+		/**
+		 * @private
+		 * DEPRECATED: Replaced by a Vector.&lt;String&gt; containing values from
+		 * <code>feathers.layout.RelativePosition</code>.
 		 *
-		 * @see #supportedDirections
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_ANY:String = "any";
-
+		
 		/**
-		 * The callout may be positioned on top or bottom of the origin region.
+		 * @private
+		 * DEPRECATED: Replaced by a Vector.&lt;String&gt; containing values from
+		 * <code>feathers.layout.RelativePosition</code>.
 		 *
-		 * @see #supportedDirections
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_VERTICAL:String = "vertical";
-
+		
 		/**
-		 * The callout may be positioned on top or bottom of the origin region.
+		 * @private
+		 * DEPRECATED: Replaced by a Vector.&lt;String&gt; containing values from
+		 * <code>feathers.layout.RelativePosition</code>.
 		 *
-		 * @see #supportedDirections
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_HORIZONTAL:String = "horizontal";
-
+		
 		/**
-		 * The callout must be positioned above the origin region.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.TOP</code>.
 		 *
-		 * @see #supportedDirections
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_UP:String = "up";
-
+		
 		/**
-		 * The callout must be positioned below the origin region.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.BOTTOM</code>.
 		 *
-		 * @see #supportedDirections
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_DOWN:String = "down";
-
+		
 		/**
-		 * The callout must be positioned to the left side of the origin region.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT</code>.
 		 *
-		 * @see #supportedDirections
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_LEFT:String = "left";
-
+		
 		/**
-		 * The callout must be positioned to the right side of the origin region.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT</code>.
 		 *
-		 * @see #supportedDirections
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_RIGHT:String = "right";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.TOP</code>.
@@ -147,7 +195,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const ARROW_POSITION_TOP:String = "top";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT</code>.
@@ -158,7 +206,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const ARROW_POSITION_RIGHT:String = "right";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.BOTTOM</code>.
@@ -169,7 +217,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const ARROW_POSITION_BOTTOM:String = "bottom";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT</code>.
@@ -180,39 +228,22 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const ARROW_POSITION_LEFT:String = "left";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_ORIGIN:String = "origin";
-
+		
 		/**
 		 * @private
 		 */
 		private static const HELPER_RECT:Rectangle = new Rectangle();
-
-		/**
-		 * @private
-		 */
-		private static const HELPER_POINT:Point = new Point();
-
-		/**
-		 * @private
-		 */
-		protected static const DIRECTION_TO_FUNCTION:Object = {};
-		DIRECTION_TO_FUNCTION[DIRECTION_ANY] = positionBestSideOfOrigin;
-		DIRECTION_TO_FUNCTION[DIRECTION_UP] = positionAboveOrigin;
-		DIRECTION_TO_FUNCTION[DIRECTION_DOWN] = positionBelowOrigin;
-		DIRECTION_TO_FUNCTION[DIRECTION_LEFT] = positionToLeftOfOrigin;
-		DIRECTION_TO_FUNCTION[DIRECTION_RIGHT] = positionToRightOfOrigin;
-		DIRECTION_TO_FUNCTION[DIRECTION_VERTICAL] = positionAboveOrBelowOrigin;
-		DIRECTION_TO_FUNCTION[DIRECTION_HORIZONTAL] = positionToLeftOrRightOfOrigin;
-
+		
 		/**
 		 * @private
 		 */
 		protected static const FUZZY_CONTENT_DIMENSIONS_PADDING:Number = 0.000001;
-
+		
 		/**
 		 * Quickly sets all stage padding properties to the same value. The
 		 * <code>stagePadding</code> getter always returns the value of
@@ -236,7 +267,7 @@ package feathers.controls
 		{
 			return Callout.stagePaddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -247,7 +278,7 @@ package feathers.controls
 			Callout.stagePaddingBottom = value;
 			Callout.stagePaddingLeft = value;
 		}
-
+		
 		/**
 		 * The padding between a callout and the top edge of the stage when the
 		 * callout is positioned automatically. May be ignored if the callout
@@ -260,7 +291,7 @@ package feathers.controls
 		 * Callout.stagePaddingTop = 20;</listing>
 		 */
 		public static var stagePaddingTop:Number = 0;
-
+		
 		/**
 		 * The padding between a callout and the right edge of the stage when the
 		 * callout is positioned automatically. May be ignored if the callout
@@ -273,7 +304,7 @@ package feathers.controls
 		 * Callout.stagePaddingRight = 20;</listing>
 		 */
 		public static var stagePaddingRight:Number = 0;
-
+		
 		/**
 		 * The padding between a callout and the bottom edge of the stage when the
 		 * callout is positioned automatically. May be ignored if the callout
@@ -286,7 +317,7 @@ package feathers.controls
 		 * Callout.stagePaddingBottom = 20;</listing>
 		 */
 		public static var stagePaddingBottom:Number = 0;
-
+		
 		/**
 		 * The margin between a callout and the top edge of the stage when the
 		 * callout is positioned automatically. May be ignored if the callout
@@ -299,7 +330,7 @@ package feathers.controls
 		 * Callout.stagePaddingLeft = 20;</listing>
 		 */
 		public static var stagePaddingLeft:Number = 0;
-
+		
 		/**
 		 * Returns a new <code>Callout</code> instance when
 		 * <code>Callout.show()</code> is called. If one wishes to skin the
@@ -330,7 +361,7 @@ package feathers.controls
 		 * @see #show()
 		 */
 		public static var calloutFactory:Function = defaultCalloutFactory;
-
+		
 		/**
 		 * Returns an overlay to display with a callout that is modal. Uses the
 		 * standard <code>overlayFactory</code> of the <code>PopUpManager</code>
@@ -356,13 +387,21 @@ package feathers.controls
 		 * @see #show()
 		 */
 		public static var calloutOverlayFactory:Function = PopUpManager.defaultOverlayFactory;
-
+		
 		/**
 		 * Creates a callout, and then positions and sizes it automatically
 		 * based on an origin rectangle and the specified direction relative to
 		 * the original. The provided width and height values are optional, and
 		 * these values may be ignored if the callout cannot be drawn at the
 		 * specified dimensions.
+		 * 
+		 * <p>The <code>supportedPositions</code> parameter should be a
+		 * <code>Vector.&lt;String&gt;</code> of values from the
+		 * <code>feathers.layout.RelativePosition</code> class. The positions
+		 * should be ordered by preference. This parameter is typed as
+		 * <code>Object</code> to allow some deprecated <code>String</code>
+		 * values. In a future version of Feathers, the type will change to
+		 * <code>Vector.&lt;String&gt;</code> instead.</p>
 		 *
 		 * <p>In the following example, a callout displaying a <code>Label</code> is
 		 * shown when a <code>Button</code> is triggered:</p>
@@ -378,31 +417,48 @@ package feathers.controls
 		 *     Callout.show( label, button );
 		 * }</listing>
 		 */
-		public static function show(content:DisplayObject, origin:DisplayObject, supportedDirections:String = DIRECTION_ANY,
-			isModal:Boolean = true, customCalloutFactory:Function = null, customOverlayFactory:Function = null):Callout
+		public static function show(content:DisplayObject, origin:DisplayObject,
+									supportedPositions:Object = null, isModal:Boolean = true, customCalloutFactory:Function = null,
+									customOverlayFactory:Function = null):Callout
 		{
-			if(!origin.stage)
+			if(origin.stage === null)
 			{
 				throw new ArgumentError("Callout origin must be added to the stage.");
 			}
 			var factory:Function = customCalloutFactory;
-			if(factory == null)
+			if(factory === null)
 			{
-				factory = calloutFactory != null ? calloutFactory : defaultCalloutFactory;
+				factory = calloutFactory;
+				if(factory === null)
+				{
+					factory = defaultCalloutFactory;
+				}
 			}
 			var callout:Callout = Callout(factory());
 			callout.content = content;
-			callout.supportedDirections = supportedDirections;
+			if(supportedPositions is String)
+			{
+				//fallback for deprecated options
+				callout.supportedDirections = supportedPositions as String;
+			}
+			else
+			{
+				callout.supportedPositions = supportedPositions as Vector.<String>;
+			}
 			callout.origin = origin;
 			factory = customOverlayFactory;
-			if(factory == null)
+			if(factory === null)
 			{
-				factory = calloutOverlayFactory != null ? calloutOverlayFactory : PopUpManager.defaultOverlayFactory;
+				factory = calloutOverlayFactory;
+				if(factory === null)
+				{
+					factory = PopUpManager.defaultOverlayFactory;
+				}
 			}
 			PopUpManager.addPopUp(callout, isModal, false, factory);
 			return callout;
 		}
-
+		
 		/**
 		 * The default factory that creates callouts when <code>Callout.show()</code>
 		 * is called. To use a different factory, you need to set
@@ -417,153 +473,44 @@ package feathers.controls
 			callout.closeOnKeys = new <uint>[Keyboard.BACK, Keyboard.ESCAPE];
 			return callout;
 		}
-
-		/**
-		 * @private
-		 */
-		protected static function positionWithSupportedDirections(callout:Callout, globalOrigin:Rectangle, direction:String):void
-		{
-			if(DIRECTION_TO_FUNCTION.hasOwnProperty(direction))
-			{
-				var calloutPositionFunction:Function = DIRECTION_TO_FUNCTION[direction];
-				calloutPositionFunction(callout, globalOrigin);
-			}
-			else
-			{
-				positionBestSideOfOrigin(callout, globalOrigin);
-			}
-		}
-
-		/**
-		 * @private
-		 */
-		protected static function positionBestSideOfOrigin(callout:Callout, globalOrigin:Rectangle):void
-		{
-			callout.measureWithArrowPosition(RelativePosition.TOP, HELPER_POINT);
-			var downSpace:Number = (Starling.current.stage.stageHeight - HELPER_POINT.y) - (globalOrigin.y + globalOrigin.height);
-			if(downSpace >= stagePaddingBottom)
-			{
-				positionBelowOrigin(callout, globalOrigin);
-				return;
-			}
-
-			callout.measureWithArrowPosition(RelativePosition.BOTTOM, HELPER_POINT);
-			var upSpace:Number = globalOrigin.y - HELPER_POINT.y;
-			if(upSpace >= stagePaddingTop)
-			{
-				positionAboveOrigin(callout, globalOrigin);
-				return;
-			}
-
-			callout.measureWithArrowPosition(RelativePosition.LEFT, HELPER_POINT);
-			var rightSpace:Number = (Starling.current.stage.stageWidth - HELPER_POINT.x) - (globalOrigin.x + globalOrigin.width);
-			if(rightSpace >= stagePaddingRight)
-			{
-				positionToRightOfOrigin(callout, globalOrigin);
-				return;
-			}
-
-			callout.measureWithArrowPosition(RelativePosition.RIGHT, HELPER_POINT);
-			var leftSpace:Number = globalOrigin.x - HELPER_POINT.x;
-			if(leftSpace >= stagePaddingLeft)
-			{
-				positionToLeftOfOrigin(callout, globalOrigin);
-				return;
-			}
-
-			//worst case: pick the side that has the most available space
-			if(downSpace >= upSpace && downSpace >= rightSpace && downSpace >= leftSpace)
-			{
-				positionBelowOrigin(callout, globalOrigin);
-			}
-			else if(upSpace >= rightSpace && upSpace >= leftSpace)
-			{
-				positionAboveOrigin(callout, globalOrigin);
-			}
-			else if(rightSpace >= leftSpace)
-			{
-				positionToRightOfOrigin(callout, globalOrigin);
-			}
-			else
-			{
-				positionToLeftOfOrigin(callout, globalOrigin);
-			}
-		}
-
-		/**
-		 * @private
-		 */
-		protected static function positionAboveOrBelowOrigin(callout:Callout, globalOrigin:Rectangle):void
-		{
-			callout.measureWithArrowPosition(RelativePosition.TOP, HELPER_POINT);
-			var downSpace:Number = (Starling.current.stage.stageHeight - HELPER_POINT.y) - (globalOrigin.y + globalOrigin.height);
-			if(downSpace >= stagePaddingBottom)
-			{
-				positionBelowOrigin(callout, globalOrigin);
-				return;
-			}
-
-			callout.measureWithArrowPosition(RelativePosition.BOTTOM, HELPER_POINT);
-			var upSpace:Number = globalOrigin.y - HELPER_POINT.y;
-			if(upSpace >= stagePaddingTop)
-			{
-				positionAboveOrigin(callout, globalOrigin);
-				return;
-			}
-
-			//worst case: pick the side that has the most available space
-			if(downSpace >= upSpace)
-			{
-				positionBelowOrigin(callout, globalOrigin);
-			}
-			else
-			{
-				positionAboveOrigin(callout, globalOrigin);
-			}
-		}
-
-		/**
-		 * @private
-		 */
-		protected static function positionToLeftOrRightOfOrigin(callout:Callout, globalOrigin:Rectangle):void
-		{
-			callout.measureWithArrowPosition(RelativePosition.LEFT, HELPER_POINT);
-			var rightSpace:Number = (Starling.current.stage.stageWidth - HELPER_POINT.x) - (globalOrigin.x + globalOrigin.width);
-			if(rightSpace >= stagePaddingRight)
-			{
-				positionToRightOfOrigin(callout, globalOrigin);
-				return;
-			}
-
-			callout.measureWithArrowPosition(RelativePosition.RIGHT, HELPER_POINT);
-			var leftSpace:Number = globalOrigin.x - HELPER_POINT.x;
-			if(leftSpace >= stagePaddingLeft)
-			{
-				positionToLeftOfOrigin(callout, globalOrigin);
-				return;
-			}
-
-			//worst case: pick the side that has the most available space
-			if(rightSpace >= leftSpace)
-			{
-				positionToRightOfOrigin(callout, globalOrigin);
-			}
-			else
-			{
-				positionToLeftOfOrigin(callout, globalOrigin);
-			}
-		}
-
+		
 		/**
 		 * @private
 		 */
 		protected static function positionBelowOrigin(callout:Callout, globalOrigin:Rectangle):void
 		{
-			callout.measureWithArrowPosition(RelativePosition.TOP, HELPER_POINT);
-			var idealXPosition:Number = globalOrigin.x + Math.round((globalOrigin.width - HELPER_POINT.x) / 2);
-			var xPosition:Number = Math.max(stagePaddingLeft, Math.min(Starling.current.stage.stageWidth - HELPER_POINT.x - stagePaddingRight, idealXPosition));
-			callout.x = xPosition;
-			callout.y = globalOrigin.y + globalOrigin.height;
+			callout.measureWithArrowPosition(RelativePosition.TOP);
+			var idealXPosition:Number = globalOrigin.x;
+			if(callout._horizontalAlign === HorizontalAlign.CENTER)
+			{
+				idealXPosition += Math.round((globalOrigin.width - callout.width) / 2);
+			}
+			else if(callout._horizontalAlign === HorizontalAlign.RIGHT)
+			{
+				idealXPosition += (globalOrigin.width - callout.width);
+			}
+			var xPosition:Number = idealXPosition;
+			if(stagePaddingLeft > xPosition)
+			{
+				xPosition = stagePaddingLeft;
+			}
+			else
+			{
+				var stage:Stage = callout.stage !== null ? callout.stage : Starling.current.stage;
+				var maxXPosition:Number = stage.stageWidth - callout.width - stagePaddingRight;
+				if(maxXPosition < xPosition)
+				{
+					xPosition = maxXPosition;
+				}
+			}
+			var point:Point = Pool.getPoint(xPosition, globalOrigin.y + globalOrigin.height);
+			//we calculate the position in global coordinates, but the callout
+			//may be in a container that is offset from the global origin, so
+			//adjust for that difference.
+			callout.parent.globalToLocal(point, point);
+			callout.x = point.x;
+			callout.y = point.y;
+			Pool.putPoint(point);
 			if(callout._isValidating)
 			{
 				//no need to invalidate and need to validate again next frame
@@ -576,17 +523,44 @@ package feathers.controls
 				callout.arrowPosition = RelativePosition.TOP;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected static function positionAboveOrigin(callout:Callout, globalOrigin:Rectangle):void
 		{
-			callout.measureWithArrowPosition(RelativePosition.BOTTOM, HELPER_POINT);
-			var idealXPosition:Number = globalOrigin.x + Math.round((globalOrigin.width - HELPER_POINT.x) / 2);
-			var xPosition:Number = Math.max(stagePaddingLeft, Math.min(Starling.current.stage.stageWidth - HELPER_POINT.x - stagePaddingRight, idealXPosition));
-			callout.x = xPosition;
-			callout.y = globalOrigin.y - HELPER_POINT.y;
+			callout.measureWithArrowPosition(RelativePosition.BOTTOM);
+			var idealXPosition:Number = globalOrigin.x;
+			if(callout._horizontalAlign === HorizontalAlign.CENTER)
+			{
+				idealXPosition += Math.round((globalOrigin.width - callout.width) / 2);
+			}
+			else if(callout._horizontalAlign === HorizontalAlign.RIGHT)
+			{
+				idealXPosition += (globalOrigin.width - callout.width);
+			}
+			var xPosition:Number = idealXPosition;
+			if(stagePaddingLeft > xPosition)
+			{
+				xPosition = stagePaddingLeft;
+			}
+			else
+			{
+				var stage:Stage = callout.stage !== null ? callout.stage : Starling.current.stage;
+				var maxXPosition:Number = stage.stageWidth - callout.width - stagePaddingRight;
+				if(maxXPosition < xPosition)
+				{
+					xPosition = maxXPosition;
+				}
+			}
+			var point:Point = Pool.getPoint(xPosition, globalOrigin.y - callout.height);
+			//we calculate the position in global coordinates, but the callout
+			//may be in a container that is offset from the global origin, so
+			//adjust for that difference.
+			callout.parent.globalToLocal(point, point);
+			callout.x = point.x;
+			callout.y = point.y;
+			Pool.putPoint(point);
 			if(callout._isValidating)
 			{
 				//no need to invalidate and need to validate again next frame
@@ -599,17 +573,44 @@ package feathers.controls
 				callout.arrowPosition = RelativePosition.BOTTOM;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected static function positionToRightOfOrigin(callout:Callout, globalOrigin:Rectangle):void
 		{
-			callout.measureWithArrowPosition(RelativePosition.LEFT, HELPER_POINT);
-			callout.x = globalOrigin.x + globalOrigin.width;
-			var idealYPosition:Number = globalOrigin.y + Math.round((globalOrigin.height - HELPER_POINT.y) / 2);
-			var yPosition:Number = Math.max(stagePaddingTop, Math.min(Starling.current.stage.stageHeight - HELPER_POINT.y - stagePaddingBottom, idealYPosition));
-			callout.y = yPosition;
+			callout.measureWithArrowPosition(RelativePosition.LEFT);
+			var idealYPosition:Number = globalOrigin.y;
+			if(callout._verticalAlign === VerticalAlign.MIDDLE)
+			{
+				idealYPosition += Math.round((globalOrigin.height - callout.height) / 2);
+			}
+			else if(callout._verticalAlign === VerticalAlign.BOTTOM)
+			{
+				idealYPosition += (globalOrigin.height - callout.height);
+			}
+			var yPosition:Number = idealYPosition;
+			if(stagePaddingTop > yPosition)
+			{
+				yPosition = stagePaddingTop;
+			}
+			else
+			{
+				var stage:Stage = callout.stage !== null ? callout.stage : Starling.current.stage;
+				var maxYPosition:Number = stage.stageHeight - callout.height - stagePaddingBottom;
+				if(maxYPosition < yPosition)
+				{
+					yPosition = maxYPosition;
+				}
+			}
+			var point:Point = Pool.getPoint(globalOrigin.x + globalOrigin.width, yPosition);
+			//we calculate the position in global coordinates, but the callout
+			//may be in a container that is offset from the global origin, so
+			//adjust for that difference.
+			callout.parent.globalToLocal(point, point);
+			callout.x = point.x;
+			callout.y = point.y;
+			Pool.putPoint(point);
 			if(callout._isValidating)
 			{
 				//no need to invalidate and need to validate again next frame
@@ -622,17 +623,44 @@ package feathers.controls
 				callout.arrowPosition = RelativePosition.LEFT;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected static function positionToLeftOfOrigin(callout:Callout, globalOrigin:Rectangle):void
 		{
-			callout.measureWithArrowPosition(RelativePosition.RIGHT, HELPER_POINT);
-			callout.x = globalOrigin.x - HELPER_POINT.x;
-			var idealYPosition:Number = globalOrigin.y + Math.round((globalOrigin.height - HELPER_POINT.y) / 2);
-			var yPosition:Number = Math.max(stagePaddingLeft, Math.min(Starling.current.stage.stageHeight - HELPER_POINT.y - stagePaddingBottom, idealYPosition));
-			callout.y = yPosition;
+			callout.measureWithArrowPosition(RelativePosition.RIGHT);
+			var idealYPosition:Number = globalOrigin.y;
+			if(callout._verticalAlign === VerticalAlign.MIDDLE)
+			{
+				idealYPosition += Math.round((globalOrigin.height - callout.height) / 2);
+			}
+			else if(callout._verticalAlign === VerticalAlign.BOTTOM)
+			{
+				idealYPosition += (globalOrigin.height - callout.height);
+			}
+			var yPosition:Number = idealYPosition;
+			if(stagePaddingTop > yPosition)
+			{
+				yPosition = stagePaddingTop;
+			}
+			else
+			{
+				var stage:Stage = callout.stage !== null ? callout.stage : Starling.current.stage;
+				var maxYPosition:Number = stage.stageHeight - callout.height - stagePaddingBottom;
+				if(maxYPosition < yPosition)
+				{
+					yPosition = maxYPosition;
+				}
+			}
+			var point:Point = Pool.getPoint(globalOrigin.x - callout.width, yPosition);
+			//we calculate the position in global coordinates, but the callout
+			//may be in a container that is offset from the global origin, so
+			//adjust for that difference.
+			callout.parent.globalToLocal(point, point);
+			callout.x = point.x;
+			callout.y = point.y;
+			Pool.putPoint(point);
 			if(callout._isValidating)
 			{
 				//no need to invalidate and need to validate again next frame
@@ -645,7 +673,7 @@ package feathers.controls
 				callout.arrowPosition = RelativePosition.RIGHT;
 			}
 		}
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -654,11 +682,11 @@ package feathers.controls
 			super();
 			this.addEventListener(Event.ADDED_TO_STAGE, callout_addedToStageHandler);
 		}
-
+		
 		/**
 		 * Determines if the callout is automatically closed if a touch in the
 		 * <code>TouchPhase.BEGAN</code> phase happens outside of the callout's
-		 * bounds.
+		 * or the origin's bounds.
 		 *
 		 * <p>In the following example, the callout will not close when a touch
 		 * event with <code>TouchPhase.BEGAN</code> is detected outside the
@@ -671,11 +699,11 @@ package feathers.controls
 		 * @see #closeOnKeys
 		 */
 		public var closeOnTouchBeganOutside:Boolean = false;
-
+		
 		/**
 		 * Determines if the callout is automatically closed if a touch in the
 		 * <code>TouchPhase.ENDED</code> phase happens outside of the callout's
-		 * bounds.
+		 * or the origin's bounds.
 		 *
 		 * <p>In the following example, the callout will not close when a touch
 		 * event with <code>TouchPhase.ENDED</code> is detected outside the
@@ -688,7 +716,7 @@ package feathers.controls
 		 * @see #closeOnKeys
 		 */
 		public var closeOnTouchEndedOutside:Boolean = false;
-
+		
 		/**
 		 * The callout will be closed if any of these keys are pressed.
 		 *
@@ -702,7 +730,7 @@ package feathers.controls
 		 * @see #closeOnTouchEndedOutside
 		 */
 		public var closeOnKeys:Vector.<uint>;
-
+		
 		/**
 		 * Determines if the callout will be disposed when <code>close()</code>
 		 * is called internally. Close may be called internally in a variety of
@@ -724,7 +752,7 @@ package feathers.controls
 		 * @see #close()
 		 */
 		public var disposeOnSelfClose:Boolean = true;
-
+		
 		/**
 		 * Determines if the callout's content will be disposed when the callout
 		 * is disposed. If set to <code>false</code>, the callout's content may
@@ -737,12 +765,12 @@ package feathers.controls
 		 * callout.disposeContent = false;</listing>
 		 */
 		public var disposeContent:Boolean = true;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isReadyToClose:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
@@ -750,12 +778,72 @@ package feathers.controls
 		{
 			return Callout.globalStyleProvider;
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitContentWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitContentHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitContentMinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitContentMinHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitContentMaxWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitContentMaxHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundSkinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundSkinHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundSkinMinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundSkinMinHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundSkinMaxWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundSkinMaxHeight:Number;
+		
 		/**
 		 * @private
 		 */
 		protected var _content:DisplayObject;
-
+		
 		/**
 		 * The display object that will be presented by the callout. This object
 		 * may be resized to fit the callout's bounds. If the content needs to
@@ -774,7 +862,7 @@ package feathers.controls
 		{
 			return this._content;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -784,35 +872,58 @@ package feathers.controls
 			{
 				return;
 			}
-			if(this._content)
+			if(this._content !== null)
 			{
 				if(this._content is IFeathersControl)
 				{
 					IFeathersControl(this._content).removeEventListener(FeathersEventType.RESIZE, content_resizeHandler);
 				}
-				if(this._content.parent == this)
+				if(this._content.parent === this)
 				{
 					this._content.removeFromParent(false);
 				}
 			}
 			this._content = value;
-			if(this._content)
+			if(this._content !== null)
 			{
 				if(this._content is IFeathersControl)
 				{
 					IFeathersControl(this._content).addEventListener(FeathersEventType.RESIZE, content_resizeHandler);
 				}
 				this.addChild(this._content);
+				if(this._content is IFeathersControl)
+				{
+					IFeathersControl(this._content).initializeNow();
+				}
+				if(this._content is IMeasureDisplayObject)
+				{
+					var measureContent:IMeasureDisplayObject = IMeasureDisplayObject(this._content);
+					this._explicitContentWidth = measureContent.explicitWidth;
+					this._explicitContentHeight = measureContent.explicitHeight;
+					this._explicitContentMinWidth = measureContent.explicitMinWidth;
+					this._explicitContentMinHeight = measureContent.explicitMinHeight;
+					this._explicitContentMaxWidth = measureContent.explicitMaxWidth;
+					this._explicitContentMaxHeight = measureContent.explicitMaxHeight;
+				}
+				else
+				{
+					this._explicitContentWidth = this._content.width;
+					this._explicitContentHeight = this._content.height;
+					this._explicitContentMinWidth = this._explicitContentWidth;
+					this._explicitContentMinHeight = this._explicitContentHeight;
+					this._explicitContentMaxWidth = this._explicitContentWidth;
+					this._explicitContentMaxHeight = this._explicitContentHeight;
+				}
 			}
 			this.invalidate(INVALIDATION_FLAG_SIZE);
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _origin:DisplayObject;
-
+		
 		/**
 		 * A callout may be positioned relative to another display object, known
 		 * as the callout's origin. Even if the position of the origin changes,
@@ -820,12 +931,22 @@ package feathers.controls
 		 *
 		 * <p>When an origin is set, the <code>arrowPosition</code> and
 		 * <code>arrowOffset</code> properties will be managed automatically by
-		 * the callout. Setting either of these values manually with either have
+		 * the callout. Setting either of these values manually will either have
 		 * no effect or unexpected behavior, so it is recommended that you
 		 * avoid modifying those properties.</p>
+		 * 
+		 * <p>Note: The <code>origin</code> is excluded when using
+		 * <code>closeOnTouchBeganOutside</code> and <code>closeOnTouchEndedOutside</code>.
+		 * In other words, when the origin is touched, and either of these
+		 * properties is <code>true</code>, the callout will not be closed. If
+		 * the callout is not displayed modally, and touching the origin opens
+		 * the callout, you should check if a callout is already visible. If a
+		 * callout is visible, close it. If no callouts are visible, show one.
+		 * However, if the callout is modal, the touch will be stopped by the
+		 * overlay before it reaches the origin, so this behavior will not apply.</p>
 		 *
 		 * <p>In general, if you use <code>Callout.show()</code>, you will
-		 * rarely need to manually manage the origin.</p>
+		 * rarely need to manually manage the <code>origin</code> property.</p>
 		 *
 		 * <p>In the following example, the callout's origin is set to a button:</p>
 		 *
@@ -834,6 +955,7 @@ package feathers.controls
 		 *
 		 * @default null
 		 *
+		 * @see feathers.controls.Callout#show()
 		 * @see #supportedDirections
 		 * @see #arrowPosition
 		 * @see #arrowOffset
@@ -842,7 +964,7 @@ package feathers.controls
 		{
 			return this._origin;
 		}
-
+		
 		public function set origin(value:DisplayObject):void
 		{
 			if(this._origin == value)
@@ -867,51 +989,189 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_ORIGIN);
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected var _supportedDirections:String = DIRECTION_ANY;
-
-		[Inspectable(type="String",enumeration="any,vertical,horizontal,up,down,left,right")]
+		protected var _supportedDirections:String = null;
+		
 		/**
-		 * The directions that the callout may be positioned, relative to its
-		 * origin. If the callout's origin is not set, this value will be
-		 * ignored.
+		 * @private
+		 * DEPRECATED: Replaced by the <code>position</code> property.
 		 *
-		 * <p>The <code>arrowPosition</code> property is related to this one,
-		 * but they have different meanings and are usually opposites. For
-		 * example, a callout on the right side of its origin will generally
-		 * display its left arrow.</p>
-		 *
-		 * <p>In the following example, the callout's supported directions are
-		 * restricted to up and down:</p>
-		 *
-		 * <listing version="3.0">
-		 * callout.supportedDirections = Callout.DIRECTION_VERTICAL;</listing>
-		 *
-		 * @default Callout.DIRECTION_ANY
-		 *
-		 * @see #origin
-		 * @see #DIRECTION_ANY
-		 * @see #DIRECTION_VERTICAL
-		 * @see #DIRECTION_HORIZONTAL
-		 * @see #DIRECTION_UP
-		 * @see #DIRECTION_DOWN
-		 * @see #DIRECTION_LEFT
-		 * @see #DIRECTION_RIGHT
-		 * @see #arrowPosition
+		 * <p><strong>DEPRECATION WARNING:</strong> This property is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public function get supportedDirections():String
 		{
 			return this._supportedDirections;
 		}
-
+		
+		/**
+		 * @private
+		 */
 		public function set supportedDirections(value:String):void
 		{
+			var positions:Vector.<String> = null;
+			if(value === DIRECTION_ANY)
+			{
+				positions = new <String>[RelativePosition.BOTTOM, RelativePosition.TOP, RelativePosition.RIGHT, RelativePosition.LEFT];
+			}
+			else if(value === DIRECTION_HORIZONTAL)
+			{
+				positions = new <String>[RelativePosition.RIGHT, RelativePosition.LEFT];
+			}
+			else if(value === DIRECTION_VERTICAL)
+			{
+				positions = new <String>[RelativePosition.BOTTOM, RelativePosition.TOP];
+			}
+			else if(value === DIRECTION_UP)
+			{
+				positions = new <String>[RelativePosition.TOP];
+			}
+			else if(value === DIRECTION_DOWN)
+			{
+				positions = new <String>[RelativePosition.BOTTOM];
+			}
+			else if(value === DIRECTION_RIGHT)
+			{
+				positions = new <String>[RelativePosition.RIGHT];
+			}
+			else if(value === DIRECTION_LEFT)
+			{
+				positions = new <String>[RelativePosition.LEFT];
+			}
 			this._supportedDirections = value;
+			this.supportedPositions = positions;
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected var _supportedPositions:Vector.<String> = null;
+		
+		/**
+		 * The position of the callout, relative to its origin. Accepts a
+		 * <code>Vector.&lt;String&gt;</code> containing one or more of the
+		 * constants from <code>feathers.layout.RelativePosition</code> or
+		 * <code>null</code>. If <code>null</code>, the callout will attempt to
+		 * position itself using values in the following order:
+		 * 
+		 * <ul>
+		 *     <li><code>RelativePosition.BOTTOM</code></li>
+		 *     <li><code>RelativePosition.TOP</code></li>
+		 *     <li><code>RelativePosition.RIGHT</code></li>
+		 *     <li><code>RelativePosition.LEFT</code></li>
+		 * </ul>
+		 * 
+		 * <p>Note: If the callout's origin is not set, the
+		 * <code>supportedPositions</code> property will be ignored.</p>
+		 *
+		 * <p>In the following example, the callout's supported positions are
+		 * restricted to the top and bottom of the origin:</p>
+		 *
+		 * <listing version="3.0">
+		 * callout.supportedPositions = new &lt;String&gt;[RelativePosition.TOP, RelativePosition.BOTTOM];</listing>
+		 *
+		 * <p>In the following example, the callout's position is restricted to
+		 * the right of the origin:</p>
+		 *
+		 * <listing version="3.0">
+		 * callout.supportedPositions = new &lt;String&gt;[RelativePosition.RIGHT];</listing>
+		 *
+		 * <p>Note: The <code>arrowPosition</code> property is related to this
+		 * one, but they have different meanings and are usually opposites. For
+		 * example, a callout on the right side of its origin will generally
+		 * display its left arrow.</p>
+		 *
+		 * @default null
+		 *
+		 * @see feathers.layout.RelativePosition#TOP
+		 * @see feathers.layout.RelativePosition#RIGHT
+		 * @see feathers.layout.RelativePosition#BOTTOM
+		 * @see feathers.layout.RelativePosition#LEFT
+		 */
+		public function get supportedPositions():Vector.<String>
+		{
+			return this._supportedPositions;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function set supportedPositions(value:Vector.<String>):void
+		{
+			this._supportedPositions = value;
+		}
+		
+		/**
+		 * @private
+		 */
+		protected var _horizontalAlign:String = HorizontalAlign.CENTER;
+		
+		/**
+		 * The horizontal alignment of the callout, relative to the origin.
+		 * 
+		 * @default feathers.layout.HorizontalAlign.CENTER
+		 *
+		 * @see feathers.layout.HorizontalAlign#LEFT
+		 * @see feathers.layout.HorizontalAlign#CENTER
+		 * @see feathers.layout.HorizontalAlign#RIGHT
+		 */
+		public function get horizontalAlign():String
+		{
+			return this._horizontalAlign;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function set horizontalAlign(value:String):void
+		{
+			if(this._horizontalAlign === value)
+			{
+				return;
+			}
+			this._horizontalAlign = value;
+			this._lastGlobalBoundsOfOrigin = null;
+			this.invalidate(INVALIDATION_FLAG_ORIGIN);
+		}
+		
+		/**
+		 * @private
+		 */
+		protected var _verticalAlign:String = VerticalAlign.MIDDLE;
+		
+		/**
+		 * The vertical alignment of the callout, relative to the origin.
+		 *
+		 * @default feathers.layout.VerticalAlign.MIDDLE
+		 *
+		 * @see feathers.layout.VerticalAlign#TOP
+		 * @see feathers.layout.VerticalAlign#MIDDLE
+		 * @see feathers.layout.VerticalAlign#BOTTOM
+		 */
+		public function get verticalAlign():String
+		{
+			return this._verticalAlign;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function set verticalAlign(value:String):void
+		{
+			if(this._verticalAlign === value)
+			{
+				return;
+			}
+			this._verticalAlign = value;
+			this._lastGlobalBoundsOfOrigin = null;
+			this.invalidate(INVALIDATION_FLAG_ORIGIN);
+		}
+		
 		/**
 		 * Quickly sets all padding properties to the same value. The
 		 * <code>padding</code> getter always returns the value of
@@ -935,7 +1195,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -946,12 +1206,12 @@ package feathers.controls
 			this.paddingBottom = value;
 			this.paddingLeft = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingTop:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the callout's top edge and the
 		 * callout's content.
@@ -968,7 +1228,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -981,12 +1241,12 @@ package feathers.controls
 			this._paddingTop = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingRight:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the callout's right edge and
 		 * the callout's content.
@@ -1003,7 +1263,7 @@ package feathers.controls
 		{
 			return this._paddingRight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1016,12 +1276,12 @@ package feathers.controls
 			this._paddingRight = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingBottom:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the callout's bottom edge and
 		 * the callout's content.
@@ -1038,7 +1298,7 @@ package feathers.controls
 		{
 			return this._paddingBottom;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1051,12 +1311,12 @@ package feathers.controls
 			this._paddingBottom = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingLeft:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the callout's left edge and the
 		 * callout's content.
@@ -1073,7 +1333,7 @@ package feathers.controls
 		{
 			return this._paddingLeft;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1086,12 +1346,12 @@ package feathers.controls
 			this._paddingLeft = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _arrowPosition:String = RelativePosition.TOP;
-
+		
 		[Inspectable(type="String",enumeration="top,right,bottom,left")]
 		/**
 		 * The position of the callout's arrow relative to the callout's
@@ -1129,7 +1389,7 @@ package feathers.controls
 		{
 			return this._arrowPosition;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1142,22 +1402,12 @@ package feathers.controls
 			this._arrowPosition = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
-		/**
-		 * @private
-		 */
-		protected var _originalBackgroundWidth:Number = NaN;
-
-		/**
-		 * @private
-		 */
-		protected var _originalBackgroundHeight:Number = NaN;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _backgroundSkin:DisplayObject;
-
+		
 		/**
 		 * The primary background to display.
 		 *
@@ -1172,7 +1422,7 @@ package feathers.controls
 		{
 			return this._backgroundSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1182,31 +1432,52 @@ package feathers.controls
 			{
 				return;
 			}
-
-			if(this._backgroundSkin)
+			
+			if(this._backgroundSkin !== null && this._backgroundSkin.parent === this)
 			{
-				this.removeChild(this._backgroundSkin);
+				this._backgroundSkin.removeFromParent(false);
 			}
 			this._backgroundSkin = value;
-			if(this._backgroundSkin)
+			if(this._backgroundSkin !== null)
 			{
-				this._originalBackgroundWidth = this._backgroundSkin.width;
-				this._originalBackgroundHeight = this._backgroundSkin.height;
 				this.addChildAt(this._backgroundSkin, 0);
+				if(this._backgroundSkin is IFeathersControl)
+				{
+					IFeathersControl(this._backgroundSkin).initializeNow();
+				}
+				if(this._backgroundSkin is IMeasureDisplayObject)
+				{
+					var measureSkin:IMeasureDisplayObject = IMeasureDisplayObject(this._backgroundSkin);
+					this._explicitBackgroundSkinWidth = measureSkin.explicitWidth;
+					this._explicitBackgroundSkinHeight = measureSkin.explicitHeight;
+					this._explicitBackgroundSkinMinWidth = measureSkin.explicitMinWidth;
+					this._explicitBackgroundSkinMinHeight = measureSkin.explicitMinHeight;
+					this._explicitBackgroundSkinMaxWidth = measureSkin.explicitMaxWidth;
+					this._explicitBackgroundSkinMaxHeight = measureSkin.explicitMaxHeight;
+				}
+				else
+				{
+					this._explicitBackgroundSkinWidth = this._backgroundSkin.width;
+					this._explicitBackgroundSkinHeight = this._backgroundSkin.height;
+					this._explicitBackgroundSkinMinWidth = this._explicitBackgroundSkinWidth;
+					this._explicitBackgroundSkinMinHeight = this._explicitBackgroundSkinHeight;
+					this._explicitBackgroundSkinMaxWidth = this._explicitBackgroundSkinWidth;
+					this._explicitBackgroundSkinMaxHeight = this._explicitBackgroundSkinHeight;
+				}
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var currentArrowSkin:DisplayObject;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _bottomArrowSkin:DisplayObject;
-
+		
 		/**
 		 * The arrow skin to display on the bottom edge of the callout. This
 		 * arrow is displayed when the callout is displayed above the region it
@@ -1224,7 +1495,7 @@ package feathers.controls
 		{
 			return this._bottomArrowSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1234,13 +1505,13 @@ package feathers.controls
 			{
 				return;
 			}
-
-			if(this._bottomArrowSkin)
+			
+			if(this._bottomArrowSkin !== null && this._bottomArrowSkin.parent === this)
 			{
-				this.removeChild(this._bottomArrowSkin);
+				this._bottomArrowSkin.removeFromParent(false);
 			}
 			this._bottomArrowSkin = value;
-			if(this._bottomArrowSkin)
+			if(this._bottomArrowSkin !== null)
 			{
 				this._bottomArrowSkin.visible = false;
 				var index:int = this.getChildIndex(this._content);
@@ -1255,12 +1526,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _topArrowSkin:DisplayObject;
-
+		
 		/**
 		 * The arrow skin to display on the top edge of the callout. This arrow
 		 * is displayed when the callout is displayed below the region it points
@@ -1278,7 +1549,7 @@ package feathers.controls
 		{
 			return this._topArrowSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1288,13 +1559,13 @@ package feathers.controls
 			{
 				return;
 			}
-
-			if(this._topArrowSkin)
+			
+			if(this._topArrowSkin !== null && this._topArrowSkin.parent === this)
 			{
-				this.removeChild(this._topArrowSkin);
+				this._topArrowSkin.removeFromParent(false);
 			}
 			this._topArrowSkin = value;
-			if(this._topArrowSkin)
+			if(this._topArrowSkin !== null)
 			{
 				this._topArrowSkin.visible = false;
 				var index:int = this.getChildIndex(this._content);
@@ -1309,12 +1580,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _leftArrowSkin:DisplayObject;
-
+		
 		/**
 		 * The arrow skin to display on the left edge of the callout. This arrow
 		 * is displayed when the callout is displayed to the right of the region
@@ -1332,7 +1603,7 @@ package feathers.controls
 		{
 			return this._leftArrowSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1342,13 +1613,13 @@ package feathers.controls
 			{
 				return;
 			}
-
-			if(this._leftArrowSkin)
+			
+			if(this._leftArrowSkin !== null && this._leftArrowSkin.parent === this)
 			{
-				this.removeChild(this._leftArrowSkin);
+				this._leftArrowSkin.removeFromParent(false);
 			}
 			this._leftArrowSkin = value;
-			if(this._leftArrowSkin)
+			if(this._leftArrowSkin !== null)
 			{
 				this._leftArrowSkin.visible = false;
 				var index:int = this.getChildIndex(this._content);
@@ -1363,12 +1634,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _rightArrowSkin:DisplayObject;
-
+		
 		/**
 		 * The arrow skin to display on the right edge of the callout. This
 		 * arrow is displayed when the callout is displayed to the left of the
@@ -1386,7 +1657,7 @@ package feathers.controls
 		{
 			return this._rightArrowSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1396,13 +1667,13 @@ package feathers.controls
 			{
 				return;
 			}
-
-			if(this._rightArrowSkin)
+			
+			if(this._rightArrowSkin !== null && this._rightArrowSkin.parent === this)
 			{
-				this.removeChild(this._rightArrowSkin);
+				this._rightArrowSkin.removeFromParent(false);
 			}
 			this._rightArrowSkin = value;
-			if(this._rightArrowSkin)
+			if(this._rightArrowSkin !== null)
 			{
 				this._rightArrowSkin.visible = false;
 				var index:int = this.getChildIndex(this._content);
@@ -1417,12 +1688,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _topArrowGap:Number = 0;
-
+		
 		/**
 		 * The space, in pixels, between the top arrow skin and the background
 		 * skin. To have the arrow overlap the background, you may use a
@@ -1441,7 +1712,7 @@ package feathers.controls
 		{
 			return this._topArrowGap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1454,12 +1725,12 @@ package feathers.controls
 			this._topArrowGap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _bottomArrowGap:Number = 0;
-
+		
 		/**
 		 * The space, in pixels, between the bottom arrow skin and the
 		 * background skin. To have the arrow overlap the background, you may
@@ -1478,7 +1749,7 @@ package feathers.controls
 		{
 			return this._bottomArrowGap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1491,12 +1762,12 @@ package feathers.controls
 			this._bottomArrowGap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _rightArrowGap:Number = 0;
-
+		
 		/**
 		 * The space, in pixels, between the right arrow skin and the background
 		 * skin. To have the arrow overlap the background, you may use a
@@ -1515,7 +1786,7 @@ package feathers.controls
 		{
 			return this._rightArrowGap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1528,12 +1799,12 @@ package feathers.controls
 			this._rightArrowGap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _leftArrowGap:Number = 0;
-
+		
 		/**
 		 * The space, in pixels, between the right arrow skin and the background
 		 * skin. To have the arrow overlap the background, you may use a
@@ -1552,7 +1823,7 @@ package feathers.controls
 		{
 			return this._leftArrowGap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1565,12 +1836,12 @@ package feathers.controls
 			this._leftArrowGap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _arrowOffset:Number = 0;
-
+		
 		/**
 		 * The offset, in pixels, of the arrow skin from the horizontal center
 		 * or vertical middle of the background skin, depending on the position
@@ -1601,7 +1872,7 @@ package feathers.controls
 		{
 			return this._arrowOffset;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1614,17 +1885,17 @@ package feathers.controls
 			this._arrowOffset = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _lastGlobalBoundsOfOrigin:Rectangle;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _ignoreContentResize:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
@@ -1634,13 +1905,13 @@ package feathers.controls
 			var savedContent:DisplayObject = this._content;
 			this.content = null;
 			//remove the content safely if it should not be disposed
-			if(savedContent && this.disposeContent)
+			if(savedContent !== null && this.disposeContent)
 			{
 				savedContent.dispose();
 			}
 			super.dispose();
 		}
-
+		
 		/**
 		 * Closes the callout.
 		 */
@@ -1658,7 +1929,7 @@ package feathers.controls
 				this.dispose();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1666,7 +1937,7 @@ package feathers.controls
 		{
 			this.addEventListener(Event.REMOVED_FROM_STAGE, callout_removedFromStageHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1677,39 +1948,33 @@ package feathers.controls
 			var stateInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STATE);
 			var stylesInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STYLES);
 			var originInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_ORIGIN);
-
+			
 			if(sizeInvalid)
 			{
 				this._lastGlobalBoundsOfOrigin = null;
 				originInvalid = true;
 			}
-
+			
 			if(originInvalid)
 			{
-				this.positionToOrigin();
+				this.positionRelativeToOrigin();
 			}
-
+			
 			if(stylesInvalid || stateInvalid)
 			{
 				this.refreshArrowSkin();
 			}
-
-			if(stateInvalid)
+			
+			if(stateInvalid || dataInvalid)
 			{
-				if(this._content is IFeathersControl)
-				{
-					IFeathersControl(this._content).isEnabled = this._isEnabled;
-				}
+				this.refreshEnabled();
 			}
-
+			
 			sizeInvalid = this.autoSizeIfNeeded() || sizeInvalid;
-
-			if(sizeInvalid || stylesInvalid || dataInvalid || stateInvalid)
-			{
-				this.layoutChildren();
-			}
+			
+			this.layoutChildren();
 		}
-
+		
 		/**
 		 * If the component's dimensions have not been set explicitly, it will
 		 * measure its content and determine an ideal size for itself. If the
@@ -1719,7 +1984,7 @@ package feathers.controls
 		 * explicit value will not be measured, but the other non-explicit
 		 * dimension will still need measurement.
 		 *
-		 * <p>Calls <code>setSizeInternal()</code> to set up the
+		 * <p>Calls <code>saveMeasurements()</code> to set up the
 		 * <code>actualWidth</code> and <code>actualHeight</code> member
 		 * variables used for layout.</p>
 		 *
@@ -1728,179 +1993,253 @@ package feathers.controls
 		 */
 		protected function autoSizeIfNeeded():Boolean
 		{
-			this.measureWithArrowPosition(this._arrowPosition, HELPER_POINT);
-			return this.setSizeInternal(HELPER_POINT.x, HELPER_POINT.y, false);
+			return this.measureWithArrowPosition(this._arrowPosition);
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected function measureWithArrowPosition(arrowPosition:String, result:Point = null):Point
+		protected function measureWithArrowPosition(arrowPosition:String):Boolean
 		{
-			if(!result)
-			{
-				result = new Point();
-			}
 			var needsWidth:Boolean = this._explicitWidth !== this._explicitWidth; //isNaN
 			var needsHeight:Boolean = this._explicitHeight !== this._explicitHeight; //isNaN
-			if(!needsWidth && !needsHeight)
+			var needsMinWidth:Boolean = this._explicitMinWidth !== this._explicitMinWidth; //isNaN
+			var needsMinHeight:Boolean = this._explicitMinHeight !== this._explicitMinHeight; //isNaN
+			if(!needsWidth && !needsHeight && !needsMinWidth && !needsMinHeight)
 			{
-				result.x = this._explicitWidth;
-				result.y = this._explicitHeight;
-				return result;
+				return false;
 			}
-
-			var minWidth:Number = this._explicitMinWidth;
-			var maxWidth:Number = this._maxWidth;
-			var minHeight:Number = this._explicitMinHeight;
-			var maxHeight:Number = this._maxHeight;
-			//the background skin dimensions affect the minimum width
-			if(this._originalBackgroundWidth === this._originalBackgroundWidth && //!isNaN
-				minWidth < this._originalBackgroundWidth)
+			
+			if(this._backgroundSkin !== null)
 			{
-				minWidth = this._originalBackgroundWidth;
+				var oldBackgroundWidth:Number = this._backgroundSkin.width;
+				var oldBackgroundHeight:Number = this._backgroundSkin.height;
 			}
-			if(this._originalBackgroundHeight === this._originalBackgroundHeight && //!isNaN
-				minHeight < this._originalBackgroundHeight)
+			var measureBackground:IMeasureDisplayObject = this._backgroundSkin as IMeasureDisplayObject;
+			resetFluidChildDimensionsForMeasurement(this._backgroundSkin,
+				this._explicitWidth, this._explicitHeight,
+				this._explicitMinWidth, this._explicitMinHeight,
+				this._explicitMaxWidth, this._explicitMaxHeight,
+				this._explicitBackgroundSkinWidth, this._explicitBackgroundSkinHeight,
+				this._explicitBackgroundSkinMinWidth, this._explicitBackgroundSkinMinHeight,
+				this._explicitBackgroundSkinMaxWidth, this._explicitBackgroundSkinMaxHeight);
+			if(this._backgroundSkin is IValidating)
 			{
-				minHeight = this._originalBackgroundHeight;
+				IValidating(this._backgroundSkin).validate();
 			}
-			//the width of top or bottom arrow (plus padding) affect the minimum
-			//width too
-			if(arrowPosition === RelativePosition.TOP && this._topArrowSkin)
-			{
-				var minWidthWithTopArrow:Number = this._topArrowSkin.width + this._paddingLeft + this._paddingRight;
-				if(minWidth < minWidthWithTopArrow)
-				{
-					minWidth = minWidthWithTopArrow;
-				}
-			}
-			if(arrowPosition === RelativePosition.BOTTOM && this._bottomArrowSkin)
-			{
-				var minWidthWithBottomArrow:Number = this._bottomArrowSkin.width + this._paddingLeft + this._paddingRight;
-				if(minWidth < minWidthWithBottomArrow)
-				{
-					minWidth = minWidthWithBottomArrow;
-				}
-			}
-			//the height of left or right arrow (plus padding) affect the
-			//minimum height too
-			if(arrowPosition === RelativePosition.LEFT && this._leftArrowSkin)
-			{
-				var minHeightWithLeftArrow:Number = this._leftArrowSkin.height + this._paddingTop + this._paddingBottom;
-				if(minHeight < minHeightWithLeftArrow)
-				{
-					minHeight = minHeightWithLeftArrow;
-				}
-			}
-			if(arrowPosition === RelativePosition.RIGHT && this._rightArrowSkin)
-			{
-				var minHeightWithRightArrow:Number = this._rightArrowSkin.height + this._paddingTop + this._paddingBottom;
-				if(minHeight < minHeightWithRightArrow)
-				{
-					minHeight = minHeightWithRightArrow;
-				}
-			}
-			//the dimensions of the stage (plus stage padding) affect the
-			//maximum width and height
-			if(this.stage)
-			{
-				var stageMaxWidth:Number = this.stage.stageWidth - stagePaddingLeft - stagePaddingRight;
-				var stageMaxHeight:Number = this.stage.stageHeight - stagePaddingTop - stagePaddingBottom;
-				if(maxWidth > stageMaxWidth)
-				{
-					maxWidth = stageMaxWidth;
-				}
-				if(maxHeight > stageMaxHeight)
-				{
-					maxHeight = stageMaxHeight;
-				}
-			}
-			//the width of the left or right arrow skin affects the minimum and
-			//maximum width of the content
+			
 			var leftOrRightArrowWidth:Number = 0;
-			if(arrowPosition === RelativePosition.LEFT && this._leftArrowSkin)
+			var leftOrRightArrowHeight:Number = 0;
+			if(arrowPosition === RelativePosition.LEFT && this._leftArrowSkin !== null)
 			{
-				leftOrRightArrowWidth += this._leftArrowSkin.width + this._leftArrowGap;
+				leftOrRightArrowWidth = this._leftArrowSkin.width + this._leftArrowGap;
+				leftOrRightArrowHeight = this._leftArrowSkin.height;
 			}
-			else if(arrowPosition === RelativePosition.RIGHT && this._rightArrowSkin)
+			else if(arrowPosition === RelativePosition.RIGHT && this._rightArrowSkin !== null)
 			{
-				leftOrRightArrowWidth += this._rightArrowSkin.width + this._rightArrowGap;
+				leftOrRightArrowWidth = this._rightArrowSkin.width + this._rightArrowGap;
+				leftOrRightArrowHeight = this._rightArrowSkin.height;
 			}
-			//the height of the top or bottom arrow skin affects the minimum and
-			//maximum height of the content
+			var topOrBottomArrowWidth:Number = 0;
 			var topOrBottomArrowHeight:Number = 0;
-			if(arrowPosition === RelativePosition.TOP && this._topArrowSkin)
+			if(arrowPosition === RelativePosition.TOP && this._topArrowSkin !== null)
 			{
-				topOrBottomArrowHeight += this._topArrowSkin.height + this._topArrowGap;
+				topOrBottomArrowWidth = this._topArrowSkin.width;
+				topOrBottomArrowHeight = this._topArrowSkin.height + this._topArrowGap;
 			}
-			else if(arrowPosition === RelativePosition.BOTTOM && this._bottomArrowSkin)
+			else if(arrowPosition === RelativePosition.BOTTOM && this._bottomArrowSkin !== null)
 			{
-				topOrBottomArrowHeight += this._bottomArrowSkin.height + this._bottomArrowGap;
+				topOrBottomArrowWidth = this._bottomArrowSkin.width;
+				topOrBottomArrowHeight = this._bottomArrowSkin.height + this._bottomArrowGap;
 			}
-			if(this._content is IFeathersControl)
+			//the content resizes when the callout resizes, so we can treat it
+			//similarly to a background skin
+			var oldIgnoreContentResize:Boolean = this._ignoreContentResize;
+			this._ignoreContentResize = true;
+			var measureContent:IMeasureDisplayObject = this._content as IMeasureDisplayObject;
+			resetFluidChildDimensionsForMeasurement(this._content,
+				this._explicitWidth - leftOrRightArrowWidth - this._paddingLeft - this._paddingRight,
+				this._explicitHeight - topOrBottomArrowHeight - this._paddingTop - this._paddingBottom,
+				this._explicitMinWidth - leftOrRightArrowWidth - this._paddingLeft - this._paddingRight,
+				this._explicitMinHeight - topOrBottomArrowHeight - this._paddingTop - this._paddingBottom,
+				this._explicitMaxWidth - leftOrRightArrowHeight - this._paddingLeft - this._paddingRight,
+				this._explicitMaxHeight - topOrBottomArrowHeight - this._paddingTop - this._paddingBottom,
+				this._explicitContentWidth, this._explicitContentHeight,
+				this._explicitContentMinWidth, this._explicitContentMinHeight,
+				this._explicitContentMaxWidth, this._explicitContentMaxHeight);
+			if(measureContent !== null)
 			{
-				var minContentWidth:Number = minWidth - leftOrRightArrowWidth - this._paddingLeft - this._paddingRight;
-				var maxContentWidth:Number = maxWidth - leftOrRightArrowWidth - this._paddingLeft - this._paddingRight;
-				var minContentHeight:Number = minHeight - topOrBottomArrowHeight - this._paddingTop - this._paddingBottom;
-				var maxContentHeight:Number = maxHeight - topOrBottomArrowHeight - this._paddingTop - this._paddingBottom;
-				//we only adjust the minimum and maximum dimensions of the
-				//content when it won't fit into the callout's minimum or
-				//maximum dimensions
-				var feathersContent:IFeathersControl = IFeathersControl(this._content);
-				if(feathersContent.minWidth < minContentWidth)
+				var contentMaxWidth:Number = this._explicitMaxWidth - this._paddingLeft - this._paddingRight;
+				if(contentMaxWidth < measureContent.maxWidth)
 				{
-					feathersContent.minWidth = minContentWidth;
+					measureContent.maxWidth = contentMaxWidth;
 				}
-				if(feathersContent.maxWidth > maxContentWidth)
+				var contentMaxHeight:Number = this._explicitMaxHeight - this._paddingTop - this._paddingBottom;
+				if(contentMaxHeight < measureContent.maxHeight)
 				{
-					feathersContent.maxWidth = maxContentWidth;
-				}
-				if(feathersContent.minHeight < minContentHeight)
-				{
-					feathersContent.minHeight = minContentHeight;
-				}
-				if(feathersContent.maxHeight > maxContentHeight)
-				{
-					feathersContent.maxHeight = maxContentHeight;
+					measureContent.maxHeight = contentMaxHeight;
 				}
 			}
 			if(this._content is IValidating)
 			{
 				IValidating(this._content).validate();
 			}
-
+			this._ignoreContentResize = oldIgnoreContentResize;
+			
+			//the dimensions of the stage (plus stage padding) affect the
+			//maximum width and height
+			var maxWidth:Number = this._explicitMaxWidth;
+			var maxHeight:Number = this._explicitMaxHeight;
+			if(this.stage !== null)
+			{
+				var stageMaxWidth:Number = this.stage.stageWidth - stagePaddingLeft - stagePaddingRight;
+				if(maxWidth > stageMaxWidth)
+				{
+					maxWidth = stageMaxWidth;
+				}
+				var stageMaxHeight:Number = this.stage.stageHeight - stagePaddingTop - stagePaddingBottom;
+				if(maxHeight > stageMaxHeight)
+				{
+					maxHeight = stageMaxHeight;
+				}
+			}
+			
 			var newWidth:Number = this._explicitWidth;
-			var newHeight:Number = this._explicitHeight;
 			if(needsWidth)
 			{
-				newWidth = this._content.width + leftOrRightArrowWidth + this._paddingLeft + this._paddingRight;
-				if(newWidth < minWidth)
+				var contentWidth:Number = 0;
+				if(this._content !== null)
 				{
-					newWidth = minWidth;
+					contentWidth = this._content.width;
 				}
-				else if(newWidth > maxWidth)
+				if(topOrBottomArrowWidth > contentWidth)
+				{
+					contentWidth = topOrBottomArrowWidth;
+				}
+				newWidth = contentWidth + this._paddingLeft + this._paddingRight;
+				var backgroundWidth:Number = 0;
+				if(this._backgroundSkin !== null)
+				{
+					backgroundWidth = this._backgroundSkin.width;
+				}
+				if(backgroundWidth > newWidth)
+				{
+					newWidth = backgroundWidth;
+				}
+				newWidth += leftOrRightArrowWidth;
+				if(newWidth > maxWidth)
 				{
 					newWidth = maxWidth;
 				}
 			}
+			var newHeight:Number = this._explicitHeight;
 			if(needsHeight)
 			{
-				newHeight = this._content.height + topOrBottomArrowHeight + this._paddingTop + this._paddingBottom;
-				if(newHeight < minHeight)
+				var contentHeight:Number = 0;
+				if(this._content !== null)
 				{
-					newHeight = minHeight;
+					contentHeight = this._content.height;
 				}
-				else if(newHeight > maxHeight)
+				if(leftOrRightArrowHeight > contentWidth)
+				{
+					contentHeight = leftOrRightArrowHeight;
+				}
+				newHeight = contentHeight + this._paddingTop + this._paddingBottom;
+				var backgroundHeight:Number = 0;
+				if(this._backgroundSkin !== null)
+				{
+					backgroundHeight = this._backgroundSkin.height;
+				}
+				if(backgroundHeight > newHeight)
+				{
+					newHeight = backgroundHeight;
+				}
+				newHeight += topOrBottomArrowHeight;
+				if(newHeight > maxHeight)
 				{
 					newHeight = maxHeight;
 				}
 			}
-			result.x = newWidth;
-			result.y = newHeight;
-			return result;
+			var newMinWidth:Number = this._explicitMinWidth;
+			if(needsMinWidth)
+			{
+				var contentMinWidth:Number = 0;
+				if(measureContent !== null)
+				{
+					contentMinWidth = measureContent.minWidth;
+				}
+				else if(this._content !== null)
+				{
+					contentMinWidth = this._content.width;
+				}
+				if(topOrBottomArrowWidth > contentMinWidth)
+				{
+					contentMinWidth = topOrBottomArrowWidth;
+				}
+				newMinWidth = contentMinWidth + this._paddingLeft + this._paddingRight;
+				var backgroundMinWidth:Number = 0;
+				if(measureBackground !== null)
+				{
+					backgroundMinWidth = measureBackground.minWidth;
+				}
+				else if(this._backgroundSkin !== null)
+				{
+					backgroundMinWidth = this._explicitBackgroundSkinMinWidth;
+				}
+				if(backgroundMinWidth > newMinWidth)
+				{
+					newMinWidth = backgroundMinWidth;
+				}
+				newMinWidth += leftOrRightArrowWidth;
+				if(newMinWidth > maxWidth)
+				{
+					newMinWidth = maxWidth;
+				}
+			}
+			var newMinHeight:Number = this._explicitHeight;
+			if(needsMinHeight)
+			{
+				var contentMinHeight:Number = 0;
+				if(measureContent !== null)
+				{
+					contentMinHeight = measureContent.minHeight;
+				}
+				else if(this._content !== null)
+				{
+					contentMinHeight = this._content.height;
+				}
+				if(leftOrRightArrowHeight > contentMinHeight)
+				{
+					contentMinHeight = leftOrRightArrowHeight;
+				}
+				newMinHeight = contentMinHeight + this._paddingTop + this._paddingBottom;
+				var backgroundMinHeight:Number = 0;
+				if(measureBackground !== null)
+				{
+					backgroundMinHeight = measureBackground.minHeight;
+				}
+				else if(this._backgroundSkin !== null)
+				{
+					backgroundMinHeight = this._explicitBackgroundSkinMinHeight;
+				}
+				if(backgroundMinHeight > newMinHeight)
+				{
+					newMinHeight = backgroundMinHeight;
+				}
+				newMinHeight += topOrBottomArrowHeight;
+				if(newMinHeight > maxHeight)
+				{
+					newMinHeight = maxHeight;
+				}
+			}
+			if(this._backgroundSkin !== null)
+			{
+				this._backgroundSkin.width = oldBackgroundWidth;
+				this._backgroundSkin.height = oldBackgroundHeight;
+			}
+			return this.saveMeasurements(newWidth, newHeight, newMinWidth, newMinHeight);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1944,118 +2283,318 @@ package feathers.controls
 				this.currentArrowSkin.visible = true;
 			}
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected function refreshEnabled():void
+		{
+			if(this._content is IFeathersControl)
+			{
+				IFeathersControl(this._content).isEnabled = this._isEnabled;
+			}
+		}
+		
 		/**
 		 * @private
 		 */
 		protected function layoutChildren():void
 		{
-			var xPosition:Number = (this._leftArrowSkin && this._arrowPosition == RelativePosition.LEFT) ? this._leftArrowSkin.width + this._leftArrowGap : 0;
-			var yPosition:Number = (this._topArrowSkin &&  this._arrowPosition == RelativePosition.TOP) ? this._topArrowSkin.height + this._topArrowGap : 0;
-			var widthOffset:Number = (this._rightArrowSkin && this._arrowPosition == RelativePosition.RIGHT) ? this._rightArrowSkin.width + this._rightArrowGap : 0;
-			var heightOffset:Number = (this._bottomArrowSkin && this._arrowPosition == RelativePosition.BOTTOM) ? this._bottomArrowSkin.height + this._bottomArrowGap : 0;
+			var xPosition:Number = 0;
+			if(this._leftArrowSkin !== null && this._arrowPosition === RelativePosition.LEFT)
+			{
+				xPosition = this._leftArrowSkin.width + this._leftArrowGap;
+			}
+			var yPosition:Number = 0;
+			if(this._topArrowSkin !== null &&  this._arrowPosition === RelativePosition.TOP)
+			{
+				yPosition = this._topArrowSkin.height + this._topArrowGap;
+			}
+			var widthOffset:Number = 0;
+			if(this._rightArrowSkin !== null && this._arrowPosition === RelativePosition.RIGHT)
+			{
+				widthOffset = this._rightArrowSkin.width + this._rightArrowGap;
+			}
+			var heightOffset:Number = 0;
+			if(this._bottomArrowSkin !== null && this._arrowPosition === RelativePosition.BOTTOM)
+			{
+				heightOffset = this._bottomArrowSkin.height + this._bottomArrowGap;
+			}
 			var backgroundWidth:Number = this.actualWidth - xPosition - widthOffset;
 			var backgroundHeight:Number = this.actualHeight - yPosition - heightOffset;
-			if(this._backgroundSkin)
+			if(this._backgroundSkin !== null)
 			{
 				this._backgroundSkin.x = xPosition;
 				this._backgroundSkin.y = yPosition;
 				this._backgroundSkin.width = backgroundWidth;
 				this._backgroundSkin.height = backgroundHeight;
 			}
-
-			if(this.currentArrowSkin)
+			
+			if(this.currentArrowSkin !== null)
 			{
-				if(this._arrowPosition == RelativePosition.LEFT)
+				var contentWidth:Number = backgroundWidth - this._paddingLeft - this._paddingRight;
+				var contentHeight:Number = backgroundHeight - this._paddingTop - this._paddingBottom;
+				if(this._arrowPosition === RelativePosition.LEFT)
 				{
 					this._leftArrowSkin.x = xPosition - this._leftArrowSkin.width - this._leftArrowGap;
-					this._leftArrowSkin.y = this._arrowOffset + yPosition + Math.round((backgroundHeight - this._leftArrowSkin.height) / 2);
-					this._leftArrowSkin.y = Math.min(yPosition + backgroundHeight - this._paddingBottom - this._leftArrowSkin.height, Math.max(yPosition + this._paddingTop, this._leftArrowSkin.y));
+					var leftArrowSkinY:Number = this._arrowOffset + yPosition + this._paddingTop;
+					if(this._verticalAlign === VerticalAlign.MIDDLE)
+					{
+						leftArrowSkinY += Math.round((contentHeight - this._leftArrowSkin.height) / 2);
+					}
+					else if(this._verticalAlign === VerticalAlign.BOTTOM)
+					{
+						leftArrowSkinY += (contentHeight - this._leftArrowSkin.height);
+					}
+					var minLeftArrowSkinY:Number = yPosition + this._paddingTop;
+					if(minLeftArrowSkinY > leftArrowSkinY)
+					{
+						leftArrowSkinY = minLeftArrowSkinY;
+					}
+					else
+					{
+						var maxLeftArrowSkinY:Number = yPosition + this._paddingTop + contentHeight - this._leftArrowSkin.height;
+						if(maxLeftArrowSkinY < leftArrowSkinY)
+						{
+							leftArrowSkinY = maxLeftArrowSkinY;
+						}
+					}
+					this._leftArrowSkin.y = leftArrowSkinY;
 				}
-				else if(this._arrowPosition == RelativePosition.RIGHT)
+				else if(this._arrowPosition === RelativePosition.RIGHT)
 				{
 					this._rightArrowSkin.x = xPosition + backgroundWidth + this._rightArrowGap;
-					this._rightArrowSkin.y = this._arrowOffset + yPosition + Math.round((backgroundHeight - this._rightArrowSkin.height) / 2);
-					this._rightArrowSkin.y = Math.min(yPosition + backgroundHeight - this._paddingBottom - this._rightArrowSkin.height, Math.max(yPosition + this._paddingTop, this._rightArrowSkin.y));
+					var rightArrowSkinY:Number = this._arrowOffset + yPosition + this._paddingTop;
+					if(this._verticalAlign === VerticalAlign.MIDDLE)
+					{
+						rightArrowSkinY += Math.round((contentHeight - this._rightArrowSkin.height) / 2);
+					}
+					else if(this._verticalAlign === VerticalAlign.BOTTOM)
+					{
+						rightArrowSkinY += (contentHeight - this._rightArrowSkin.height);
+					}
+					var minRightArrowSkinY:Number = yPosition + this._paddingTop;
+					if(minRightArrowSkinY > rightArrowSkinY)
+					{
+						rightArrowSkinY = minRightArrowSkinY;
+					}
+					else
+					{
+						var maxRightArrowSkinY:Number = yPosition + this._paddingTop + contentHeight - this._rightArrowSkin.height;
+						if(maxRightArrowSkinY < rightArrowSkinY)
+						{
+							rightArrowSkinY = maxRightArrowSkinY;
+						}
+					}
+					this._rightArrowSkin.y = rightArrowSkinY;
 				}
-				else if(this._arrowPosition == RelativePosition.BOTTOM)
+				else if(this._arrowPosition === RelativePosition.BOTTOM)
 				{
-					this._bottomArrowSkin.x = this._arrowOffset + xPosition + Math.round((backgroundWidth - this._bottomArrowSkin.width) / 2);
-					this._bottomArrowSkin.x = Math.min(xPosition + backgroundWidth - this._paddingRight - this._bottomArrowSkin.width, Math.max(xPosition + this._paddingLeft, this._bottomArrowSkin.x));
+					var bottomArrowSkinX:Number = this._arrowOffset + xPosition + this._paddingLeft;
+					if(this._horizontalAlign === HorizontalAlign.CENTER)
+					{
+						bottomArrowSkinX += Math.round((contentWidth - this._bottomArrowSkin.width) / 2);
+					}
+					else if(this._horizontalAlign === HorizontalAlign.RIGHT)
+					{
+						bottomArrowSkinX += (contentWidth - this._bottomArrowSkin.width);
+					}
+					var minBottomArrowSkinX:Number = xPosition + this._paddingLeft;
+					if(minBottomArrowSkinX > bottomArrowSkinX)
+					{
+						bottomArrowSkinX = minBottomArrowSkinX;
+					}
+					else
+					{
+						var maxBottomArrowSkinX:Number = xPosition + this._paddingLeft + contentWidth - this._bottomArrowSkin.width;
+						if(maxBottomArrowSkinX < bottomArrowSkinX)
+						{
+							bottomArrowSkinX = maxBottomArrowSkinX;
+						}
+					}
+					this._bottomArrowSkin.x = bottomArrowSkinX; 
 					this._bottomArrowSkin.y = yPosition + backgroundHeight + this._bottomArrowGap;
 				}
 				else //top
 				{
-					this._topArrowSkin.x = this._arrowOffset + xPosition + Math.round((backgroundWidth - this._topArrowSkin.width) / 2);
-					this._topArrowSkin.x = Math.min(xPosition + backgroundWidth - this._paddingRight - this._topArrowSkin.width, Math.max(xPosition + this._paddingLeft, this._topArrowSkin.x));
+					var topArrowSkinX:Number = this._arrowOffset + xPosition + this._paddingLeft;
+					if(this._horizontalAlign === HorizontalAlign.CENTER)
+					{
+						topArrowSkinX += Math.round((contentWidth - this._topArrowSkin.width) / 2);
+					}
+					else if(this._horizontalAlign === HorizontalAlign.RIGHT)
+					{
+						topArrowSkinX += (contentWidth - this._topArrowSkin.width);
+					}
+					var minTopArrowSkinX:Number = xPosition + this._paddingLeft;
+					if(minTopArrowSkinX > topArrowSkinX)
+					{
+						topArrowSkinX = minTopArrowSkinX;
+					}
+					else
+					{
+						var maxTopArrowSkinX:Number = xPosition + this._paddingLeft + contentWidth - this._topArrowSkin.width;
+						if(maxTopArrowSkinX < topArrowSkinX)
+						{
+							topArrowSkinX = maxTopArrowSkinX;
+						}
+					}
+					this._topArrowSkin.x = topArrowSkinX;
 					this._topArrowSkin.y = yPosition - this._topArrowSkin.height - this._topArrowGap;
 				}
 			}
-
-			if(this._content)
+			
+			if(this._content !== null)
 			{
 				this._content.x = xPosition + this._paddingLeft;
 				this._content.y = yPosition + this._paddingTop;
 				var oldIgnoreContentResize:Boolean = this._ignoreContentResize;
 				this._ignoreContentResize = true;
-				var contentWidth:Number = backgroundWidth - this._paddingLeft - this._paddingRight;
-				var difference:Number = Math.abs(this._content.width - contentWidth);
-				//instead of !=, we do some fuzzy math to account for possible
-				//floating point errors.
-				if(difference > FUZZY_CONTENT_DIMENSIONS_PADDING)
+				this._content.width = backgroundWidth - this._paddingLeft - this._paddingRight;
+				this._content.height = backgroundHeight - this._paddingTop - this._paddingBottom;
+				if(this._content is IValidating)
 				{
-					//we prefer not to set the width property of the content
-					//because that stops it from being able to resize, but
-					//sometimes, it's required.
-					this._content.width = contentWidth;
-				}
-				var contentHeight:Number = backgroundHeight - this._paddingTop - this._paddingBottom;
-				difference = Math.abs(this._content.height - contentHeight);
-				//instead of !=, we do some fuzzy math to account for possible
-				//floating point errors.
-				if(difference > FUZZY_CONTENT_DIMENSIONS_PADDING)
-				{
-					this._content.height = contentHeight;
+					IValidating(this._content).validate();
 				}
 				this._ignoreContentResize = oldIgnoreContentResize;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected function positionToOrigin():void
+		protected function positionRelativeToOrigin():void
 		{
-			if(!this._origin)
+			if(this._origin === null)
 			{
 				return;
 			}
-			this._origin.getBounds(Starling.current.stage, HELPER_RECT);
+			var stage:Stage = this.stage !== null ? this.stage : Starling.current.stage;
+			this._origin.getBounds(stage, HELPER_RECT);
 			var hasGlobalBounds:Boolean = this._lastGlobalBoundsOfOrigin != null;
-			if(!hasGlobalBounds || !this._lastGlobalBoundsOfOrigin.equals(HELPER_RECT))
+			if(hasGlobalBounds && this._lastGlobalBoundsOfOrigin.equals(HELPER_RECT))
 			{
-				if(!hasGlobalBounds)
+				return;
+			}
+			if(!hasGlobalBounds)
+			{
+				this._lastGlobalBoundsOfOrigin = new Rectangle();
+			}
+			this._lastGlobalBoundsOfOrigin.x = HELPER_RECT.x;
+			this._lastGlobalBoundsOfOrigin.y = HELPER_RECT.y;
+			this._lastGlobalBoundsOfOrigin.width = HELPER_RECT.width;
+			this._lastGlobalBoundsOfOrigin.height = HELPER_RECT.height;
+			
+			var supportedPositions:Vector.<String> = this._supportedPositions;
+			if(supportedPositions === null)
+			{
+				supportedPositions = DEFAULT_POSITIONS;
+			}
+			var upSpace:Number = -1;
+			var rightSpace:Number = -1;
+			var downSpace:Number = -1;
+			var leftSpace:Number = -1;
+			var positionsCount:int = supportedPositions.length;
+			for(var i:int = 0; i < positionsCount; i++)
+			{
+				var position:String = supportedPositions[i];
+				switch(position)
 				{
-					this._lastGlobalBoundsOfOrigin = new Rectangle();
+					case RelativePosition.TOP:
+					{
+						//arrow is opposite, on bottom side
+						this.measureWithArrowPosition(RelativePosition.BOTTOM);
+						upSpace = this._lastGlobalBoundsOfOrigin.y - this.actualHeight;
+						if(upSpace >= stagePaddingTop)
+						{
+							positionAboveOrigin(this, this._lastGlobalBoundsOfOrigin);
+							return;
+						}
+						if(upSpace < 0)
+						{
+							upSpace = 0;
+						}
+						break;
+					}
+					case RelativePosition.RIGHT:
+					{
+						//arrow is opposite, on left side
+						this.measureWithArrowPosition(RelativePosition.LEFT);
+						rightSpace = (stage.stageWidth - actualWidth) - (this._lastGlobalBoundsOfOrigin.x + this._lastGlobalBoundsOfOrigin.width);
+						if(rightSpace >= stagePaddingRight)
+						{
+							positionToRightOfOrigin(this, this._lastGlobalBoundsOfOrigin);
+							return;
+						}
+						if(rightSpace < 0)
+						{
+							rightSpace = 0;
+						}
+						break;
+					}
+					case RelativePosition.LEFT:
+					{
+						this.measureWithArrowPosition(RelativePosition.RIGHT);
+						leftSpace = this._lastGlobalBoundsOfOrigin.x - this.actualWidth;
+						if(leftSpace >= stagePaddingLeft)
+						{
+							positionToLeftOfOrigin(this, this._lastGlobalBoundsOfOrigin);
+							return;
+						}
+						if(leftSpace < 0)
+						{
+							leftSpace = 0;
+						}
+						break;
+					}
+					default: //bottom
+					{
+						//arrow is opposite, on top side
+						this.measureWithArrowPosition(RelativePosition.TOP);
+						downSpace = (stage.stageHeight - this.actualHeight) - (this._lastGlobalBoundsOfOrigin.y + this._lastGlobalBoundsOfOrigin.height);
+						if(downSpace >= stagePaddingBottom)
+						{
+							positionBelowOrigin(this, this._lastGlobalBoundsOfOrigin);
+							return;
+						}
+						if(downSpace < 0)
+						{
+							downSpace = 0;
+						}
+					}
 				}
-				this._lastGlobalBoundsOfOrigin.x = HELPER_RECT.x;
-				this._lastGlobalBoundsOfOrigin.y = HELPER_RECT.y;
-				this._lastGlobalBoundsOfOrigin.width = HELPER_RECT.width;
-				this._lastGlobalBoundsOfOrigin.height = HELPER_RECT.height;
-				positionWithSupportedDirections(this, this._lastGlobalBoundsOfOrigin, this._supportedDirections);
+			}
+			//worst case: pick the side that has the most available space
+			if(downSpace !== -1 && downSpace >= upSpace &&
+				downSpace >= rightSpace && downSpace >= leftSpace)
+			{
+				positionBelowOrigin(this, this._lastGlobalBoundsOfOrigin);
+			}
+			else if(upSpace !== -1 && upSpace >= rightSpace && upSpace >= leftSpace)
+			{
+				positionAboveOrigin(this, this._lastGlobalBoundsOfOrigin);
+			}
+			else if(rightSpace !== -1 && rightSpace >= leftSpace)
+			{
+				positionToRightOfOrigin(this, this._lastGlobalBoundsOfOrigin);
+			}
+			else
+			{
+				positionToLeftOfOrigin(this, this._lastGlobalBoundsOfOrigin);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function callout_addedToStageHandler(event:Event):void
 		{
+			var starling:Starling = this.stage !== null ? this.stage.starling : Starling.current;
 			//using priority here is a hack so that objects higher up in the
 			//display list have a chance to cancel the event first.
 			var priority:int = -getDisplayObjectDepthFromStage(this);
-			Starling.current.nativeStage.addEventListener(KeyboardEvent.KEY_DOWN, callout_nativeStage_keyDownHandler, false, priority, true);
-
+			starling.nativeStage.addEventListener(KeyboardEvent.KEY_DOWN, callout_nativeStage_keyDownHandler, false, priority, true);
+			
 			this.stage.addEventListener(TouchEvent.TOUCH, stage_touchHandler);
 			//to avoid touch events bubbling up to the callout and causing it to
 			//close immediately, we wait one frame before allowing it to close
@@ -2063,16 +2602,17 @@ package feathers.controls
 			this._isReadyToClose = false;
 			this.addEventListener(EnterFrameEvent.ENTER_FRAME, callout_oneEnterFrameHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function callout_removedFromStageHandler(event:Event):void
 		{
 			this.stage.removeEventListener(TouchEvent.TOUCH, stage_touchHandler);
-			Starling.current.nativeStage.removeEventListener(KeyboardEvent.KEY_DOWN, callout_nativeStage_keyDownHandler);
+			var starling:Starling = this.stage !== null ? this.stage.starling : Starling.current;
+			starling.nativeStage.removeEventListener(KeyboardEvent.KEY_DOWN, callout_nativeStage_keyDownHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2081,15 +2621,15 @@ package feathers.controls
 			this.removeEventListener(EnterFrameEvent.ENTER_FRAME, callout_oneEnterFrameHandler);
 			this._isReadyToClose = true;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function callout_enterFrameHandler(event:EnterFrameEvent):void
 		{
-			this.positionToOrigin();
+			this.positionRelativeToOrigin();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2102,12 +2642,12 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			if(this._origin == target || (this._origin is DisplayObjectContainer && DisplayObjectContainer(this._origin).contains(target)))
 			{
 				return;
 			}
-
+			
 			if(this.closeOnTouchBeganOutside)
 			{
 				var touch:Touch = event.getTouch(this.stage, TouchPhase.BEGAN);
@@ -2127,7 +2667,7 @@ package feathers.controls
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2146,7 +2686,7 @@ package feathers.controls
 			event.preventDefault();
 			this.close(this.disposeOnSelfClose);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2154,7 +2694,7 @@ package feathers.controls
 		{
 			this.close(this.disposeOnSelfClose);
 		}
-
+		
 		/**
 		 * @private
 		 */

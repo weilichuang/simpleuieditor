@@ -2,19 +2,19 @@ package uieditor.editor.ui.inspector
 {
 	import feathers.controls.LayoutGroup;
 	import feathers.controls.ScrollContainer;
-	
+
 	import starling.display.DisplayObject;
 	import starling.events.Event;
 	import starling.events.EventDispatcher;
-	
+
 	import uieditor.editor.feathers.FeathersUIUtil;
 	import uieditor.engine.util.ObjectLocaterUtil;
 	import uieditor.engine.util.ParamUtil;
 
 	public class PropertyPanel extends LayoutGroup
 	{
-		public static const DEFAULT_ROW_GAP:int = 10;
-		
+		public static const DEFAULT_ROW_GAP : int = 10;
+
 		public static var globalDispatcher : EventDispatcher = new EventDispatcher();
 
 		protected var _container : ScrollContainer;
@@ -24,7 +24,7 @@ package uieditor.editor.ui.inspector
 
 		protected var _propertyRetrieverFactory : Function;
 
-		protected var _linkOperation:ILinkOperation;
+		protected var _linkOperation : ILinkOperation;
 		protected var _linkButton : LinkButton;
 
 		protected var _setting : Object;
@@ -42,8 +42,26 @@ package uieditor.editor.ui.inspector
 
 			if ( target && params )
 				reloadData( target, params );
-
+		}
+		
+		public function addPropertyListener():void
+		{
 			globalDispatcher.addEventListener( UIMapperEventType.PROPERTY_CHANGE, onGlobalPropertyChange );
+		}
+		
+		public function removePropertyListener():void
+		{
+			globalDispatcher.removeEventListener( UIMapperEventType.PROPERTY_CHANGE, onGlobalPropertyChange );
+		}
+
+		override public function dispose() : void
+		{
+			globalDispatcher.removeEventListener( UIMapperEventType.PROPERTY_CHANGE, onGlobalPropertyChange );
+			_linkButton = null;
+			_setting = null;
+			_propertyRetrieverFactory = null;
+
+			super.dispose();
 		}
 
 		public function get rowGap() : int
@@ -150,50 +168,44 @@ package uieditor.editor.ui.inspector
 			return ObjectLocaterUtil.hasProperty( target, name );
 		}
 
-		override public function dispose() : void
-		{
-			globalDispatcher.removeEventListener( UIMapperEventType.PROPERTY_CHANGE, onGlobalPropertyChange );
-
-			super.dispose();
-		}
-
 		private function findFirstLinkedPropertyIndex() : int
 		{
-			for (var i:int = 0; i < _params.length; ++i)
+			for ( var i : int = 0; i < _params.length; ++i )
 			{
-				if (_params[i].hasOwnProperty("link"))
+				if ( _params[ i ].hasOwnProperty( "link" ))
 				{
 					return i;
 				}
 			}
-			
+
 			return -1;
 		}
 
 		private function changeLinkedProperties( event : Event ) : void
 		{
-			var name:String = event.data.propertyName;
-			
-			if (_linkButton.isSelected)
+			var name : String = event.data.propertyName;
+
+			if ( _linkButton.isSelected )
 			{
-				for each (var param:Object in _params)
+				for each ( var param : Object in _params )
 				{
-					if (!param.hasOwnProperty("link")) continue;
-					
-					if (_target && _target.hasOwnProperty(name))
+					if ( !param.hasOwnProperty( "link" ))
+						continue;
+
+					if ( _target && _target.hasOwnProperty( name ))
 					{
-						_linkOperation.update(_target, name, param.name);
+						_linkOperation.update( _target, name, param.name );
 					}
 				}
 			}
 		}
 
-		public function set linkOperation(value:ILinkOperation):void
+		public function set linkOperation( value : ILinkOperation ) : void
 		{
 			_linkOperation = value;
 		}
-		
-		public function get linkOperation():ILinkOperation
+
+		public function get linkOperation() : ILinkOperation
 		{
 			return _linkOperation;
 		}

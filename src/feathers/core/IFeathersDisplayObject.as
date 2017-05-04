@@ -129,30 +129,6 @@ package feathers.core
 		function set scaleY(value:Number):void;
 
 		/**
-		 * The horizontal skew, in radians.
-		 *
-		 * @see http://doc.starling-framework.org/core/starling/display/DisplayObject.html#skewX Full description of starling.display.DisplayObject.skewX in Gamua's Starling Framework API Reference
-		 */
-		function get skewX():Number;
-
-		/**
-		 * @private
-		 */
-		function set skewX(value:Number):void;
-
-		/**
-		 * The vertical skew, in radians.
-		 *
-		 * @see http://doc.starling-framework.org/core/starling/display/DisplayObject.html#skewY Full description of starling.display.DisplayObject.skewY in Gamua's Starling Framework API Reference
-		 */
-		function get skewY():Number;
-
-		/**
-		 * @private
-		 */
-		function set skewY(value:Number):void;
-
-		/**
 		 * The blend mode used when rendering the display object.
 		 *
 		 * @see http://doc.starling-framework.org/core/starling/display/DisplayObject.html#blendMode Full description of starling.display.DisplayObject.blendMode in Gamua's Starling Framework API Reference

@@ -21,22 +21,32 @@ package starling.text
      */ 
     public class BitmapChar
     {
-        private var _texture:Texture;
-        private var _charID:int;
-        private var _xOffset:Number;
-        private var _yOffset:Number;
-        private var _xAdvance:Number;
+		/** The texture of the character. */
+		public var texture:Texture;
+		
+		/** The unicode ID of the char. */
+        public var charID:int;
+		
+		/** The number of points to move the char in x direction on character arrangement. */
+		public var xOffset:Number;
+		
+		/** The number of points to move the char in y direction on character arrangement. */
+		public var yOffset:Number;
+		
+		/** The number of points the cursor has to be moved to the right for the next char. */
+		public var xAdvance:Number;
+		
         private var _kernings:Dictionary;
         
         /** Creates a char with a texture and its properties. */
         public function BitmapChar(id:int, texture:Texture, 
                                    xOffset:Number, yOffset:Number, xAdvance:Number)
         {
-            _charID = id;
-            _texture = texture;
-            _xOffset = xOffset;
-            _yOffset = yOffset;
-            _xAdvance = xAdvance;
+            this.charID = id;
+			this.texture = texture;
+			this.xOffset = xOffset;
+			this.yOffset = yOffset;
+			this.xAdvance = xAdvance;
             _kernings = null;
         }
         
@@ -59,28 +69,13 @@ package starling.text
         /** Creates an image of the char. */
         public function createImage():Image
         {
-            return new Image(_texture);
+            return new Image(texture);
         }
-        
-        /** The unicode ID of the char. */
-        public function get charID():int { return _charID; }
-        
-        /** The number of points to move the char in x direction on character arrangement. */
-        public function get xOffset():Number { return _xOffset; }
-        
-        /** The number of points to move the char in y direction on character arrangement. */
-        public function get yOffset():Number { return _yOffset; }
-        
-        /** The number of points the cursor has to be moved to the right for the next char. */
-        public function get xAdvance():Number { return _xAdvance; }
-        
-        /** The texture of the character. */
-        public function get texture():Texture { return _texture; }
-        
+
         /** The width of the character in points. */
-        public function get width():Number { return _texture.width; }
+        public function get width():Number { return texture.width; }
         
         /** The height of the character in points. */
-        public function get height():Number { return _texture.height; }
+        public function get height():Number { return texture.height; }
     }
 }

@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -15,12 +15,11 @@ package feathers.controls.text
 	import feathers.events.FeathersEventType;
 	import feathers.skins.IStyleProvider;
 	import feathers.text.BitmapFontTextFormat;
-
-	import flash.geom.Matrix;
+	
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.text.TextFormatAlign;
-
+	
 	import starling.display.Image;
 	import starling.display.MeshBatch;
 	import starling.events.Event;
@@ -31,7 +30,7 @@ package feathers.controls.text
 	import starling.textures.Texture;
 	import starling.textures.TextureSmoothing;
 	import starling.utils.MathUtil;
-
+	
 	/**
 	 * Renders text using
 	 * <a href="http://wiki.starling-framework.org/manual/displaying_text#bitmap_fonts" target="_top">bitmap fonts</a>.
@@ -58,47 +57,52 @@ package feathers.controls.text
 		 * @private
 		 */
 		private static var HELPER_IMAGE:Image;
-
+		
 		/**
 		 * @private
 		 */
 		private static const HELPER_POINT:Point = new Point();
-
+		
+		/**
+		 * @private
+		 */
+		private static const HELPER_RESULT:MeasureTextResult = new MeasureTextResult();
+		
 		/**
 		 * @private
 		 */
 		private static const CHARACTER_ID_SPACE:int = 32;
-
+		
 		/**
 		 * @private
 		 */
 		private static const CHARACTER_ID_TAB:int = 9;
-
+		
 		/**
 		 * @private
 		 */
 		private static const CHARACTER_ID_LINE_FEED:int = 10;
-
+		
 		/**
 		 * @private
 		 */
 		private static const CHARACTER_ID_CARRIAGE_RETURN:int = 13;
-
+		
 		/**
 		 * @private
 		 */
 		private static var CHARACTER_BUFFER:Vector.<CharLocation>;
-
+		
 		/**
 		 * @private
 		 */
 		private static var CHAR_LOCATION_POOL:Vector.<CharLocation>;
-
+		
 		/**
 		 * @private
 		 */
 		private static const FUZZY_MAX_WIDTH_PADDING:Number = 0.000001;
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>BitmapFontTextRenderer</code>
 		 * components.
@@ -107,7 +111,7 @@ package feathers.controls.text
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -126,24 +130,29 @@ package feathers.controls.text
 			}
 			this.isQuickHitAreaEnabled = true;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _characterBatch:MeshBatch;
-
+		
 		/**
 		 * @private
 		 * This variable may be used by subclasses to affect the x position of
 		 * the text.
 		 */
 		protected var _batchX:Number = 0;
-
+		
+		/**
+		 * @private
+		 */
+		protected var _textFormatChanged:Boolean = true;
+		
 		/**
 		 * @private
 		 */
 		protected var currentTextFormat:BitmapFontTextFormat;
-
+		
 		/**
 		 * @private
 		 */
@@ -151,7 +160,35 @@ package feathers.controls.text
 		{
 			return BitmapFontTextRenderer.globalStyleProvider;
 		}
-
+		
+		/**
+		 * @private
+		 */
+		override public function set maxWidth(value:Number):void
+		{
+			//this is a special case because truncation may bypass normal rules
+			//for determining if changing maxWidth should invalidate
+			var needsInvalidate:Boolean = value > this._explicitMaxWidth && this._lastLayoutIsTruncated;
+			super.maxWidth = value;
+			if(needsInvalidate)
+			{
+				this.invalidate(INVALIDATION_FLAG_SIZE);
+			}
+		}
+		
+		/**
+		 * @private
+		 */
+		protected var _numLines:int = 0;
+		
+		/**
+		 * @copy feathers.core.ITextRenderer#numLines
+		 */
+		public function get numLines():int
+		{
+			return this._numLines;
+		}
+		
 		/**
 		 * @private
 		 */
@@ -193,12 +230,12 @@ package feathers.controls.text
 			this._textFormat = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _disabledTextFormat:BitmapFontTextFormat;
-
+		
 		/**
 		 * The font and styles used to draw the text when the label is disabled.
 		 *
@@ -217,7 +254,7 @@ package feathers.controls.text
 		{
 			return this._disabledTextFormat;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -230,12 +267,12 @@ package feathers.controls.text
 			this._disabledTextFormat = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectedTextFormat:BitmapFontTextFormat;
-
+		
 		/**
 		 * The font and styles used to draw the text when the
 		 * <code>stateContext</code> implements the <code>IToggle</code>
@@ -257,7 +294,7 @@ package feathers.controls.text
 		{
 			return this._selectedTextFormat;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -308,7 +345,7 @@ package feathers.controls.text
 		 * @private
 		 */
 		protected var _textureSmoothing:String = TextureSmoothing.BILINEAR;
-
+		
 		[Inspectable(type="String",enumeration="bilinear,trilinear,none")]
 		/**
 		 * A texture smoothing value passed to each character image.
@@ -339,12 +376,48 @@ package feathers.controls.text
 			this._textureSmoothing = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected var _pixelSnapping:Boolean = true;
+		
+		/**
+		 * Determines if the position of the text should be snapped to the
+		 * nearest whole pixel when rendered. When snapped to a whole pixel, the
+		 * text is often more readable. When not snapped, the text may become
+		 * blurry due to texture smoothing.
+		 *
+		 * <p>In the following example, the text is not snapped to pixels:</p>
+		 *
+		 * <listing version="3.0">
+		 * textRenderer.pixelSnapping = false;</listing>
+		 *
+		 * @default true
+		 */
+		public function get pixelSnapping():Boolean
+		{
+			return _pixelSnapping;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function set pixelSnapping(value:Boolean):void
+		{
+			if(this._pixelSnapping === value)
+			{
+				return;
+			}
+			this._pixelSnapping = value;
+			this.invalidate(INVALIDATION_FLAG_STYLES);
+		}
+		
 		/**
 		 * @private
 		 */
 		protected var _wordWrap:Boolean = false;
-
+		
 		/**
 		 * @inheritDoc
 		 *
@@ -359,7 +432,7 @@ package feathers.controls.text
 		{
 			return _wordWrap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -372,12 +445,12 @@ package feathers.controls.text
 			this._wordWrap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _truncateToFit:Boolean = true;
-
+		
 		/**
 		 * If word wrap is disabled, and the text is longer than the width of
 		 * the label, the text may be truncated using <code>truncationText</code>.
@@ -400,7 +473,7 @@ package feathers.controls.text
 		{
 			return _truncateToFit;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -413,12 +486,12 @@ package feathers.controls.text
 			this._truncateToFit = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _truncationText:String = "...";
-
+		
 		/**
 		 * The text to display at the end of the label if it is truncated.
 		 *
@@ -433,7 +506,7 @@ package feathers.controls.text
 		{
 			return _truncationText;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -446,12 +519,12 @@ package feathers.controls.text
 			this._truncationText = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _useSeparateBatch:Boolean = true;
-
+		
 		/**
 		 * Determines if the characters are batched normally by Starling or if
 		 * they're batched separately. Batching separately may improve
@@ -469,7 +542,7 @@ package feathers.controls.text
 		{
 			return this._useSeparateBatch;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -482,7 +555,7 @@ package feathers.controls.text
 			this._useSeparateBatch = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -500,25 +573,24 @@ package feathers.controls.text
 				fontSizeScale = 1;
 			}
 			var baseline:Number = font.baseline;
-			//for some reason, if we don't call a function right here,
-			//compiling with the flex 4.6 SDK will throw a VerifyError
+			//for some reason, if we do the !== check on a local variable right
+			//here, compiling with the flex 4.6 SDK will throw a VerifyError
 			//for a stack overflow.
 			//we could change the !== check back to isNaN() instead, but
-			//isNaN() can allocate an object, so we should call a different
-			//function without allocation.
-			this.doNothing();
+			//isNaN() can allocate an object that needs garbage collection.
+			this._compilerWorkaround = baseline;
 			if(baseline !== baseline) //isNaN
 			{
 				return font.lineHeight * fontSizeScale;
 			}
 			return baseline * fontSizeScale;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _stateContext:IStateContext;
-
+		
 		/**
 		 * When the text renderer observes a state context, the text renderer
 		 * may change its <code>BitmapFontTextFormat</code> based on the current
@@ -534,7 +606,7 @@ package feathers.controls.text
 		{
 			return this._stateContext;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -555,7 +627,14 @@ package feathers.controls.text
 			}
 			this.invalidate(INVALIDATION_FLAG_STATE);
 		}
-
+		
+		/**
+		 * @private
+		 * This function is here to work around a bug in the Flex 4.6 SDK
+		 * compiler. For explanation, see the places where it gets called.
+		 */
+		private var _compilerWorkaround:Object;
+		
 		/**
 		 * @private
 		 */
@@ -564,7 +643,7 @@ package feathers.controls.text
 			this.stateContext = null;
 			super.dispose();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -583,7 +662,7 @@ package feathers.controls.text
 			{
 				result = new Point();
 			}
-
+			
 			var needsWidth:Boolean = this._explicitWidth !== this._explicitWidth; //isNaN
 			var needsHeight:Boolean = this._explicitHeight !== this._explicitHeight; //isNaN
 			if(!needsWidth && !needsHeight)
@@ -592,18 +671,18 @@ package feathers.controls.text
 				result.y = this._explicitHeight;
 				return result;
 			}
-
+			
 			if(this.isInvalid(INVALIDATION_FLAG_STYLES) || this.isInvalid(INVALIDATION_FLAG_STATE))
 			{
 				this.refreshTextFormat();
 			}
-
+			
 			if(!this.currentTextFormat || this._text === null)
 			{
 				result.setTo(0, 0);
 				return result;
 			}
-
+			
 			var font:BitmapFont = this.currentTextFormat.font;
 			var customSize:Number = this.currentTextFormat.size;
 			var customLetterSpacing:Number = this.currentTextFormat.letterSpacing;
@@ -617,9 +696,9 @@ package feathers.controls.text
 			var maxLineWidth:Number = this._explicitWidth;
 			if(maxLineWidth !== maxLineWidth) //isNaN
 			{
-				maxLineWidth = this._maxWidth;
+				maxLineWidth = this._explicitMaxWidth;
 			}
-
+			
 			var maxX:Number = 0;
 			var currentX:Number = 0;
 			var currentY:Number = 0;
@@ -652,20 +731,20 @@ package feathers.controls.text
 					widthOfWhitespaceAfterWord = 0;
 					continue;
 				}
-
+				
 				var charData:BitmapChar = font.getChar(charID);
 				if(!charData)
 				{
 					trace("Missing character " + String.fromCharCode(charID) + " in font " + font.name + ".");
 					continue;
 				}
-
+				
 				if(isKerningEnabled &&
 					previousCharID === previousCharID) //!isNaN
 				{
 					currentX += charData.getKerning(previousCharID) * scale;
 				}
-
+				
 				var xAdvance:Number = charData.xAdvance * scale;
 				if(this._wordWrap)
 				{
@@ -686,7 +765,7 @@ package feathers.controls.text
 						line += word;
 						word = "";
 					}
-
+					
 					if(!currentCharIsWhitespace && wordCountForLine > 0 && (currentX + xAdvance) > maxLineWidth)
 					{
 						//we're just reusing this variable to avoid creating a
@@ -729,12 +808,26 @@ package feathers.controls.text
 			{
 				maxX = currentX;
 			}
-
-			result.x = maxX;
-			result.y = currentY + lineHeight - this.currentTextFormat.leading;
+			
+			if(needsWidth)
+			{
+				result.x = maxX;
+			}
+			else
+			{
+				result.x = this._explicitWidth;
+			}
+			if(needsHeight)
+			{
+				result.y = currentY + lineHeight - this.currentTextFormat.leading;
+			}
+			else
+			{
+				result.y = this._explicitHeight;
+			}
 			return result;
 		}
-
+		
 		/**
 		 * Sets the <code>BitmapFontTextFormat</code> to be used by the text
 		 * renderer when the <code>currentState</code> property of the
@@ -772,7 +865,7 @@ package feathers.controls.text
 				this.invalidate(INVALIDATION_FLAG_STATE);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -789,42 +882,97 @@ package feathers.controls.text
 		/**
 		 * @private
 		 */
+		protected var _lastLayoutWidth:Number = 0;
+		
+		/**
+		 * @private
+		 */
+		protected var _lastLayoutHeight:Number = 0;
+		
+		/**
+		 * @private
+		 */
+		protected var _lastLayoutIsTruncated:Boolean = false;
+		
+		/**
+		 * @private
+		 */
 		override protected function draw():void
 		{
 			var dataInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_DATA);
 			var stylesInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STYLES);
-			var sizeInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_SIZE);
 			var stateInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STATE);
-
+			
 			if(stylesInvalid || stateInvalid)
 			{
 				this.refreshTextFormat();
 			}
-
-			if(dataInvalid || stylesInvalid || sizeInvalid || stateInvalid)
+			
+			if(stylesInvalid)
 			{
+				this._characterBatch.pixelSnapping = this._pixelSnapping;
 				this._characterBatch.batchable = !this._useSeparateBatch;
+			}
+			
+			//sometimes, we can determine that the layout will be exactly
+			//the same without needing to update. this will result in much
+			//better performance.
+			var newWidth:Number = this._explicitWidth;
+			if(newWidth !== newWidth) //isNaN
+			{
+				newWidth = this._explicitMaxWidth;
+			}
+			
+			//sometimes, we can determine that the dimensions will be exactly
+			//the same without needing to refresh the text lines. this will
+			//result in much better performance.
+			if(this._wordWrap)
+			{
+				//when word wrapped, we need to measure again any time that the
+				//width changes.
+				var sizeInvalid:Boolean = newWidth !== this._lastLayoutWidth;
+			}
+			else
+			{
+				//we can skip measuring again more frequently when the text is
+				//a single line.
+				
+				//if the width is smaller than the last layout width, we need to
+				//measure again. when it's larger, the result won't change...
+				sizeInvalid = newWidth < this._lastLayoutWidth;
+				
+				//...unless the text was previously truncated!
+				sizeInvalid ||= (this._lastLayoutIsTruncated && newWidth !== this._lastLayoutWidth);
+			}
+			if(dataInvalid || sizeInvalid || this._textFormatChanged)
+			{
+				this._textFormatChanged = false;
 				this._characterBatch.clear();
 				if(!this.currentTextFormat || this._text === null)
 				{
-					this.setSizeInternal(0, 0, false);
+					this.saveMeasurements(0, 0, 0, 0);
 					return;
 				}
-				this.layoutCharacters(HELPER_POINT);
-				this.setSizeInternal(HELPER_POINT.x, HELPER_POINT.y, false);
+				this.layoutCharacters(HELPER_RESULT);
+				this._lastLayoutWidth = HELPER_RESULT.width;
+				this._lastLayoutHeight = HELPER_RESULT.height;
+				this._lastLayoutIsTruncated = HELPER_RESULT.isTruncated;
 			}
+			this.saveMeasurements(this._lastLayoutWidth, this._lastLayoutHeight,
+				this._lastLayoutWidth, this._lastLayoutHeight);
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected function layoutCharacters(result:Point = null):Point
+		protected function layoutCharacters(result:MeasureTextResult = null):MeasureTextResult
 		{
 			if(!result)
 			{
-				result = new Point();
+				result = new MeasureTextResult();
 			}
-
+			this._numLines = 1;
+			
 			var font:BitmapFont = this.currentTextFormat.font;
 			var customSize:Number = this.currentTextFormat.size;
 			var customLetterSpacing:Number = this.currentTextFormat.letterSpacing;
@@ -837,10 +985,10 @@ package feathers.controls.text
 			var lineHeight:Number = font.lineHeight * scale + this.currentTextFormat.leading;
 			var offsetX:Number = font.offsetX * scale;
 			var offsetY:Number = font.offsetY * scale;
-
+			
 			var hasExplicitWidth:Boolean = this._explicitWidth === this._explicitWidth; //!isNaN
 			var isAligned:Boolean = this.currentTextFormat.align != TextFormatAlign.LEFT;
-			var maxLineWidth:Number = hasExplicitWidth ? this._explicitWidth : this._maxWidth;
+			var maxLineWidth:Number = hasExplicitWidth ? this._explicitWidth : this._explicitMaxWidth;
 			if(isAligned && maxLineWidth == Number.POSITIVE_INFINITY)
 			{
 				//we need to measure the text to get the maximum line width
@@ -851,10 +999,16 @@ package feathers.controls.text
 			var textToDraw:String = this._text;
 			if(this._truncateToFit)
 			{
-				textToDraw = this.getTruncatedText(maxLineWidth);
+				var truncatedText:String = this.getTruncatedText(maxLineWidth);
+				result.isTruncated = truncatedText !== textToDraw;
+				textToDraw = truncatedText;
+			}
+			else
+			{
+				result.isTruncated = false;
 			}
 			CHARACTER_BUFFER.length = 0;
-
+			
 			var maxX:Number = 0;
 			var currentX:Number = 0;
 			var currentY:Number = 0;
@@ -892,22 +1046,23 @@ package feathers.controls.text
 					widthOfWhitespaceAfterWord = 0;
 					wordLength = 0;
 					wordCountForLine = 0;
+					this._numLines++;
 					continue;
 				}
-
+				
 				var charData:BitmapChar = font.getChar(charID);
 				if(!charData)
 				{
 					trace("Missing character " + String.fromCharCode(charID) + " in font " + font.name + ".");
 					continue;
 				}
-
+				
 				if(isKerningEnabled &&
 					previousCharID === previousCharID) //!isNaN
 				{
 					currentX += charData.getKerning(previousCharID) * scale;
 				}
-
+				
 				var xAdvance:Number = charData.xAdvance * scale;
 				if(this._wordWrap)
 				{
@@ -928,7 +1083,7 @@ package feathers.controls.text
 						wordCountForLine++;
 						isWordComplete = true;
 					}
-
+					
 					//we may need to move to a new line at the same time
 					//that our previous word in the buffer can be batched
 					//so we need to add the buffer here rather than after
@@ -937,7 +1092,7 @@ package feathers.controls.text
 					{
 						this.addBufferToBatch(0);
 					}
-
+					
 					//floating point errors can cause unnecessary line breaks,
 					//so we're going to be a little bit fuzzy on the greater
 					//than check. such tiny numbers shouldn't break anything.
@@ -965,6 +1120,7 @@ package feathers.controls.text
 						wordLength = 0;
 						isWordComplete = false;
 						wordCountForLine = 0;
+						this._numLines++;
 					}
 				}
 				if(this._wordWrap || isAligned)
@@ -984,7 +1140,7 @@ package feathers.controls.text
 						currentY + offsetY + charData.yOffset * scale,
 						scale);
 				}
-
+				
 				currentX += xAdvance + customLetterSpacing;
 				previousCharID = charID;
 			}
@@ -1013,7 +1169,7 @@ package feathers.controls.text
 			{
 				maxX = currentX;
 			}
-
+			
 			if(isAligned && !hasExplicitWidth)
 			{
 				var align:String = this._textFormat.align;
@@ -1031,12 +1187,12 @@ package feathers.controls.text
 				this._batchX = 0;
 			}
 			this._characterBatch.x = this._batchX;
-
-			result.x = maxX;
-			result.y = currentY + lineHeight - this.currentTextFormat.leading;
+			
+			result.width = maxX;
+			result.height = currentY + lineHeight - this.currentTextFormat.leading;
 			return result;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1063,7 +1219,7 @@ package feathers.controls.text
 				CHARACTER_BUFFER.splice(i + 1, countToRemove);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1079,7 +1235,7 @@ package feathers.controls.text
 				this.moveBufferedCharacters(maxLineWidth - currentLineWidth, 0, skipCount);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1096,7 +1252,7 @@ package feathers.controls.text
 				pushIndex++;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1110,7 +1266,7 @@ package feathers.controls.text
 				charLocation.y += yOffset;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1143,20 +1299,21 @@ package feathers.controls.text
 			HELPER_IMAGE.y = y;
 			HELPER_IMAGE.color = this.currentTextFormat.color;
 			HELPER_IMAGE.textureSmoothing = this._textureSmoothing;
-
-			if(painter)
+			HELPER_IMAGE.pixelSnapping = this._pixelSnapping;
+			
+			if(painter !== null)
 			{
-				/*support.pushMatrix();
-				support.transformMatrix(HELPER_IMAGE);
-				support.batchQuad(HELPER_IMAGE, parentAlpha, HELPER_IMAGE.texture, this._textureSmoothing);
-				support.popMatrix();*/
+				painter.pushState();
+				painter.setStateTo(HELPER_IMAGE.transformationMatrix);
+				painter.batchMesh(HELPER_IMAGE);
+				painter.popState();
 			}
 			else
 			{
 				this._characterBatch.addMesh(HELPER_IMAGE);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1189,15 +1346,19 @@ package feathers.controls.text
 					//if it's not registered, do that first
 					if(!TextField.getBitmapFont(BitmapFont.MINI))
 					{
-						TextField.registerBitmapFont(new BitmapFont());
+						TextField.registerCompositor(new BitmapFont(),BitmapFont.MINI);
 					}
 					this._textFormat = new BitmapFontTextFormat(BitmapFont.MINI, NaN, 0x000000);
 				}
 				textFormat = this._textFormat;
 			}
-			this.currentTextFormat = textFormat;
+			if(this.currentTextFormat !== textFormat)
+			{
+				this.currentTextFormat = textFormat;
+				this._textFormatChanged = true;
+			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1208,13 +1369,13 @@ package feathers.controls.text
 				//this shouldn't be called if _text is null, but just in case...
 				return "";
 			}
-
+			
 			//if the width is infinity or the string is multiline, don't allow truncation
 			if(width == Number.POSITIVE_INFINITY || this._wordWrap || this._text.indexOf(String.fromCharCode(CHARACTER_ID_LINE_FEED)) >= 0 || this._text.indexOf(String.fromCharCode(CHARACTER_ID_CARRIAGE_RETURN)) >= 0)
 			{
 				return this._text;
 			}
-
+			
 			var font:BitmapFont = this.currentTextFormat.font;
 			var customSize:Number = this.currentTextFormat.size;
 			var customLetterSpacing:Number = this.currentTextFormat.letterSpacing;
@@ -1258,7 +1419,7 @@ package feathers.controls.text
 				currentX += customLetterSpacing;
 				previousCharID = charID;
 			}
-
+			
 			if(truncationIndex >= 0)
 			{
 				//first measure the size of the truncation text
@@ -1281,7 +1442,7 @@ package feathers.controls.text
 					previousCharID = charID;
 				}
 				currentX -= customLetterSpacing;
-
+				
 				//then work our way backwards until we fit into the width
 				for(i = truncationIndex; i >= 0; i--)
 				{
@@ -1308,7 +1469,7 @@ package feathers.controls.text
 			}
 			return this._text;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1316,13 +1477,6 @@ package feathers.controls.text
 		{
 			this.invalidate(INVALIDATION_FLAG_STATE);
 		}
-
-		/**
-		 * @private
-		 * This function is here to work around a bug in the Flex 4.6 SDK
-		 * compiler. For explanation, see the places where it gets called.
-		 */
-		protected function doNothing():void {}
 	}
 }
 
@@ -1332,9 +1486,9 @@ class CharLocation
 {
 	public function CharLocation()
 	{
-
+		
 	}
-
+	
 	public var char:BitmapChar;
 	public var scale:Number;
 	public var x:Number;

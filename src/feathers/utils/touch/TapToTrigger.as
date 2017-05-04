@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -8,7 +8,7 @@ accordance with the terms of the accompanying license agreement.
 package feathers.utils.touch
 {
 	import flash.geom.Point;
-
+	
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.display.Stage;
@@ -16,7 +16,8 @@ package feathers.utils.touch
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
-
+	import starling.utils.Pool;
+	
 	/**
 	 * Dispatches <code>Event.TRIGGERED</code> from the target when the target
 	 * is tapped. Conveniently handles all <code>TouchEvent</code> listeners
@@ -50,23 +51,18 @@ package feathers.utils.touch
 	public class TapToTrigger
 	{
 		/**
-		 * @private
-		 */
-		private static const HELPER_POINT:Point = new Point();
-
-		/**
 		 * Constructor.
 		 */
 		public function TapToTrigger(target:DisplayObject = null)
 		{
 			this.target = target;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _target:DisplayObject;
-
+		
 		/**
 		 * The target component that should dispatch
 		 * <code>Event.TRIGGERED</code> when tapped.
@@ -75,7 +71,7 @@ package feathers.utils.touch
 		{
 			return this._target;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -98,17 +94,17 @@ package feathers.utils.touch
 				this._target.addEventListener(TouchEvent.TOUCH, target_touchHandler);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _touchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isEnabled:Boolean = true;
-
+		
 		/**
 		 * May be set to <code>false</code> to disable the triggered event
 		 * temporarily until set back to <code>true</code>.
@@ -117,7 +113,7 @@ package feathers.utils.touch
 		{
 			return this._isEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -133,7 +129,7 @@ package feathers.utils.touch
 				this._touchPointID = -1;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -158,18 +154,23 @@ package feathers.utils.touch
 				if(touch.phase == TouchPhase.ENDED)
 				{
 					var stage:Stage = this._target.stage;
-					touch.getLocation(stage, HELPER_POINT);
-					if(this._target is DisplayObjectContainer)
+					if(stage !== null)
 					{
-						var isInBounds:Boolean = DisplayObjectContainer(this._target).contains(stage.hitTest(HELPER_POINT));
-					}
-					else
-					{
-						isInBounds = this._target === stage.hitTest(HELPER_POINT);
-					}
-					if(isInBounds)
-					{
-						this._target.dispatchEventWith(Event.TRIGGERED);
+						var point:Point = Pool.getPoint();
+						touch.getLocation(stage, point);
+						if(this._target is DisplayObjectContainer)
+						{
+							var isInBounds:Boolean = DisplayObjectContainer(this._target).contains(stage.hitTest(point));
+						}
+						else
+						{
+							isInBounds = this._target === stage.hitTest(point);
+						}
+						Pool.putPoint(point);
+						if(isInBounds)
+						{
+							this._target.dispatchEventWith(Event.TRIGGERED);
+						}
 					}
 					
 					//the touch has ended, so now we can start watching for a

@@ -1,10 +1,10 @@
 package uieditor.editor.ui.property
 {
-	import feathers.controls.LayoutGroup;
-	import feathers.controls.PickerList;
-	import feathers.data.ListCollection;
 	import flash.geom.Rectangle;
 	import flash.ui.MouseCursor;
+	
+	import feathers.controls.LayoutGroup;
+	
 	import starling.display.DisplayObject;
 	import starling.display.Image;
 	import starling.display.Sprite;
@@ -15,11 +15,10 @@ package uieditor.editor.ui.property
 	import starling.textures.Texture;
 	import starling.utils.AssetManager;
 	import starling.utils.RectangleUtil;
+	
 	import uieditor.editor.cursor.CursorManager;
-	import uieditor.editor.feathers.popup.InfoPopup;
 	import uieditor.editor.ui.inspector.PropertyPanel;
 	import uieditor.editor.ui.inspector.UIMapperEventType;
-	import uieditor.editor.UIEditorApp;
 
 	public class Scale9GridTexturePopup extends AbstractPropertyPopup
 	{
@@ -46,7 +45,7 @@ package uieditor.editor.ui.property
 			super( owner, target, targetParam, onComplete );
 			
 			title =  "9宫格设置";
-			buttons = [ "确定", "取消" ];
+			buttons = [ "确定","删除", "取消" ];
 
 			addEventListener( Event.COMPLETE, onDialogComplete );
 
@@ -95,8 +94,6 @@ package uieditor.editor.ui.property
 
 			imageContainer.addChild( _image );
 			imageContainer.addChild( _gridContainer );
-
-			fitDisplayObject( _image );
 
 			container.addChild( imageContainer );
 			container.addChild( _propertyPanel );
@@ -240,6 +237,10 @@ package uieditor.editor.ui.property
 			{
 				complete();
 			}
+			else if ( index == 1 )
+			{
+				_onComplete( null );
+			}
 			else
 			{
 				_owner = null;
@@ -269,16 +270,6 @@ package uieditor.editor.ui.property
 			super.dispose();
 		}
 
-		private function fitDisplayObject( object : DisplayObject ) : void
-		{
-			if ( object.width > MAX_SIZE || object.height > MAX_SIZE )
-			{
-				var rect : Rectangle = RectangleUtil.fit( new Rectangle( 0, 0, object.width, object.height ), new Rectangle( 0, 0, MAX_SIZE, MAX_SIZE ));
-				object.width = rect.width;
-				object.height = rect.height;
-			}
-		}
-
 		protected function complete() : void
 		{
 			_onComplete( _scale9Grid );
@@ -286,6 +277,7 @@ package uieditor.editor.ui.property
 	}
 }
 import starling.display.Quad;
+
 import uieditor.editor.util.MathUtil;
 
 

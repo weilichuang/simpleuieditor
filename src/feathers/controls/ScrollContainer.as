@@ -15,7 +15,8 @@ package feathers.controls
 	import feathers.layout.ILayoutDisplayObject;
 	import feathers.layout.IVirtualLayout;
 	import feathers.skins.IStyleProvider;
-
+	
+	import starling.core.Starling;
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.events.Event;
@@ -94,196 +95,6 @@ package feathers.controls
 		public static const ALTERNATE_STYLE_NAME_TOOLBAR:String = "feathers-toolbar-scroll-container";
 
 		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.AUTO</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_POLICY_AUTO:String = "auto";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.ON</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_POLICY_ON:String = "on";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.OFF</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_POLICY_OFF:String = "off";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FLOAT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_BAR_DISPLAY_MODE_FLOAT:String = "float";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FIXED</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_BAR_DISPLAY_MODE_FIXED:String = "fixed";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FIXED_FLOAT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_BAR_DISPLAY_MODE_FIXED_FLOAT:String = "fixedFloat";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.NONE</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_BAR_DISPLAY_MODE_NONE:String = "none";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const VERTICAL_SCROLL_BAR_POSITION_RIGHT:String = "right";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const VERTICAL_SCROLL_BAR_POSITION_LEFT:String = "left";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.TOUCH</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const INTERACTION_MODE_TOUCH:String = "touch";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.MOUSE</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const INTERACTION_MODE_MOUSE:String = "mouse";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.TOUCH_AND_SCROLL_BARS</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const INTERACTION_MODE_TOUCH_AND_SCROLL_BARS:String = "touchAndScrollBars";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.VERTICAL</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const MOUSE_WHEEL_SCROLL_DIRECTION_VERTICAL:String = "vertical";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.HORIZONTAL</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const MOUSE_WHEEL_SCROLL_DIRECTION_HORIZONTAL:String = "horizontal";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.DecelerationRate.NORMAL</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const DECELERATION_RATE_NORMAL:Number = 0.998;
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.DecelerationRate.FAST</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const DECELERATION_RATE_FAST:Number = 0.99;
-
-		/**
-		 * The container will auto size itself to fill the entire stage.
-		 *
-		 * @see #autoSizeMode
-		 */
-		public static const AUTO_SIZE_MODE_STAGE:String = "stage";
-
-		/**
-		 * The container will auto size itself to fit its content.
-		 *
-		 * @see #autoSizeMode
-		 */
-		public static const AUTO_SIZE_MODE_CONTENT:String = "content";
-
-		/**
 		 * The default <code>IStyleProvider</code> for all <code>ScrollContainer</code>
 		 * components.
 		 *
@@ -292,7 +103,6 @@ package feathers.controls
 		 */
 		public static var globalStyleProvider:IStyleProvider;
 
-		
 		/**
 		 * Constructor.
 		 */
@@ -303,6 +113,20 @@ package feathers.controls
 			this.viewPort = this.layoutViewPort;
 			this.addEventListener(Event.ADDED_TO_STAGE, scrollContainer_addedToStageHandler);
 			this.addEventListener(Event.REMOVED_FROM_STAGE, scrollContainer_removedFromStageHandler);
+		}
+		
+		override public function dispose():void
+		{
+			if(this.stage)
+				this.stage.removeEventListener(Event.RESIZE, stage_resizeHandler);
+			this.removeEventListener(Event.ADDED_TO_STAGE, scrollContainer_addedToStageHandler);
+			this.removeEventListener(Event.REMOVED_FROM_STAGE, scrollContainer_removedFromStageHandler);
+			if(this.layoutViewPort)
+			{
+				this.layoutViewPort.dispose();
+				this.layoutViewPort = null;
+			}
+			super.dispose();
 		}
 
 		/**
@@ -390,7 +214,7 @@ package feathers.controls
 		/**
 		 * @private
 		 */
-		protected var _autoSizeMode:String = AUTO_SIZE_MODE_CONTENT;
+		protected var _autoSizeMode:String = AutoSizeMode.CONTENT;
 
 		[Inspectable(type="String",enumeration="stage,content")]
 		/**
@@ -401,14 +225,14 @@ package feathers.controls
 		 * match the stage:</p>
 		 *
 		 * <listing version="3.0">
-		 * container.autoSizeMode = ScrollContainer.AUTO_SIZE_MODE_STAGE;</listing>
+		 * container.autoSizeMode = AutoSizeMode.STAGE;</listing>
 		 *
-		 * <p>Usually defaults to <code>ScrollContainer.AUTO_SIZE_MODE_CONTENT</code>.
-		 * However, if this component is the root of the Starling display list,
-		 * defaults to <code>ScrollContainer.AUTO_SIZE_MODE_STAGE</code> instead.</p>
+		 * <p>Usually defaults to <code>AutoSizeMode.CONTENT</code>. However, if
+		 * this component is the root of the Starling display list, defaults to
+		 * <code>AutoSizeMode.STAGE</code> instead.</p>
 		 *
-		 * @see #AUTO_SIZE_MODE_STAGE
-		 * @see #AUTO_SIZE_MODE_CONTENT
+		 * @see feathers.controls.AutoSizeMode#STAGE
+		 * @see feathers.controls.AutoSizeMode#CONTENT
 		 */
 		public function get autoSizeMode():String
 		{
@@ -425,10 +249,10 @@ package feathers.controls
 				return;
 			}
 			this._autoSizeMode = value;
-			this._measureViewPort = this._autoSizeMode != AUTO_SIZE_MODE_STAGE;
-			if(this.stage)
+			this._measureViewPort = this._autoSizeMode != AutoSizeMode.STAGE;
+			if(this.stage !== null)
 			{
-				if(this._autoSizeMode == AUTO_SIZE_MODE_STAGE)
+				if(this._autoSizeMode === AutoSizeMode.STAGE)
 				{
 					this.stage.addEventListener(Event.RESIZE, stage_resizeHandler);
 				}
@@ -760,9 +584,15 @@ package feathers.controls
 		 */
 		override protected function initialize():void
 		{
-			if(this.stage !== null && this.stage.root === this)
+			if(this.stage !== null)
 			{
-				this.autoSizeMode = AUTO_SIZE_MODE_STAGE;
+				var starling:Starling = Starling.current;
+				//we use starling.root because a pop-up's root and the stage
+				//root may be different.
+				if(starling.root === this)
+				{
+					this.autoSizeMode = AutoSizeMode.STAGE;
+				}
 			}
 			super.initialize();
 		}
@@ -796,13 +626,17 @@ package feathers.controls
 		{
 			var needsWidth:Boolean = this._explicitWidth !== this._explicitWidth; //isNaN
 			var needsHeight:Boolean = this._explicitHeight !== this._explicitHeight; //isNaN
-			if(!needsWidth && !needsHeight)
+			var needsMinWidth:Boolean = this._explicitMinWidth !== this._explicitMinWidth; //isNaN
+			var needsMinHeight:Boolean = this._explicitMinHeight !== this._explicitMinHeight; //isNaN
+			if(!needsWidth && !needsHeight && !needsMinWidth && !needsMinHeight)
 			{
 				return false;
 			}
-			if(this._autoSizeMode == AUTO_SIZE_MODE_STAGE)
+			if(this._autoSizeMode === AutoSizeMode.STAGE && this.stage !== null)
 			{
-				return this.setSizeInternal(this.stage.stageWidth, this.stage.stageHeight, false);
+				var newWidth:Number = this.stage.stageWidth;
+				var newHeight:Number = this.stage.stageHeight;
+				return this.saveMeasurements(newWidth, newHeight, newWidth, newHeight);
 			}
 			return super.autoSizeIfNeeded();
 		}
@@ -812,8 +646,13 @@ package feathers.controls
 		 */
 		protected function scrollContainer_addedToStageHandler(event:Event):void
 		{
-			if(this._autoSizeMode == AUTO_SIZE_MODE_STAGE)
+			if(this._autoSizeMode == AutoSizeMode.STAGE)
 			{
+				//if we validated before being added to the stage, or if we've
+				//been removed from stage and added again, we need to be sure
+				//that the new stage dimensions are accounted for.
+				this.invalidate(INVALIDATION_FLAG_SIZE);
+				
 				this.stage.addEventListener(Event.RESIZE, stage_resizeHandler);
 			}
 		}

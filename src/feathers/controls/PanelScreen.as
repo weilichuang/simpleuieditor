@@ -7,12 +7,12 @@ accordance with the terms of the accompanying license agreement.
 */
 package feathers.controls
 {
-	import feathers.skins.IStyleProvider;
-	import feathers.utils.display.getDisplayObjectDepthFromStage;
-
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
-
+	
+	import feathers.skins.IStyleProvider;
+	import feathers.utils.display.getDisplayObjectDepthFromStage;
+	
 	import starling.core.Starling;
 	import starling.events.Event;
 
@@ -327,16 +327,24 @@ package feathers.controls
 		public static const DECELERATION_RATE_FAST:Number = 0.99;
 
 		/**
-		 * @copy feathers.controls.ScrollContainer#AUTO_SIZE_MODE_STAGE
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.AutoSizeMode.STAGE</code>.
 		 *
-		 * @see feathers.controls.ScrollContainer#autoSizeMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const AUTO_SIZE_MODE_STAGE:String = "stage";
 
 		/**
-		 * @copy feathers.controls.ScrollContainer#AUTO_SIZE_MODE_CONTENT
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.AutoSizeMode.CONTENT</code>.
 		 *
-		 * @see feathers.controls.ScrollContainer#autoSizeMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const AUTO_SIZE_MODE_CONTENT:String = "content";
 
@@ -487,7 +495,8 @@ package feathers.controls
 			//using priority here is a hack so that objects higher up in the
 			//display list have a chance to cancel the event first.
 			var priority:int = -getDisplayObjectDepthFromStage(this);
-			Starling.current.nativeStage.addEventListener(KeyboardEvent.KEY_DOWN, panelScreen_nativeStage_keyDownHandler, false, priority, true);
+			var starling:Starling = Starling.current;
+			starling.nativeStage.addEventListener(KeyboardEvent.KEY_DOWN, panelScreen_nativeStage_keyDownHandler, false, priority, true);
 		}
 
 		/**
@@ -496,7 +505,8 @@ package feathers.controls
 		protected function panelScreen_removedFromStageHandler(event:Event):void
 		{
 			this.removeEventListener(Event.REMOVED_FROM_STAGE, panelScreen_removedFromStageHandler);
-			Starling.current.nativeStage.removeEventListener(KeyboardEvent.KEY_DOWN, panelScreen_nativeStage_keyDownHandler);
+			var starling:Starling = Starling.current;
+			starling.nativeStage.removeEventListener(KeyboardEvent.KEY_DOWN, panelScreen_nativeStage_keyDownHandler);
 		}
 
 		/**

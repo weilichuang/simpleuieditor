@@ -27,26 +27,94 @@ package uieditor.editor.data
 		[Embed( source = "../../../embed/font/default_bitmap_font.fnt", mimeType = "application/octet-stream" )]
 		private static const default_font_xml : Class;
 
-		[Embed( source = "../../../embed/font/default_bitmap_font_0.png" )]
+		[Embed( source = "../../../embed/font/default_bitmap_font.png" )]
 		private static const default_font_bitmap : Class;
 
-		[Embed( source = "../../../embed/font/default_bitmap_font_bold.fnt", mimeType = "application/octet-stream" )]
-		private static const default_font_bold_xml : Class;
+		[Embed( source = "../../../embed/font/default_bitmap_font_16.fnt", mimeType = "application/octet-stream" )]
+		private static const default_font_16_xml : Class;
 
-		[Embed( source = "../../../embed/font/default_bitmap_font_bold_0.png" )]
-		private static const default_font_bold_bitmap : Class;
+		[Embed( source = "../../../embed/font/default_bitmap_font_16.png" )]
+		private static const default_font_16_bitmap : Class;
+
+		[Embed( source = "../../../embed/font/big_bitmap_font.fnt", mimeType = "application/octet-stream" )]
+		private static const big_font_xml : Class;
+
+		[Embed( source = "../../../embed/font/big_bitmap_font.png" )]
+		private static const big_font_bitmap : Class;
+
+		[Embed( source = "../../../embed/font/big_bitmap_font_24.fnt", mimeType = "application/octet-stream" )]
+		private static const big_font_24_xml : Class;
+
+		[Embed( source = "../../../embed/font/big_bitmap_font_24.png" )]
+		private static const big_font_24_bitmap : Class;
+
+		[Embed( source = "../../../embed/font/gold_font.fnt", mimeType = "application/octet-stream" )]
+		private static const gold_font_xml : Class;
+
+		[Embed( source = "../../../embed/font/gold_font.png" )]
+		private static const gold_font_bitmap : Class;
+
+		[Embed( source = "../../../embed/font/blue_score_font_32.fnt", mimeType = "application/octet-stream" )]
+		private static const blue_score_font_32_xml : Class;
+
+		[Embed( source = "../../../embed/font/blue_score_font_32.png" )]
+		private static const blue_score_font_32_bitmap : Class;
+
+		[Embed( source = "../../../embed/font/yellow_score_font_32.fnt", mimeType = "application/octet-stream" )]
+		private static const yellow_score_font_32_xml : Class;
+
+		[Embed( source = "../../../embed/font/yellow_score_font_32.png" )]
+		private static const yellow_score_font_32_bitmap : Class;
+
+		[Embed( source = "../../../embed/font/yellow_score_font_24.fnt", mimeType = "application/octet-stream" )]
+		private static const yellow_score_font_24_xml : Class;
+
+		[Embed( source = "../../../embed/font/yellow_score_font_24.png" )]
+		private static const yellow_score_font_24_bitmap : Class;
+		
+		[Embed( source = "../../../embed/font/match_score_font_16.fnt", mimeType = "application/octet-stream" )]
+		private static const match_score_font_16_xml : Class;
+		
+		[Embed( source = "../../../embed/font/match_score_font_16.png" )]
+		private static const match_score_font_16_bitmap : Class;
+		
+		[Embed( source = "../../../embed/font/match_score_font_24.fnt", mimeType = "application/octet-stream" )]
+		private static const match_score_font_24_xml : Class;
+		
+		[Embed( source = "../../../embed/font/match_score_font_24.png" )]
+		private static const match_score_font_24_bitmap : Class;
 
 		public static function initBitmapFonts() : void
 		{
-			var xml : XML = XML( new default_font_xml());
-			var bitmap : Bitmap = new default_font_bitmap();
-			var bitmapFont : BitmapFont = new BitmapFont( starling.textures.Texture.fromBitmap( bitmap ), xml );
-			starling.text.TextField.registerBitmapFont( bitmapFont, "default_bitmap_font" );
+			addFonts([ "default_bitmap_font", "default_bitmap_font_bold" ], default_font_xml, default_font_bitmap );
+			addFont( "default_bitmap_font_16", default_font_16_xml, default_font_16_bitmap );
+			addFont( "big_bitmap_font", big_font_xml, big_font_bitmap );
+			addFont( "big_bitmap_font_24", big_font_24_xml, big_font_24_bitmap );
+			addFont( "gold_font", gold_font_xml, gold_font_bitmap );
+			addFont( "blue_score_font_32", blue_score_font_32_xml, blue_score_font_32_bitmap );
+			addFont( "yellow_score_font_32", yellow_score_font_32_xml, yellow_score_font_32_bitmap );
+			addFont( "yellow_score_font_24", yellow_score_font_24_xml, yellow_score_font_24_bitmap );
+			addFont( "match_score_font_16", match_score_font_16_xml, match_score_font_16_bitmap );
+			addFont( "match_score_font_24", match_score_font_24_xml, match_score_font_24_bitmap );
+		}
 
-			xml = XML( new default_font_bold_xml());
-			bitmap = new default_font_bold_bitmap();
-			bitmapFont = new BitmapFont( starling.textures.Texture.fromBitmap( bitmap, false ), xml );
-			starling.text.TextField.registerBitmapFont( bitmapFont, "default_bitmap_font_bold" );
+		private static function addFonts( names : Array, xmlClass : Class, bitmapClass : Class ) : void
+		{
+			var xml : XML = XML( new xmlClass());
+			var bitmap : Bitmap = new bitmapClass();
+			var bitmapFont : BitmapFont = new BitmapFont( starling.textures.Texture.fromBitmap( bitmap, false ), xml );
+			for ( var i : int = 0; i < names.length; i++ )
+			{
+				TextField.registerCompositor( bitmapFont, names[ i ]);
+			}
+		}
+
+		private static function addFont( name : String, xmlClass : Class, bitmapClass : Class ) : void
+		{
+			var xml : XML = XML( new xmlClass());
+			var bitmap : Bitmap = new bitmapClass();
+			var bitmapFont : BitmapFont = new BitmapFont( starling.textures.Texture.fromBitmap( bitmap, false ), xml );
+			TextField.registerCompositor( bitmapFont, name );
 		}
 
 		private static var _editorTextureAtlas : TextureAtlas;

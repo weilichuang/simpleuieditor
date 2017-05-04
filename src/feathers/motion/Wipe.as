@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -9,7 +9,7 @@ package feathers.motion
 {
 	import starling.animation.Transitions;
 	import starling.display.DisplayObject;
-
+	
 	/**
 	 * Creates animated effects, like transitions for screen navigators, that
 	 * wipes a display object out of view, revealing another display object
@@ -24,7 +24,7 @@ package feathers.motion
 		 * @private
 		 */
 		protected static const SCREEN_REQUIRED_ERROR:String = "Cannot transition if both old screen and new screen are null.";
-
+		
 		/**
 		 * Creates a transition function for a screen navigator that wipes the
 		 * old screen out of view to the left, animating the <code>width</code>
@@ -48,7 +48,7 @@ package feathers.motion
 				new WipeTween(newScreen, oldScreen, xOffset, 0, duration, ease, onComplete, tweenProperties);
 			}
 		}
-
+		
 		/**
 		 * Creates a transition function for a screen navigator that wipes the
 		 * old screen out of view to the right, animating the <code>x</code>
@@ -72,7 +72,7 @@ package feathers.motion
 				new WipeTween(newScreen, oldScreen, xOffset, 0, duration, ease, onComplete, tweenProperties);
 			}
 		}
-
+		
 		/**
 		 * Creates a transition function for a screen navigator that wipes the
 		 * old screen up, animating the <code>height</code> property of a
@@ -96,7 +96,7 @@ package feathers.motion
 				new WipeTween(newScreen, oldScreen, 0, yOffset, duration, ease, onComplete, tweenProperties);
 			}
 		}
-
+		
 		/**
 		 * Creates a transition function for a screen navigator that wipes the
 		 * old screen down, animating the <code>y</code> and <code>height</code>
@@ -125,8 +125,6 @@ package feathers.motion
 
 import feathers.display.RenderDelegate;
 
-import flash.geom.Rectangle;
-
 import starling.animation.Tween;
 import starling.core.Starling;
 import starling.display.DisplayObject;
@@ -136,13 +134,12 @@ import starling.display.Sprite;
 class WipeTween extends Tween
 {
 	public function WipeTween(newScreen:DisplayObject, oldScreen:DisplayObject,
-		xOffset:Number, yOffset:Number, duration:Number, ease:Object, onCompleteCallback:Function,
-		tweenProperties:Object)
+							  xOffset:Number, yOffset:Number, duration:Number, ease:Object, onCompleteCallback:Function,
+							  tweenProperties:Object)
 	{
 		var mask:Quad;
 		if(newScreen)
 		{
-			this._temporaryNewScreenParent = new Sprite();
 			mask = new Quad(1, 1, 0xff00ff);
 			//the initial dimensions cannot be 0 or there's a runtime error,
 			mask.width = 0;
@@ -163,41 +160,38 @@ class WipeTween extends Tween
 				}
 				mask.width = newScreen.width;
 			}
-			this._temporaryNewScreenParent.mask = mask;
-			newScreen.parent.addChild(this._temporaryNewScreenParent);
-			var delegate:RenderDelegate = new RenderDelegate(newScreen);
-			delegate.alpha = newScreen.alpha;
-			delegate.blendMode = newScreen.blendMode;
-			delegate.rotation = newScreen.rotation;
-			delegate.scaleX = newScreen.scaleX;
-			delegate.scaleY = newScreen.scaleY;
-			this._temporaryNewScreenParent.addChild(delegate);
+			this._newScreenDelegate = new RenderDelegate(newScreen);
+			this._newScreenDelegate.alpha = newScreen.alpha;
+			this._newScreenDelegate.blendMode = newScreen.blendMode;
+			this._newScreenDelegate.rotation = newScreen.rotation;
+			this._newScreenDelegate.scaleX = newScreen.scaleX;
+			this._newScreenDelegate.scaleY = newScreen.scaleY;
+			this._newScreenDelegate.mask = mask;
+			newScreen.parent.addChild(this._newScreenDelegate);
+			newScreen.parent.addChild(mask);
 			newScreen.visible = false;
 			this._savedNewScreen = newScreen;
-			//the clipRect setter may have made a clone
-			mask = Quad(this._temporaryNewScreenParent.mask);
 		}
 		if(oldScreen)
 		{
-			this._temporaryOldScreenParent = new Sprite();
 			mask = new Quad(1, 1, 0xff00ff);
 			//the initial dimensions cannot be 0 or there's a runtime error,
 			//and these values might be 0
 			mask.width = oldScreen.width;
 			mask.height = oldScreen.height;
-			this._temporaryOldScreenParent.mask = mask;
-			delegate = new RenderDelegate(oldScreen);
-			delegate.alpha = oldScreen.alpha;
-			delegate.blendMode = oldScreen.blendMode;
-			delegate.rotation = oldScreen.rotation;
-			delegate.scaleX = oldScreen.scaleX;
-			delegate.scaleY = oldScreen.scaleY;
-			this._temporaryOldScreenParent.addChild(delegate);
-			oldScreen.parent.addChild(this._temporaryOldScreenParent);
+			this._oldScreenDelegate = new RenderDelegate(oldScreen);
+			this._oldScreenDelegate.alpha = oldScreen.alpha;
+			this._oldScreenDelegate.blendMode = oldScreen.blendMode;
+			this._oldScreenDelegate.rotation = oldScreen.rotation;
+			this._oldScreenDelegate.scaleX = oldScreen.scaleX;
+			this._oldScreenDelegate.scaleY = oldScreen.scaleY;
+			this._oldScreenDelegate.mask = mask;
+			oldScreen.parent.addChild(this._oldScreenDelegate);
+			oldScreen.parent.addChild(mask);
 			oldScreen.visible = false;
 			this._savedOldScreen = oldScreen;
 		}
-
+		
 		super(mask, duration, ease);
 		
 		if(oldScreen)
@@ -220,7 +214,7 @@ class WipeTween extends Tween
 				this.animate("y", yOffset);
 				this.animate("height", oldScreen.height - yOffset);
 			}
-			if(this._temporaryNewScreenParent)
+			if(this._newScreenDelegate)
 			{
 				this.onUpdate = this.updateNewScreen;
 			}
@@ -257,21 +251,21 @@ class WipeTween extends Tween
 		this._savedYOffset = yOffset;
 		this._onCompleteCallback = onCompleteCallback;
 		this.onComplete = this.cleanupTween;
-		Starling.juggler.add(this);
+		Starling.current.juggler.add(this);
 	}
-
-	private var _temporaryOldScreenParent:Sprite;
-	private var _temporaryNewScreenParent:Sprite;
+	
+	private var _oldScreenDelegate:RenderDelegate;
+	private var _newScreenDelegate:RenderDelegate;
 	private var _savedOldScreen:DisplayObject;
 	private var _savedNewScreen:DisplayObject;
 	private var _savedXOffset:Number;
 	private var _savedYOffset:Number;
 	private var _onCompleteCallback:Function;
-
+	
 	private function updateNewScreen():void
 	{
 		var oldScreenClipRect:Quad = Quad(this.target);
-		var newScreenClipRect:Quad = Quad(this._temporaryNewScreenParent.mask);
+		var newScreenClipRect:Quad = Quad(this._newScreenDelegate.mask);
 		if(this._savedXOffset < 0)
 		{
 			newScreenClipRect.x = oldScreenClipRect.width;
@@ -291,18 +285,20 @@ class WipeTween extends Tween
 			newScreenClipRect.height = oldScreenClipRect.y;
 		}
 	}
-
+	
 	private function cleanupTween():void
 	{
-		if(this._temporaryOldScreenParent)
+		if(this._oldScreenDelegate)
 		{
-			this._temporaryOldScreenParent.removeFromParent(true);
-			this._temporaryOldScreenParent = null;
+			this._oldScreenDelegate.mask.removeFromParent(true);
+			this._oldScreenDelegate.removeFromParent(true);
+			this._oldScreenDelegate = null;
 		}
-		if(this._temporaryNewScreenParent)
+		if(this._newScreenDelegate)
 		{
-			this._temporaryNewScreenParent.removeFromParent(true);
-			this._temporaryNewScreenParent = null;
+			this._newScreenDelegate.mask.removeFromParent(true);
+			this._newScreenDelegate.removeFromParent(true);
+			this._newScreenDelegate = null;
 		}
 		if(this._savedOldScreen)
 		{
@@ -319,6 +315,6 @@ class WipeTween extends Tween
 			this._onCompleteCallback();
 		}
 	}
-
+	
 }
 

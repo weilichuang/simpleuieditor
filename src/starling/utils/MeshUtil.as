@@ -10,84 +10,75 @@
 
 package starling.utils
 {
-    import flash.geom.Matrix;
-    import flash.geom.Matrix3D;
-    import flash.geom.Point;
-    import flash.geom.Rectangle;
-    import flash.geom.Vector3D;
+	import flash.geom.Matrix;
+	import flash.geom.Matrix3D;
+	import flash.geom.Point;
+	import flash.geom.Rectangle;
+	import flash.geom.Vector3D;
 
-    import starling.display.DisplayObject;
-    import starling.display.Stage;
-    import starling.errors.AbstractClassError;
-    import starling.rendering.IndexData;
-    import starling.rendering.VertexData;
+	import starling.core.starling_internal;
+	import starling.display.DisplayObject;
+	import starling.errors.AbstractClassError;
+	import starling.rendering.IndexData;
+	import starling.rendering.VertexData;
 
-    /** A utility class that helps with tasks that are common when working with meshes. */
-    public class MeshUtil
-    {
-        // helper objects
-        private static var sPoint3D:Vector3D = new Vector3D();
-        private static var sMatrix:Matrix = new Matrix();
-        private static var sMatrix3D:Matrix3D = new Matrix3D();
+	use namespace starling_internal;
 
-        /** @private */
-        public function MeshUtil() { throw new AbstractClassError(); }
+	/** A utility class that helps with tasks that are common when working with meshes. */
+	public class MeshUtil
+	{
+		// helper objects
+		private static var sPoint3D : Vector3D = new Vector3D();
+		private static var sMatrix : Matrix = new Matrix();
+		private static var sMatrix3D : Matrix3D = new Matrix3D();
 
-        /** Determines if a point is inside a mesh that is spawned up by the given
-         *  vertex- and index-data. */
-        public static function containsPoint(vertexData:VertexData, indexData:IndexData,
-                                             point:Point):Boolean
-        {
-            var i:int;
-            var result:Boolean = false;
-            var numIndices:int = indexData.numIndices;
-            var p0:Point = Pool.getPoint();
-            var p1:Point = Pool.getPoint();
-            var p2:Point = Pool.getPoint();
+		private static var p0 : Point = new Point();
+		private static var p1 : Point = new Point();
+		private static var p2 : Point = new Point();
 
-            for (i=0; i<numIndices; i+=3)
-            {
-                vertexData.getPoint(indexData.getIndex(i  ), "position", p0);
-                vertexData.getPoint(indexData.getIndex(i+1), "position", p1);
-                vertexData.getPoint(indexData.getIndex(i+2), "position", p2);
+		/** @private */
+		public function MeshUtil()
+		{
+			throw new AbstractClassError();
+		}
 
-                if (MathUtil.isPointInTriangle(point, p0, p1, p2))
-                {
-                    result = true;
-                    break;
-                }
-            }
+		/** Determines if a point is inside a mesh that is spawned up by the given
+		 *  vertex- and index-data. */
+		public static function containsPoint( vertexData : VertexData, indexData : IndexData, point : Point ) : Boolean
+		{
+			var i : int;
+			var result : Boolean = false;
+			var numIndices : int = indexData._numIndices;
 
-            Pool.putPoint(p0);
-            Pool.putPoint(p1);
-            Pool.putPoint(p2);
+			for ( i = 0; i < numIndices; i += 3 )
+			{
+				vertexData.getPoint( indexData.getIndex( i ), "position", p0 );
+				vertexData.getPoint( indexData.getIndex( i + 1 ), "position", p1 );
+				vertexData.getPoint( indexData.getIndex( i + 2 ), "position", p2 );
 
-            return result;
-        }
+				if ( MathUtil.isPointInTriangle( point, p0, p1, p2 ))
+				{
+					result = true;
+					break;
+				}
+			}
 
-        /** Calculates the bounds of the given vertices in the target coordinate system. */
-        public static function calculateBounds(vertexData:VertexData,
-                                               sourceSpace:DisplayObject,
-                                               targetSpace:DisplayObject,
-                                               out:Rectangle=null):Rectangle
-        {
-            if (out == null) out = new Rectangle();
+			return result;
+		}
 
-            var stage:Stage = sourceSpace.stage;
+		/** Calculates the bounds of the given vertices in the target coordinate system. */
+		public static function calculateBounds( vertexData : VertexData,
+			sourceSpace : DisplayObject,
+			targetSpace : DisplayObject,
+			out : Rectangle = null ) : Rectangle
+		{
+			if ( out == null )
+				out = new Rectangle();
 
-            if (sourceSpace.is3D && stage)
-            {
-                stage.getCameraPosition(targetSpace, sPoint3D);
-                sourceSpace.getTransformationMatrix3D(targetSpace, sMatrix3D);
-                vertexData.getBoundsProjected("position", sMatrix3D, sPoint3D, 0, -1, out);
-            }
-            else
-            {
-                sourceSpace.getTransformationMatrix(targetSpace, sMatrix);
-                vertexData.getBounds("position", sMatrix, 0, -1, out);
-            }
+			sourceSpace.getTransformationMatrix( targetSpace, sMatrix );
+			vertexData.getBounds( "position", sMatrix, 0, -1, out );
 
-            return out;
-        }
-    }
+			return out;
+		}
+	}
 }

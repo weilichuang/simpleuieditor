@@ -1,7 +1,6 @@
 package uieditor.editor
 {
 	import feathers.core.ToolTipManager;
-	import uieditor.editor.ui.property.TileGridTexturePopup;
 	
 	import starling.core.Starling;
 	import starling.display.Sprite;
@@ -15,17 +14,20 @@ package uieditor.editor
 	import uieditor.editor.data.EmbedAsset;
 	import uieditor.editor.events.DocumentEventType;
 	import uieditor.editor.themes.AeonDesktopTheme;
-	import uieditor.editor.ui.DefaultCreateComponentPopup;
-	import uieditor.editor.ui.property.Scale9GridTexturePopup;
+	import uieditor.editor.ui.popup.DefaultCreateComponentPopup;
 	import uieditor.editor.ui.property.ChooseDirectoryPropertyPopup;
 	import uieditor.editor.ui.property.ChooseFilePropertyPopup;
 	import uieditor.editor.ui.property.DefaultEditPropertyPopup;
 	import uieditor.editor.ui.property.DisplayObjectPropertyPopup;
+	import uieditor.editor.ui.property.Scale9GridTexturePopup;
 	import uieditor.editor.ui.property.TextureConstructorPopup;
 	import uieditor.editor.ui.property.TexturePropertyPopup;
+	import uieditor.editor.ui.property.TileGridTexturePopup;
 
 	public class UIEditorApp extends Sprite
 	{
+		public static var SWF_VERSION:int;
+		
 		private static const linker : Array = [ Scale9GridTexturePopup, DefaultCreateComponentPopup,
 			DefaultEditPropertyPopup, TexturePropertyPopup, DisplayObjectPropertyPopup, 
 			ChooseDirectoryPropertyPopup, ChooseFilePropertyPopup,TextureConstructorPopup,TileGridTexturePopup ];

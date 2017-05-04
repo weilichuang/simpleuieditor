@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -14,10 +14,10 @@ package feathers.controls
 	import feathers.skins.IStyleProvider;
 	import feathers.utils.keyboard.KeyToSelect;
 	import feathers.utils.touch.TapToSelect;
-
+	
 	import starling.display.DisplayObject;
 	import starling.events.Event;
-
+	
 	/**
 	 * Dispatched when the button is selected or deselected either
 	 * programmatically or as a result of user interaction. The value of the
@@ -46,7 +46,7 @@ package feathers.controls
 	 * @see #isToggle
 	 */
 	[Event(name="change",type="starling.events.Event")]
-
+	
 	/**
 	 * A button that may be selected and deselected when triggered.
 	 *
@@ -73,7 +73,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const STATE_UP:String = "up";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.DOWN</code>.
@@ -84,7 +84,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const STATE_DOWN:String = "down";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.HOVER</code>.
@@ -95,7 +95,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const STATE_HOVER:String = "hover";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.DISABLED</code>.
@@ -106,7 +106,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const STATE_DISABLED:String = "disabled";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.DISABLED_AND_SELECTED</code>.
@@ -117,7 +117,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const STATE_UP_AND_SELECTED:String = "upAndSelected";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.DOWN_AND_SELECTED</code>.
@@ -128,7 +128,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const STATE_DOWN_AND_SELECTED:String = "downAndSelected";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.HOVER_AND_SELECTED</code>.
@@ -139,7 +139,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const STATE_HOVER_AND_SELECTED:String = "hoverAndSelected";
-
+		
 		/**
 		 * @private
 		 *
@@ -151,7 +151,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const STATE_DISABLED_AND_SELECTED:String = "disabledAndSelected";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.TOP</code>.
@@ -162,7 +162,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const ICON_POSITION_TOP:String = "top";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT</code>.
@@ -173,7 +173,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const ICON_POSITION_RIGHT:String = "right";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.BOTTOM</code>.
@@ -184,7 +184,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const ICON_POSITION_BOTTOM:String = "bottom";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT</code>.
@@ -195,7 +195,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const ICON_POSITION_LEFT:String = "left";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.MANUAL</code>.
@@ -206,7 +206,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const ICON_POSITION_MANUAL:String = "manual";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT_BASELINE</code>.
@@ -217,7 +217,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const ICON_POSITION_LEFT_BASELINE:String = "leftBaseline";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT_BASELINE</code>.
@@ -228,7 +228,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const ICON_POSITION_RIGHT_BASELINE:String = "rightBaseline";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.LEFT</code>.
@@ -239,7 +239,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const HORIZONTAL_ALIGN_LEFT:String = "left";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.CENTER</code>.
@@ -250,7 +250,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const HORIZONTAL_ALIGN_CENTER:String = "center";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.RIGHT</code>.
@@ -261,7 +261,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const HORIZONTAL_ALIGN_RIGHT:String = "right";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.TOP</code>.
@@ -272,7 +272,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_TOP:String = "top";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.MIDDLE</code>.
@@ -283,7 +283,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_MIDDLE:String = "middle";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.BOTTOM</code>.
@@ -305,7 +305,7 @@ package feathers.controls
 		 * @see feathers.controls.Button#globalStyleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -313,7 +313,7 @@ package feathers.controls
 		{
 			super();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -325,7 +325,7 @@ package feathers.controls
 			}
 			return Button.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -337,22 +337,22 @@ package feathers.controls
 			}
 			return super.currentState;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var tapToSelect:TapToSelect;
-
+		
 		/**
 		 * @private
 		 */
 		protected var keyToSelect:KeyToSelect;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isToggle:Boolean = true;
-
+		
 		/**
 		 * Determines if the button may be selected or deselected as a result of
 		 * user interaction. If <code>true</code>, the value of the
@@ -373,7 +373,7 @@ package feathers.controls
 		{
 			return this._isToggle;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -386,12 +386,12 @@ package feathers.controls
 			this._isToggle = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isSelected:Boolean = false;
-
+		
 		/**
 		 * Indicates if the button is selected or not. The button may be
 		 * selected programmatically, even if <code>isToggle</code> is <code>false</code>,
@@ -416,7 +416,7 @@ package feathers.controls
 		{
 			return this._isSelected;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -432,12 +432,12 @@ package feathers.controls
 			this.dispatchEventWith(Event.CHANGE);
 			this.dispatchEventWith(FeathersEventType.STATE_CHANGE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _toggleGroup:ToggleGroup;
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -445,7 +445,7 @@ package feathers.controls
 		{
 			return this._toggleGroup;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -467,7 +467,7 @@ package feathers.controls
 		}
 		
 		protected var _defaultSelectedSkin:DisplayObject;
-
+		
 		/**
 		 * The skin used when no other skin is defined for the current state
 		 * when the button is selected. Has a higher priority than
@@ -495,7 +495,7 @@ package feathers.controls
 		{
 			return this._defaultSelectedSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -505,10 +505,18 @@ package feathers.controls
 			{
 				return;
 			}
+			if(this._defaultSelectedSkin !== null &&
+				this.currentSkin === this._defaultSelectedSkin)
+			{
+				//if this icon needs to be reused somewhere else, we need to
+				//properly clean it up
+				this.removeCurrentSkin(this._defaultSelectedSkin);
+				this.currentSkin = null;
+			}
 			this._defaultSelectedSkin = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * The skin used for the button's up state when the button is selected.
 		 * If <code>null</code>, then <code>defaultSelectedSkin</code> is used
@@ -533,7 +541,7 @@ package feathers.controls
 		{
 			return this.getSkinForState(ButtonState.UP_AND_SELECTED);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -541,7 +549,7 @@ package feathers.controls
 		{
 			this.setSkinForState(ButtonState.UP_AND_SELECTED, value);
 		}
-
+		
 		/**
 		 * The skin used for the button's down state when the button is
 		 * selected. If <code>null</code>, then <code>defaultSelectedSkin</code>
@@ -566,7 +574,7 @@ package feathers.controls
 		{
 			return this.getSkinForState(ButtonState.DOWN_AND_SELECTED);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -574,7 +582,7 @@ package feathers.controls
 		{
 			this.setSkinForState(ButtonState.DOWN_AND_SELECTED, value);
 		}
-
+		
 		/**
 		 * The skin used for the button's hover state when the button is
 		 * selected. If <code>null</code>, then <code>defaultSelectedSkin</code>
@@ -599,7 +607,7 @@ package feathers.controls
 		{
 			return this.getSkinForState(ButtonState.HOVER_AND_SELECTED);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -607,7 +615,7 @@ package feathers.controls
 		{
 			this.setSkinForState(ButtonState.HOVER_AND_SELECTED, value);
 		}
-
+		
 		/**
 		 * The skin used for the button's disabled state when the button is
 		 * selected. If <code>null</code>, then <code>defaultSelectedSkin</code>
@@ -632,7 +640,7 @@ package feathers.controls
 		{
 			return this.getSkinForState(ButtonState.DISABLED_AND_SELECTED);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -640,12 +648,12 @@ package feathers.controls
 		{
 			this.setSkinForState(ButtonState.DISABLED_AND_SELECTED, value);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _defaultSelectedLabelProperties:PropertyProxy;
-
+		
 		/**
 		 * DEPRECATED: Use the appropriate API on the label text renderer to set
 		 * font styles for a particular state.
@@ -663,7 +671,7 @@ package feathers.controls
 			}
 			return this._defaultSelectedLabelProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -684,7 +692,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * DEPRECATED: Use the appropriate API on the label text renderer to set
 		 * font styles for a particular state.
@@ -704,7 +712,7 @@ package feathers.controls
 			}
 			return value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -726,7 +734,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * DEPRECATED: Use the appropriate API on the label text renderer to set
 		 * font styles for a particular state.
@@ -746,7 +754,7 @@ package feathers.controls
 			}
 			return value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -768,7 +776,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * DEPRECATED: Use the appropriate API on the label text renderer to set
 		 * font styles for a particular state.
@@ -788,7 +796,7 @@ package feathers.controls
 			}
 			return value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -810,7 +818,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * DEPRECATED: Use the appropriate API on the label text renderer to set
 		 * font styles for a particular state.
@@ -830,7 +838,7 @@ package feathers.controls
 			}
 			return value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -852,12 +860,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _defaultSelectedIcon:DisplayObject;
-
+		
 		/**
 		 * The icon used when no other icon is defined for the current state
 		 * when the button is selected. Has a higher priority than
@@ -885,7 +893,7 @@ package feathers.controls
 		{
 			return this._defaultSelectedIcon;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -895,10 +903,18 @@ package feathers.controls
 			{
 				return;
 			}
+			if(this._defaultSelectedIcon !== null &&
+				this.currentIcon === this._defaultSelectedIcon)
+			{
+				//if this icon needs to be reused somewhere else, we need to
+				//properly clean it up
+				this.removeCurrentIcon(this._defaultSelectedIcon);
+				this.currentIcon = null;
+			}
 			this._defaultSelectedIcon = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * The icon used for the button's up state when the button is
 		 * selected. If <code>null</code>, then <code>defaultSelectedIcon</code>
@@ -923,7 +939,7 @@ package feathers.controls
 		{
 			return this.getIconForState(ButtonState.UP_AND_SELECTED);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -931,7 +947,7 @@ package feathers.controls
 		{
 			this.setIconForState(ButtonState.UP_AND_SELECTED, value);
 		}
-
+		
 		/**
 		 * The icon used for the button's down state when the button is
 		 * selected. If <code>null</code>, then <code>defaultSelectedIcon</code>
@@ -956,7 +972,7 @@ package feathers.controls
 		{
 			return this.getIconForState(ButtonState.DOWN_AND_SELECTED);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -964,7 +980,7 @@ package feathers.controls
 		{
 			this.setIconForState(ButtonState.DOWN_AND_SELECTED, value);
 		}
-
+		
 		/**
 		 * The icon used for the button's hover state when the button is
 		 * selected. If <code>null</code>, then <code>defaultSelectedIcon</code>
@@ -989,7 +1005,7 @@ package feathers.controls
 		{
 			return this.getIconForState(ButtonState.HOVER_AND_SELECTED);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -997,7 +1013,7 @@ package feathers.controls
 		{
 			this.setIconForState(ButtonState.HOVER_AND_SELECTED, value);
 		}
-
+		
 		/**
 		 * The icon used for the button's disabled state when the button is
 		 * selected. If <code>null</code>, then <code>defaultSelectedIcon</code>
@@ -1022,7 +1038,7 @@ package feathers.controls
 		{
 			return this.getIconForState(ButtonState.DISABLED_AND_SELECTED);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1030,7 +1046,7 @@ package feathers.controls
 		{
 			this.setIconForState(ButtonState.DISABLED_AND_SELECTED, value);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1046,7 +1062,7 @@ package feathers.controls
 			}
 			super.dispose();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1063,7 +1079,7 @@ package feathers.controls
 				this.keyToSelect = new KeyToSelect(this);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1074,15 +1090,12 @@ package feathers.controls
 			
 			if(stylesInvalid || stateInvalid)
 			{
-				this.tapToSelect.isEnabled = this._isEnabled && this._isToggle;
-				this.tapToSelect.tapToDeselect = this._isToggle;
-				this.keyToSelect.isEnabled = this._isEnabled && this._isToggle;
-				this.keyToSelect.keyToDeselect = this._isToggle;
+				this.refreshSelectionEvents();
 			}
 			
 			super.draw();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1090,8 +1103,10 @@ package feathers.controls
 		{
 			if(this._stateToSkinFunction === null)
 			{
-				var result:DisplayObject = this._stateToSkin[this._currentState] as DisplayObject;
-				if(result)
+				//we use the currentState getter here instead of the variable
+				//because the variable does not keep track of the selection
+				var result:DisplayObject = this._stateToSkin[this.currentState] as DisplayObject;
+				if(result !== null)
 				{
 					return result;
 				}
@@ -1103,7 +1118,7 @@ package feathers.controls
 			}
 			return super.getCurrentSkin();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1111,8 +1126,10 @@ package feathers.controls
 		{
 			if(this._stateToIconFunction === null)
 			{
-				var result:DisplayObject = this._stateToIcon[this._currentState] as DisplayObject;
-				if(result)
+				//we use the currentState getter here instead of the variable
+				//because the variable does not keep track of the selection
+				var result:DisplayObject = this._stateToIcon[this.currentState] as DisplayObject;
+				if(result !== null)
 				{
 					return result;
 				}
@@ -1123,6 +1140,17 @@ package feathers.controls
 				return this._defaultIcon;
 			}
 			return super.getCurrentIcon();
+		}
+		
+		/**
+		 * @private
+		 */
+		protected function refreshSelectionEvents():void
+		{
+			this.tapToSelect.isEnabled = this._isEnabled && this._isToggle;
+			this.tapToSelect.tapToDeselect = this._isToggle;
+			this.keyToSelect.isEnabled = this._isEnabled && this._isToggle;
+			this.keyToSelect.keyToDeselect = this._isToggle;
 		}
 	}
 }

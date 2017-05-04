@@ -1,12 +1,16 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
 */
 package feathers.controls
 {
+	import flash.events.KeyboardEvent;
+	import flash.ui.Keyboard;
+	import flash.utils.getTimer;
+	
 	import feathers.controls.popups.DropDownPopUpContentManager;
 	import feathers.controls.popups.IPopUpContentManager;
 	import feathers.core.PropertyProxy;
@@ -14,16 +18,15 @@ package feathers.controls
 	import feathers.data.ListCollection;
 	import feathers.events.FeathersEventType;
 	import feathers.skins.IStyleProvider;
-
-	import flash.events.KeyboardEvent;
-	import flash.ui.Keyboard;
-	import flash.utils.getTimer;
-
+	
 	import starling.core.Starling;
 	import starling.events.Event;
 	import starling.events.EventDispatcher;
 	import starling.events.KeyboardEvent;
-
+	import starling.events.Touch;
+	import starling.events.TouchEvent;
+	import starling.events.TouchPhase;
+	
 	/**
 	 * Dispatched when the pop-up list is opened.
 	 *
@@ -45,7 +48,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.OPEN
 	 */
 	[Event(name="open",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the pop-up list is closed.
 	 *
@@ -67,7 +70,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.CLOSE
 	 */
 	[Event(name="close",type="starling.events.Event")]
-
+	
 	/**
 	 * A text input that provides a pop-up list with suggestions as you type.
 	 *
@@ -97,7 +100,7 @@ package feathers.controls
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_LIST_FACTORY:String = "listFactory";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the pop-up
 		 * list.
@@ -105,7 +108,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_LIST:String = "feathers-auto-complete-list";
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all
 		 * <code>AutoComplete</code> components. If <code>null</code>, falls
@@ -115,7 +118,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * @private
 		 */
@@ -123,7 +126,7 @@ package feathers.controls
 		{
 			return new List();
 		}
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -131,7 +134,7 @@ package feathers.controls
 		{
 			this.addEventListener(Event.CHANGE, autoComplete_changeHandler);
 		}
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the
 		 * pop-up list. This variable is <code>protected</code> so that
@@ -146,7 +149,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var listStyleName:String = DEFAULT_CHILD_STYLE_NAME_LIST;
-
+		
 		/**
 		 * The list sub-component.
 		 *
@@ -156,12 +159,12 @@ package feathers.controls
 		 * @see #createList()
 		 */
 		protected var list:List;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _listCollection:ListCollection;
-
+		
 		/**
 		 * @private
 		 */
@@ -173,17 +176,17 @@ package feathers.controls
 			}
 			return TextInput.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _originalText:String;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _source:IAutoCompleteSource;
-
+		
 		/**
 		 * The source of the suggestions that appear in the pop-up list.
 		 *
@@ -207,7 +210,7 @@ package feathers.controls
 		{
 			return this._source;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -227,12 +230,12 @@ package feathers.controls
 				this._source.addEventListener(Event.COMPLETE, dataProvider_completeHandler);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _autoCompleteDelay:Number = 0.5;
-
+		
 		/**
 		 * The time, in seconds, after the text has changed before requesting
 		 * suggestions from the <code>IAutoCompleteSource</code>.
@@ -250,7 +253,7 @@ package feathers.controls
 		{
 			return this._autoCompleteDelay;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -258,12 +261,12 @@ package feathers.controls
 		{
 			this._autoCompleteDelay = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minimumAutoCompleteLength:int = 2;
-
+		
 		/**
 		 * The minimum number of entered characters required to request
 		 * suggestions from the <code>IAutoCompleteSource</code>.
@@ -282,7 +285,7 @@ package feathers.controls
 		{
 			return this._minimumAutoCompleteLength;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -290,12 +293,12 @@ package feathers.controls
 		{
 			this._minimumAutoCompleteLength = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _popUpContentManager:IPopUpContentManager;
-
+		
 		/**
 		 * A manager that handles the details of how to display the pop-up list.
 		 *
@@ -310,7 +313,7 @@ package feathers.controls
 		{
 			return this._popUpContentManager;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -335,12 +338,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _listFactory:Function;
-
+		
 		/**
 		 * A function used to generate the pop-up list sub-component. The list
 		 * must be an instance of <code>List</code>. This factory can be used to
@@ -371,7 +374,7 @@ package feathers.controls
 		{
 			return this._listFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -384,12 +387,12 @@ package feathers.controls
 			this._listFactory = value;
 			this.invalidate(INVALIDATION_FLAG_LIST_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customListStyleName:String;
-
+		
 		/**
 		 * A style name to add to the list sub-component of the
 		 * <code>AutoComplete</code>. Typically used by a theme to provide
@@ -418,7 +421,7 @@ package feathers.controls
 		{
 			return this._customListStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -431,12 +434,12 @@ package feathers.controls
 			this._customListStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_LIST_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _listProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the auto-complete's pop-up list
 		 * sub-component, and the properties will be passed down to the pop-up
@@ -473,7 +476,7 @@ package feathers.controls
 			}
 			return this._listProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -507,32 +510,37 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _ignoreAutoCompleteChanges:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _lastChangeTime:int = 0;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _listHasFocus:Boolean = false;
-
+		
+		/**
+		 * @private
+		 */
+		protected var _triggered:Boolean = false;
+		
 		/**
 		 * @private
 		 */
 		protected var _isOpenListPending:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isCloseListPending:Boolean = false;
-
+		
 		/**
 		 * Opens the pop-up list, if it isn't already open.
 		 */
@@ -556,7 +564,7 @@ package feathers.controls
 				this.stage.addEventListener(starling.events.KeyboardEvent.KEY_UP, stage_keyUpHandler);
 			}
 		}
-
+		
 		/**
 		 * Closes the pop-up list, if it is open.
 		 */
@@ -584,7 +592,7 @@ package feathers.controls
 			//instead, clean up in the Event.REMOVED_FROM_STAGE listener.
 			this._popUpContentManager.close();
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -604,21 +612,21 @@ package feathers.controls
 			}
 			super.dispose();
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override protected function initialize():void
 		{
 			super.initialize();
-
+			
 			this._listCollection = new ListCollection();
 			if(!this._popUpContentManager)
 			{
 				this.popUpContentManager = new DropDownPopUpContentManager();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -626,22 +634,22 @@ package feathers.controls
 		{
 			var stylesInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STYLES);
 			var listFactoryInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_LIST_FACTORY);
-
+			
 			super.draw();
-
+			
 			if(listFactoryInvalid)
 			{
 				this.createList();
 			}
-
+			
 			if(listFactoryInvalid || stylesInvalid)
 			{
 				this.refreshListProperties();
 			}
-
+			
 			this.handlePendingActions();
 		}
-
+		
 		/**
 		 * Creates and adds the <code>list</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -662,7 +670,7 @@ package feathers.controls
 				this.list.dispose();
 				this.list = null;
 			}
-
+			
 			var factory:Function = this._listFactory != null ? this._listFactory : defaultListFactory;
 			var listStyleName:String = this._customListStyleName != null ? this._customListStyleName : this.listStyleName;
 			this.list = List(factory());
@@ -672,9 +680,10 @@ package feathers.controls
 			this.list.styleNameList.add(listStyleName);
 			this.list.addEventListener(Event.CHANGE, list_changeHandler);
 			this.list.addEventListener(Event.TRIGGERED, list_triggeredHandler);
+			this.list.addEventListener(TouchEvent.TOUCH, list_touchHandler);
 			this.list.addEventListener(Event.REMOVED_FROM_STAGE, list_removedFromStageHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -686,7 +695,7 @@ package feathers.controls
 				this.list[propertyName] = propertyValue;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -701,7 +710,7 @@ package feathers.controls
 				this.closeList();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -710,19 +719,21 @@ package feathers.controls
 			//the priority here is 1 so that this listener is called before
 			//starling's listener. we want to know the list's selected index
 			//before the list changes it.
-			Starling.current.nativeStage.addEventListener(flash.events.KeyboardEvent.KEY_DOWN, nativeStage_keyDownHandler, false, 1, true);
+			var starling:Starling = Starling.current;
+			starling.nativeStage.addEventListener(flash.events.KeyboardEvent.KEY_DOWN, nativeStage_keyDownHandler, false, 1, true);
 			super.focusInHandler(event);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override protected function focusOutHandler(event:Event):void
 		{
-			Starling.current.nativeStage.removeEventListener(flash.events.KeyboardEvent.KEY_DOWN, nativeStage_keyDownHandler);
+			var starling:Starling = Starling.current;
+			starling.nativeStage.removeEventListener(flash.events.KeyboardEvent.KEY_DOWN, nativeStage_keyDownHandler);
 			super.focusOutHandler(event);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -770,7 +781,7 @@ package feathers.controls
 				this.list.dispatchEventWith(FeathersEventType.FOCUS_OUT);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -786,13 +797,13 @@ package feathers.controls
 				this.closeList();
 				return;
 			}
-
+			
 			if(this._autoCompleteDelay == 0)
 			{
 				//just in case the enter frame listener was added before
 				//sourceUpdateDelay was set to 0.
 				this.removeEventListener(Event.ENTER_FRAME, autoComplete_enterFrameHandler);
-
+				
 				this._source.load(this.text, this._listCollection);
 			}
 			else
@@ -801,7 +812,7 @@ package feathers.controls
 				this.addEventListener(Event.ENTER_FRAME, autoComplete_enterFrameHandler);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -816,7 +827,7 @@ package feathers.controls
 			this.removeEventListener(Event.ENTER_FRAME, autoComplete_enterFrameHandler);
 			this._source.load(this.text, this._listCollection);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -833,7 +844,7 @@ package feathers.controls
 			}
 			this.openList();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -849,7 +860,7 @@ package feathers.controls
 			this.selectRange(this.text.length, this.text.length);
 			this._ignoreAutoCompleteChanges = oldIgnoreAutoCompleteChanges;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -857,7 +868,7 @@ package feathers.controls
 		{
 			this.dispatchEventWith(Event.OPEN);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -865,7 +876,7 @@ package feathers.controls
 		{
 			this.dispatchEventWith(Event.CLOSE);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -876,7 +887,7 @@ package feathers.controls
 				this.list.stage.removeEventListener(starling.events.KeyboardEvent.KEY_UP, stage_keyUpHandler);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -886,10 +897,30 @@ package feathers.controls
 			{
 				return;
 			}
-			this.closeList();
-			this.selectRange(this.text.length, this.text.length);
+			this._triggered = true;
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected function list_touchHandler(event:TouchEvent):void
+		{
+			var touch:Touch = event.getTouch(this.list);
+			if(touch === null)
+			{
+				return;
+			}
+			if(touch.phase === TouchPhase.BEGAN)
+			{
+				this._triggered = false;
+			}
+			if(touch.phase === TouchPhase.ENDED && this._triggered)
+			{
+				this.closeList();
+				this.selectRange(this.text.length, this.text.length);
+			}
+		}
+		
 		/**
 		 * @private
 		 */

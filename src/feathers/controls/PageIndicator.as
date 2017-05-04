@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -19,16 +19,17 @@ package feathers.controls
 	import feathers.layout.VerticalLayout;
 	import feathers.layout.ViewPortBounds;
 	import feathers.skins.IStyleProvider;
-
+	
 	import flash.geom.Point;
-
+	
 	import starling.display.DisplayObject;
 	import starling.display.Quad;
 	import starling.events.Event;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
-
+	import starling.utils.Pool;
+	
 	/**
 	 * Dispatched when the selected item changes.
 	 *
@@ -50,7 +51,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.CHANGE
 	 */
 	[Event(name="change",type="starling.events.Event")]
-
+	
 	/**
 	 * Displays a selected index, usually corresponding to a page index in
 	 * another UI control, using a highlighted symbol.
@@ -63,17 +64,12 @@ package feathers.controls
 		 * @private
 		 */
 		private static const LAYOUT_RESULT:LayoutBoundsResult = new LayoutBoundsResult();
-
+		
 		/**
 		 * @private
 		 */
 		private static const SUGGESTED_BOUNDS:ViewPortBounds = new ViewPortBounds();
-
-		/**
-		 * @private
-		 */
-		private static const HELPER_POINT:Point = new Point();
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.HORIZONTAL</code>.
@@ -84,7 +80,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_VERTICAL:String = "vertical";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.VERTICAL</code>.
@@ -95,7 +91,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_HORIZONTAL:String = "horizontal";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.TOP</code>.
@@ -106,7 +102,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_TOP:String = "top";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.MIDDLE</code>.
@@ -117,7 +113,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_MIDDLE:String = "middle";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.BOTTOM</code>.
@@ -128,7 +124,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_BOTTOM:String = "bottom";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.LEFT</code>.
@@ -139,7 +135,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const HORIZONTAL_ALIGN_LEFT:String = "left";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.CENTER</code>.
@@ -150,7 +146,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const HORIZONTAL_ALIGN_CENTER:String = "center";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.RIGHT</code>.
@@ -161,24 +157,29 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const HORIZONTAL_ALIGN_RIGHT:String = "right";
-
+		
 		/**
-		 * Touching the page indicator on the left of the selected symbol will
-		 * select the previous index and to the right of the selected symbol
-		 * will select the next index.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.layout.PageIndicatorInteractionMode.PREVIOUS_NEXT</code>.
 		 *
-		 * @see #interactionMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const INTERACTION_MODE_PREVIOUS_NEXT:String = "previousNext";
-
+		
 		/**
-		 * Touching the page indicator on a symbol will select that symbol's
-		 * exact index.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.layout.PageIndicatorInteractionMode.PRECISE</code>.
 		 *
-		 * @see #interactionMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const INTERACTION_MODE_PRECISE:String = "precise";
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>PageIndicator</code>
 		 * components.
@@ -187,7 +188,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * @private
 		 */
@@ -195,7 +196,7 @@ package feathers.controls
 		{
 			return new Quad(25, 25, 0xffffff);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -203,7 +204,7 @@ package feathers.controls
 		{
 			return new Quad(25, 25, 0xcccccc);
 		}
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -213,32 +214,32 @@ package feathers.controls
 			this.isQuickHitAreaEnabled = true;
 			this.addEventListener(TouchEvent.TOUCH, touchHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var selectedSymbol:DisplayObject;
-
+		
 		/**
 		 * @private
 		 */
 		protected var cache:Vector.<DisplayObject> = new <DisplayObject>[];
-
+		
 		/**
 		 * @private
 		 */
 		protected var unselectedSymbols:Vector.<DisplayObject> = new <DisplayObject>[];
-
+		
 		/**
 		 * @private
 		 */
 		protected var symbols:Vector.<DisplayObject> = new <DisplayObject>[];
-
+		
 		/**
 		 * @private
 		 */
 		protected var touchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
@@ -246,12 +247,12 @@ package feathers.controls
 		{
 			return PageIndicator.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _pageCount:int = 1;
-
+		
 		/**
 		 * The number of available pages.
 		 *
@@ -266,7 +267,7 @@ package feathers.controls
 		{
 			return this._pageCount;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -279,12 +280,12 @@ package feathers.controls
 			this._pageCount = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectedIndex:int = 0;
-
+		
 		/**
 		 * The currently selected index.
 		 *
@@ -312,7 +313,7 @@ package feathers.controls
 		{
 			return this._selectedIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -327,12 +328,12 @@ package feathers.controls
 			this.invalidate(INVALIDATION_FLAG_SELECTED);
 			this.dispatchEventWith(Event.CHANGE);
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected var _interactionMode:String = INTERACTION_MODE_PREVIOUS_NEXT;
-
+		protected var _interactionMode:String = PageIndicatorInteractionMode.PREVIOUS_NEXT;
+		
 		[Inspectable(type="String",enumeration="previousNext,precise")]
 		/**
 		 * Determines how the selected index changes on touch.
@@ -340,18 +341,18 @@ package feathers.controls
 		 * <p>In the following example, the interaction mode is changed to precise:</p>
 		 *
 		 * <listing version="3.0">
-		 * pages.direction = PageIndicator.INTERACTION_MODE_PRECISE;</listing>
+		 * pages.direction = PageIndicatorInteractionMode.PRECISE;</listing>
 		 *
-		 * @default PageIndicator.INTERACTION_MODE_PREVIOUS_NEXT
+		 * @default feathers.controls.PageIndicatorInteractionMode.PREVIOUS_NEXT
 		 *
-		 * @see #INTERACTION_MODE_PREVIOUS_NEXT
-		 * @see #INTERACTION_MODE_PRECISE
+		 * @see feathers.controls.PageIndicatorInteractionMode#PREVIOUS_NEXT
+		 * @see feathers.controls.PageIndicatorInteractionMode#PRECISE
 		 */
 		public function get interactionMode():String
 		{
 			return this._interactionMode;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -359,17 +360,17 @@ package feathers.controls
 		{
 			this._interactionMode = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _layout:ILayout;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _direction:String = Direction.HORIZONTAL;
-
+		
 		[Inspectable(type="String",enumeration="horizontal,vertical")]
 		/**
 		 * The symbols may be positioned vertically or horizontally.
@@ -388,7 +389,7 @@ package feathers.controls
 		{
 			return this._direction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -401,12 +402,12 @@ package feathers.controls
 			this._direction = value;
 			this.invalidate(INVALIDATION_FLAG_LAYOUT);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalAlign:String = HorizontalAlign.CENTER;
-
+		
 		[Inspectable(type="String",enumeration="left,center,right")]
 		/**
 		 * The alignment of the symbols on the horizontal axis.
@@ -427,7 +428,7 @@ package feathers.controls
 		{
 			return this._horizontalAlign;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -440,12 +441,12 @@ package feathers.controls
 			this._horizontalAlign = value;
 			this.invalidate(INVALIDATION_FLAG_LAYOUT);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalAlign:String = VerticalAlign.MIDDLE;
-
+		
 		[Inspectable(type="String",enumeration="top,middle,bottom")]
 		/**
 		 * The alignment of the symbols on the vertical axis.
@@ -466,7 +467,7 @@ package feathers.controls
 		{
 			return this._verticalAlign;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -479,12 +480,12 @@ package feathers.controls
 			this._verticalAlign = value;
 			this.invalidate(INVALIDATION_FLAG_LAYOUT);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _gap:Number = 0;
-
+		
 		/**
 		 * The spacing, in pixels, between symbols.
 		 *
@@ -499,7 +500,7 @@ package feathers.controls
 		{
 			return this._gap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -512,7 +513,7 @@ package feathers.controls
 			this._gap = value;
 			this.invalidate(INVALIDATION_FLAG_LAYOUT);
 		}
-
+		
 		/**
 		 * Quickly sets all padding properties to the same value. The
 		 * <code>padding</code> getter always returns the value of
@@ -535,7 +536,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -546,12 +547,12 @@ package feathers.controls
 			this.paddingBottom = value;
 			this.paddingLeft = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingTop:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the top edge of the component
 		 * and the top edge of the content.
@@ -567,7 +568,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -580,12 +581,12 @@ package feathers.controls
 			this._paddingTop = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingRight:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the right edge of the component
 		 * and the right edge of the content.
@@ -601,7 +602,7 @@ package feathers.controls
 		{
 			return this._paddingRight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -614,12 +615,12 @@ package feathers.controls
 			this._paddingRight = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingBottom:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the bottom edge of the component
 		 * and the bottom edge of the content.
@@ -635,7 +636,7 @@ package feathers.controls
 		{
 			return this._paddingBottom;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -648,12 +649,12 @@ package feathers.controls
 			this._paddingBottom = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingLeft:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the left edge of the component
 		 * and the left edge of the content.
@@ -669,7 +670,7 @@ package feathers.controls
 		{
 			return this._paddingLeft;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -682,12 +683,12 @@ package feathers.controls
 			this._paddingLeft = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _normalSymbolFactory:Function = defaultNormalSymbolFactory;
-
+		
 		/**
 		 * A function used to create a normal symbol. May be any Starling
 		 * display object.
@@ -711,7 +712,7 @@ package feathers.controls
 		{
 			return this._normalSymbolFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -724,12 +725,12 @@ package feathers.controls
 			this._normalSymbolFactory = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectedSymbolFactory:Function = defaultSelectedSymbolFactory;
-
+		
 		/**
 		 * A function used to create a selected symbol. May be any Starling
 		 * display object.
@@ -753,7 +754,7 @@ package feathers.controls
 		{
 			return this._selectedSymbolFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -766,7 +767,7 @@ package feathers.controls
 			this._selectedSymbolFactory = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -776,15 +777,15 @@ package feathers.controls
 			var selectionInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_SELECTED);
 			var stylesInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STYLES);
 			var layoutInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_LAYOUT);
-
+			
 			if(dataInvalid || selectionInvalid || stylesInvalid)
 			{
 				this.refreshSymbols(stylesInvalid);
 			}
-
+			
 			this.layoutSymbols(layoutInvalid);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -842,16 +843,16 @@ package feathers.controls
 					}
 				}
 			}
-
+			
 			symbolCount = this.cache.length;
 			for(i = 0; i < symbolCount; i++)
 			{
 				symbol = this.cache.shift();
 				this.removeChild(symbol, true);
 			}
-
+			
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -896,15 +897,15 @@ package feathers.controls
 			SUGGESTED_BOUNDS.scrollX = SUGGESTED_BOUNDS.scrollY = 0;
 			SUGGESTED_BOUNDS.explicitWidth = this._explicitWidth;
 			SUGGESTED_BOUNDS.explicitHeight = this._explicitHeight;
-			SUGGESTED_BOUNDS.maxWidth = this._maxWidth;
-			SUGGESTED_BOUNDS.maxHeight = this._maxHeight;
+			SUGGESTED_BOUNDS.maxWidth = this._explicitMaxWidth;
+			SUGGESTED_BOUNDS.maxHeight = this._explicitMaxHeight;
 			SUGGESTED_BOUNDS.minWidth = this._explicitMinWidth;
 			SUGGESTED_BOUNDS.minHeight = this._explicitMinHeight;
 			this._layout.layout(this.symbols, SUGGESTED_BOUNDS, LAYOUT_RESULT);
 			this.saveMeasurements(LAYOUT_RESULT.contentWidth, LAYOUT_RESULT.contentHeight,
 				LAYOUT_RESULT.contentWidth, LAYOUT_RESULT.contentHeight);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -915,7 +916,7 @@ package feathers.controls
 				this.touchPointID = -1;
 				return;
 			}
-
+			
 			if(this.touchPointID >= 0)
 			{
 				var touch:Touch = event.getTouch(this, TouchPhase.ENDED, this.touchPointID);
@@ -924,18 +925,19 @@ package feathers.controls
 					return;
 				}
 				this.touchPointID = -1;
-				touch.getLocation(this.stage, HELPER_POINT);
-				var isInBounds:Boolean = this.contains(this.stage.hitTest(HELPER_POINT));
+				var point:Point = Pool.getPoint();
+				touch.getLocation(this.stage, point);
+				var isInBounds:Boolean = this.contains(this.stage.hitTest(point));
 				if(isInBounds)
 				{
 					var lastPageIndex:int = this._pageCount - 1;
-					this.globalToLocal(HELPER_POINT, HELPER_POINT);
+					this.globalToLocal(point, point);
 					if(this._direction == Direction.VERTICAL)
 					{
-						if(this._interactionMode == INTERACTION_MODE_PRECISE)
+						if(this._interactionMode === PageIndicatorInteractionMode.PRECISE)
 						{
 							var symbolHeight:Number = this.selectedSymbol.height + (this.unselectedSymbols[0].height + this._gap) * lastPageIndex;
-							var newIndex:int = Math.round(lastPageIndex * (HELPER_POINT.y - this.symbols[0].y) / symbolHeight);
+							var newIndex:int = Math.round(lastPageIndex * (point.y - this.symbols[0].y) / symbolHeight);
 							if(newIndex < 0)
 							{
 								newIndex = 0;
@@ -946,13 +948,13 @@ package feathers.controls
 							}
 							this.selectedIndex = newIndex;
 						}
-						else
+						else //previous/next
 						{
-							if(HELPER_POINT.y < this.selectedSymbol.y)
+							if(point.y < this.selectedSymbol.y)
 							{
 								this.selectedIndex = Math.max(0, this._selectedIndex - 1);
 							}
-							if(HELPER_POINT.y > (this.selectedSymbol.y + this.selectedSymbol.height))
+							if(point.y > (this.selectedSymbol.y + this.selectedSymbol.height))
 							{
 								this.selectedIndex = Math.min(lastPageIndex, this._selectedIndex + 1);
 							}
@@ -960,10 +962,10 @@ package feathers.controls
 					}
 					else
 					{
-						if(this._interactionMode == INTERACTION_MODE_PRECISE)
+						if(this._interactionMode === PageIndicatorInteractionMode.PRECISE)
 						{
 							var symbolWidth:Number = this.selectedSymbol.width + (this.unselectedSymbols[0].width + this._gap) * lastPageIndex;
-							newIndex = Math.round(lastPageIndex * (HELPER_POINT.x - this.symbols[0].x) / symbolWidth);
+							newIndex = Math.round(lastPageIndex * (point.x - this.symbols[0].x) / symbolWidth);
 							if(newIndex < 0)
 							{
 								newIndex = 0;
@@ -974,19 +976,20 @@ package feathers.controls
 							}
 							this.selectedIndex = newIndex;
 						}
-						else
+						else // previous/next
 						{
-							if(HELPER_POINT.x < this.selectedSymbol.x)
+							if(point.x < this.selectedSymbol.x)
 							{
 								this.selectedIndex = Math.max(0, this._selectedIndex - 1);
 							}
-							if(HELPER_POINT.x > (this.selectedSymbol.x + this.selectedSymbol.width))
+							if(point.x > (this.selectedSymbol.x + this.selectedSymbol.width))
 							{
 								this.selectedIndex = Math.min(lastPageIndex, this._selectedIndex + 1);
 							}
 						}
 					}
 				}
+				Pool.putPoint(point);
 			}
 			else //if we get here, we don't have a saved touch ID yet
 			{
@@ -998,6 +1001,6 @@ package feathers.controls
 				this.touchPointID = touch.id;
 			}
 		}
-
+		
 	}
 }

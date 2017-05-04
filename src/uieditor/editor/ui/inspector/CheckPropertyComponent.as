@@ -13,17 +13,24 @@ package uieditor.editor.ui.inspector
 			super( propertyRetriever, param );
 
 			_check = new Check();
-
-			_check.addEventListener( Event.CHANGE, function( event : Event ) : void {
-				_oldValue = _propertyRetriever.get( _param.name );
-				_propertyRetriever.set( _param.name, _check.isSelected );
-
-				setChanged();
-			});
-
+			_check.addEventListener( Event.CHANGE, onCheckChange );
 			_check.isSelected = _propertyRetriever.get( _param.name );
-
 			addChild( _check );
+		}
+
+		private function onCheckChange( event : Event ) : void
+		{
+			_oldValue = _propertyRetriever.get( _param.name );
+			_propertyRetriever.set( _param.name, _check.isSelected );
+
+			setChanged();
+		}
+
+		override public function dispose() : void
+		{
+			_check.removeEventListener( Event.CHANGE, onCheckChange );
+			_check = null;
+			super.dispose();
 		}
 
 		override public function update() : void

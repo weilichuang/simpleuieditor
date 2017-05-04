@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -22,9 +22,9 @@ package feathers.controls
 	import feathers.events.FeathersEventType;
 	import feathers.skins.IStyleProvider;
 	import feathers.system.DeviceCapabilities;
-
+	
 	import flash.ui.Keyboard;
-
+	
 	import starling.core.Starling;
 	import starling.events.Event;
 	import starling.events.EventDispatcher;
@@ -33,7 +33,7 @@ package feathers.controls
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
 	import starling.utils.SystemUtil;
-
+	
 	/**
 	 * Dispatched when the pop-up list is opened.
 	 *
@@ -55,7 +55,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.OPEN
 	 */
 	[Event(name="open",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the pop-up list is closed.
 	 *
@@ -77,7 +77,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.CLOSE
 	 */
 	[Event(name="close",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the selected item changes.
 	 *
@@ -99,7 +99,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.CHANGE
 	 */
 	[Event(name="change",type="starling.events.Event")]
-
+	
 	/**
 	 * Displays a button that may be triggered to display a pop-up list.
 	 * The list may be customized to display in different ways, such as a
@@ -140,19 +140,19 @@ package feathers.controls
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_BUTTON_FACTORY:String = "buttonFactory";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_LIST_FACTORY:String = "listFactory";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the button.
 		 *
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_BUTTON:String = "feathers-picker-list-button";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the pop-up
 		 * list.
@@ -160,7 +160,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_LIST:String = "feathers-picker-list-list";
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>PickerList</code>
 		 * components.
@@ -169,7 +169,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * @private
 		 */
@@ -177,7 +177,7 @@ package feathers.controls
 		{
 			return new Button();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -185,7 +185,7 @@ package feathers.controls
 		{
 			return new List();
 		}
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -193,7 +193,7 @@ package feathers.controls
 		{
 			super();
 		}
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the
 		 * button. This variable is <code>protected</code> so that sub-classes
@@ -208,7 +208,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var buttonStyleName:String = DEFAULT_CHILD_STYLE_NAME_BUTTON;
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the
 		 * pop-up list. This variable is <code>protected</code> so that
@@ -223,7 +223,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var listStyleName:String = DEFAULT_CHILD_STYLE_NAME_LIST;
-
+		
 		/**
 		 * The button sub-component.
 		 *
@@ -233,7 +233,7 @@ package feathers.controls
 		 * @see #createButton()
 		 */
 		protected var button:Button;
-
+		
 		/**
 		 * The list sub-component.
 		 *
@@ -243,7 +243,7 @@ package feathers.controls
 		 * @see #createList()
 		 */
 		protected var list:List;
-
+		
 		/**
 		 * @private
 		 */
@@ -251,6 +251,26 @@ package feathers.controls
 		{
 			return PickerList.globalStyleProvider;
 		}
+		
+		/**
+		 * @private
+		 */
+		protected var buttonExplicitWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var buttonExplicitHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var buttonExplicitMinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var buttonExplicitMinHeight:Number;
 		
 		/**
 		 * @private
@@ -304,6 +324,7 @@ package feathers.controls
 				this._dataProvider.removeEventListener(CollectionEventType.ADD_ITEM, dataProvider_multipleEventHandler);
 				this._dataProvider.removeEventListener(CollectionEventType.REMOVE_ITEM, dataProvider_multipleEventHandler);
 				this._dataProvider.removeEventListener(CollectionEventType.REPLACE_ITEM, dataProvider_multipleEventHandler);
+				this._dataProvider.removeEventListener(CollectionEventType.UPDATE_ITEM, dataProvider_updateItemHandler);
 			}
 			this._dataProvider = value;
 			if(this._dataProvider)
@@ -312,6 +333,7 @@ package feathers.controls
 				this._dataProvider.addEventListener(CollectionEventType.ADD_ITEM, dataProvider_multipleEventHandler);
 				this._dataProvider.addEventListener(CollectionEventType.REMOVE_ITEM, dataProvider_multipleEventHandler);
 				this._dataProvider.addEventListener(CollectionEventType.REPLACE_ITEM, dataProvider_multipleEventHandler);
+				this._dataProvider.addEventListener(CollectionEventType.UPDATE_ITEM, dataProvider_updateItemHandler);
 			}
 			if(!this._dataProvider || this._dataProvider.length == 0)
 			{
@@ -329,7 +351,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -440,12 +462,12 @@ package feathers.controls
 			}
 			this.selectedIndex = this._dataProvider.getItemIndex(value);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _prompt:String;
-
+		
 		/**
 		 * Text displayed by the button sub-component when no items are
 		 * currently selected.
@@ -463,7 +485,7 @@ package feathers.controls
 		{
 			return this._prompt;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -526,7 +548,7 @@ package feathers.controls
 		 * @private
 		 */
 		protected var _labelFunction:Function;
-
+		
 		/**
 		 * A function used to generate label text for the selected item
 		 * displayed by the picker list's button control. If this
@@ -616,16 +638,6 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
-		/**
-		 * @private
-		 */
-		protected var _typicalItemWidth:Number = NaN;
-
-		/**
-		 * @private
-		 */
-		protected var _typicalItemHeight:Number = NaN;
 		
 		/**
 		 * @private
@@ -661,16 +673,14 @@ package feathers.controls
 				return;
 			}
 			this._typicalItem = value;
-			this._typicalItemWidth = NaN;
-			this._typicalItemHeight = NaN;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _buttonFactory:Function;
-
+		
 		/**
 		 * A function used to generate the picker list's button sub-component.
 		 * The button must be an instance of <code>Button</code>. This factory
@@ -703,7 +713,7 @@ package feathers.controls
 		{
 			return this._buttonFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -716,12 +726,12 @@ package feathers.controls
 			this._buttonFactory = value;
 			this.invalidate(INVALIDATION_FLAG_BUTTON_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customButtonStyleName:String;
-
+		
 		/**
 		 * A style name to add to the picker list's button sub-component.
 		 * Typically used by a theme to provide different styles to different
@@ -750,7 +760,7 @@ package feathers.controls
 		{
 			return this._customButtonStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -840,12 +850,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _listFactory:Function;
-
+		
 		/**
 		 * A function used to generate the picker list's pop-up list
 		 * sub-component. The list must be an instance of <code>List</code>.
@@ -877,7 +887,7 @@ package feathers.controls
 		{
 			return this._listFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -890,12 +900,12 @@ package feathers.controls
 			this._listFactory = value;
 			this.invalidate(INVALIDATION_FLAG_LIST_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customListStyleName:String;
-
+		
 		/**
 		 * A style name to add to the picker list's list sub-component.
 		 * Typically used by a theme to provide different styles to different
@@ -924,7 +934,7 @@ package feathers.controls
 		{
 			return this._customListStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1013,12 +1023,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _toggleButtonOnOpenAndClose:Boolean = false;
-
+		
 		/**
 		 * Determines if the <code>isSelected</code> property of the picker
 		 * list's button sub-component is toggled when the list is opened and
@@ -1041,7 +1051,7 @@ package feathers.controls
 		{
 			return this._toggleButtonOnOpenAndClose;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1064,7 +1074,7 @@ package feathers.controls
 				}
 			}
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -1076,12 +1086,17 @@ package feathers.controls
 			}
 			return this.scaleY * (this.button.y + this.button.baseline);
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected var _triggered:Boolean = false;
+		
 		/**
 		 * @private
 		 */
 		protected var _isOpenListPending:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
@@ -1098,50 +1113,58 @@ package feathers.controls
 		 */
 		public function itemToLabel(item:Object):String
 		{
-			if(this._labelFunction != null)
+			if(this._labelFunction !== null)
 			{
 				var labelResult:Object = this._labelFunction(item);
 				if(labelResult is String)
 				{
 					return labelResult as String;
 				}
-				return labelResult.toString();
+				else if(labelResult !== null)
+				{
+					return labelResult.toString();
+				}
 			}
-			else if(this._labelField != null && item && item.hasOwnProperty(this._labelField))
+			else if(this._labelField !== null && item !== null && item.hasOwnProperty(this._labelField))
 			{
 				labelResult = item[this._labelField];
 				if(labelResult is String)
 				{
 					return labelResult as String;
 				}
-				return labelResult.toString();
+				else if(labelResult !== null)
+				{
+					return labelResult.toString();
+				}
 			}
 			else if(item is String)
 			{
 				return item as String;
 			}
-			else if(item)
+			else if(item !== null)
 			{
+				//we need to use strict equality here because the data can be
+				//non-strictly equal to null
 				return item.toString();
 			}
-			return "";
+			return null;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _buttonHasFocus:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _buttonTouchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _listIsOpenOnTouchBegan:Boolean = false;
-
+		
 		/**
 		 * Opens the pop-up list, if it isn't already open.
 		 */
@@ -1172,7 +1195,7 @@ package feathers.controls
 				this.list.addEventListener(FeathersEventType.FOCUS_OUT, list_focusOutHandler);
 			}
 		}
-
+		
 		/**
 		 * Closes the pop-up list, if it is open.
 		 */
@@ -1219,7 +1242,7 @@ package feathers.controls
 			this.dataProvider = null;
 			super.dispose();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1231,7 +1254,7 @@ package feathers.controls
 			}
 			this.button.showFocus();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1264,7 +1287,7 @@ package feathers.controls
 					this.popUpContentManager = new VerticalCenteredPopUpContentManager();
 				}
 			}
-
+			
 		}
 		
 		/**
@@ -1279,12 +1302,12 @@ package feathers.controls
 			var sizeInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_SIZE);
 			var buttonFactoryInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_BUTTON_FACTORY);
 			var listFactoryInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_LIST_FACTORY);
-
+			
 			if(buttonFactoryInvalid)
 			{
 				this.createButton();
 			}
-
+			
 			if(listFactoryInvalid)
 			{
 				this.createList();
@@ -1305,14 +1328,12 @@ package feathers.controls
 					this.button.height = NaN;
 				}
 			}
-
+			
 			if(buttonFactoryInvalid || stylesInvalid)
 			{
-				this._typicalItemWidth = NaN;
-				this._typicalItemHeight = NaN;
 				this.refreshButtonProperties();
 			}
-
+			
 			if(listFactoryInvalid || stylesInvalid)
 			{
 				this.refreshListProperties();
@@ -1331,7 +1352,7 @@ package feathers.controls
 				this.button.isEnabled = this._isEnabled;
 				this.list.isEnabled = this._isEnabled;
 			}
-
+			
 			if(buttonFactoryInvalid || dataInvalid || selectionInvalid)
 			{
 				this.refreshButtonLabel();
@@ -1343,14 +1364,10 @@ package feathers.controls
 				this.list.selectedIndex = this._selectedIndex;
 				this._ignoreSelectionChanges = oldIgnoreSelectionChanges;
 			}
-
-			sizeInvalid = this.autoSizeIfNeeded() || sizeInvalid;
-
-			if(buttonFactoryInvalid || stylesInvalid || sizeInvalid || selectionInvalid)
-			{
-				this.layout();
-			}
-
+			
+			this.autoSizeIfNeeded();
+			this.layout();
+			
 			if(this.list.stage)
 			{
 				//final validation to avoid juggler next frame issues
@@ -1361,10 +1378,10 @@ package feathers.controls
 				//in the data provider, which is not good for performance!
 				this.list.validate();
 			}
-
+			
 			this.handlePendingActions();
 		}
-
+		
 		/**
 		 * If the component's dimensions have not been set explicitly, it will
 		 * measure its content and determine an ideal size for itself. If the
@@ -1374,7 +1391,7 @@ package feathers.controls
 		 * explicit value will not be measured, but the other non-explicit
 		 * dimension will still need measurement.
 		 *
-		 * <p>Calls <code>setSizeInternal()</code> to set up the
+		 * <p>Calls <code>saveMeasurements()</code> to set up the
 		 * <code>actualWidth</code> and <code>actualHeight</code> member
 		 * variables used for layout.</p>
 		 *
@@ -1385,71 +1402,77 @@ package feathers.controls
 		{
 			var needsWidth:Boolean = this._explicitWidth !== this._explicitWidth; //isNaN
 			var needsHeight:Boolean = this._explicitHeight !== this._explicitHeight; //isNaN
-			if(!needsWidth && !needsHeight)
+			var needsMinWidth:Boolean = this._explicitMinWidth !== this._explicitMinWidth; //isNaN
+			var needsMinHeight:Boolean = this._explicitMinHeight !== this._explicitMinHeight; //isNaN
+			if(!needsWidth && !needsHeight && !needsMinWidth && !needsMinHeight)
 			{
 				return false;
 			}
-
-			var buttonWidth:Number;
-			var buttonHeight:Number;
-			if(this._typicalItem)
+			
+			var buttonWidth:Number = this._explicitWidth;
+			if(buttonWidth !== buttonWidth)
 			{
-				if(this._typicalItemWidth !== this._typicalItemWidth || //isNaN
-					this._typicalItemHeight !== this._typicalItemHeight) //isNaN
-				{
-					var oldWidth:Number = this.button.width;
-					var oldHeight:Number = this.button.height;
-					this.button.width = NaN;
-					this.button.height = NaN;
-					if(this._typicalItem)
-					{
-						this.button.label = this.itemToLabel(this._typicalItem);
-					}
-					this.button.validate();
-					this._typicalItemWidth = this.button.width;
-					this._typicalItemHeight = this.button.height;
-					this.refreshButtonLabel();
-					this.button.width = oldWidth;
-					this.button.height = oldHeight;
-				}
-				buttonWidth = this._typicalItemWidth;
-				buttonHeight = this._typicalItemHeight;
+				//we save the button's explicitWidth (and other explicit
+				//dimensions) after the buttonFactory() returns so that
+				//measurement always accounts for it, even after the button's
+				//width is set by the PickerList
+				buttonWidth = this.buttonExplicitWidth;
 			}
-			else
+			var buttonHeight:Number = this._explicitHeight;
+			if(buttonHeight !== buttonHeight)
 			{
-				this.button.validate();
-				buttonWidth = this.button.width;
-				buttonHeight = this.button.height;
+				buttonHeight = this.buttonExplicitHeight;
 			}
-
+			var buttonMinWidth:Number = this._explicitMinWidth;
+			if(buttonMinWidth !== buttonMinWidth)
+			{
+				buttonMinWidth = this.buttonExplicitMinWidth;
+			}
+			var buttonMinHeight:Number = this._explicitMinHeight;
+			if(buttonMinHeight !== buttonMinHeight)
+			{
+				buttonMinHeight = this.buttonExplicitMinHeight;
+			}
+			if(this._typicalItem !== null)
+			{
+				this.button.label = this.itemToLabel(this._typicalItem);
+			}
+			this.button.width = buttonWidth;
+			this.button.height = buttonHeight;
+			this.button.minWidth = buttonMinWidth;
+			this.button.minHeight = buttonMinHeight;
+			this.button.validate();
+			
+			if(this._typicalItem !== null)
+			{
+				this.refreshButtonLabel();
+			}
+			
 			var newWidth:Number = this._explicitWidth;
 			var newHeight:Number = this._explicitHeight;
+			var newMinWidth:Number = this._explicitMinWidth;
+			var newMinHeight:Number = this._explicitMinHeight;
+			
 			if(needsWidth)
 			{
-				if(buttonWidth === buttonWidth) //!isNaN
-				{
-					newWidth = buttonWidth;
-				}
-				else
-				{
-					newWidth = 0;
-				}
+				newWidth = this.button.width;
 			}
 			if(needsHeight)
 			{
-				if(buttonHeight === buttonHeight) //!isNaN
-				{
-					newHeight = buttonHeight;
-				}
-				else
-				{
-					newHeight = 0;
-				}
+				newHeight = this.button.height;
 			}
-
-			return this.setSizeInternal(newWidth, newHeight, false);
+			if(needsMinWidth)
+			{
+				newMinWidth = this.button.minWidth;
+			}
+			if(needsMinHeight)
+			{
+				newMinHeight = this.button.minHeight;
+			}
+			
+			return this.saveMeasurements(newWidth, newHeight, newMinWidth, newMinHeight);
 		}
-
+		
 		/**
 		 * Creates and adds the <code>button</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -1468,7 +1491,7 @@ package feathers.controls
 				this.button.removeFromParent(true);
 				this.button = null;
 			}
-
+			
 			var factory:Function = this._buttonFactory != null ? this._buttonFactory : defaultButtonFactory;
 			var buttonStyleName:String = this._customButtonStyleName != null ? this._customButtonStyleName : this.buttonStyleName;
 			this.button = Button(factory());
@@ -1481,8 +1504,15 @@ package feathers.controls
 			this.button.addEventListener(TouchEvent.TOUCH, button_touchHandler);
 			this.button.addEventListener(Event.TRIGGERED, button_triggeredHandler);
 			this.addChild(this.button);
+			
+			//we will use these values for measurement, if possible
+			this.button.initializeNow();
+			this.buttonExplicitWidth = this.button.explicitWidth;
+			this.buttonExplicitHeight = this.button.explicitHeight;
+			this.buttonExplicitMinWidth = this.button.explicitMinWidth;
+			this.buttonExplicitMinHeight = this.button.explicitMinHeight;
 		}
-
+		
 		/**
 		 * Creates and adds the <code>list</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -1503,7 +1533,7 @@ package feathers.controls
 				this.list.dispose();
 				this.list = null;
 			}
-
+			
 			var factory:Function = this._listFactory != null ? this._listFactory : defaultListFactory;
 			var listStyleName:String = this._customListStyleName != null ? this._customListStyleName : this.listStyleName;
 			this.list = List(factory());
@@ -1511,6 +1541,7 @@ package feathers.controls
 			this.list.styleNameList.add(listStyleName);
 			this.list.addEventListener(Event.CHANGE, list_changeHandler);
 			this.list.addEventListener(Event.TRIGGERED, list_triggeredHandler);
+			this.list.addEventListener(TouchEvent.TOUCH, list_touchHandler);
 			this.list.addEventListener(Event.REMOVED_FROM_STAGE, list_removedFromStageHandler);
 		}
 		
@@ -1552,7 +1583,7 @@ package feathers.controls
 				this.list[propertyName] = propertyValue;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1560,11 +1591,11 @@ package feathers.controls
 		{
 			this.button.width = this.actualWidth;
 			this.button.height = this.actualHeight;
-
+			
 			//final validation to avoid juggler next frame issues
 			this.button.validate();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1579,7 +1610,7 @@ package feathers.controls
 				this.closeList();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1589,7 +1620,7 @@ package feathers.controls
 			this._buttonHasFocus = true;
 			this.button.dispatchEventWith(FeathersEventType.FOCUS_IN);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1602,7 +1633,7 @@ package feathers.controls
 			}
 			super.focusOutHandler(event);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1610,7 +1641,7 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1671,7 +1702,7 @@ package feathers.controls
 			}
 			this.selectedIndex = this.list.selectedIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1683,7 +1714,7 @@ package feathers.controls
 			}
 			this.dispatchEventWith(Event.OPEN);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1699,7 +1730,7 @@ package feathers.controls
 			}
 			this.dispatchEventWith(Event.CLOSE);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1711,7 +1742,7 @@ package feathers.controls
 				this.list.removeEventListener(FeathersEventType.FOCUS_OUT, list_focusOutHandler);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1723,7 +1754,7 @@ package feathers.controls
 			}
 			this.closeList();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1734,20 +1765,51 @@ package feathers.controls
 			{
 				return;
 			}
-			this.closeList();
+			this._triggered = true;
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected function dataProvider_multipleEventHandler():void
+		protected function list_touchHandler(event:TouchEvent):void
+		{
+			var touch:Touch = event.getTouch(this.list);
+			if(touch === null)
+			{
+				return;
+			}
+			if(touch.phase === TouchPhase.BEGAN)
+			{
+				this._triggered = false;
+			}
+			if(touch.phase === TouchPhase.ENDED && this._triggered)
+			{
+				this.closeList();
+			}
+		}
+		
+		/**
+		 * @private
+		 */
+		protected function dataProvider_multipleEventHandler(event:Event):void
 		{
 			//we need to ensure that the pop-up list has received the new
 			//selected index, or it might update the selected index to an
 			//incorrect value after an item is added, removed, or replaced.
 			this.validate();
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected function dataProvider_updateItemHandler(event:Event, index:int):void
+		{
+			if(index === this._selectedIndex)
+			{
+				this.invalidate(INVALIDATION_FLAG_SELECTED);
+			}
+		}
+		
 		/**
 		 * @private
 		 */

@@ -21,9 +21,9 @@ package uieditor.editor.ui.inspector
 			layout = FeathersUIUtil.horizontalLayout();
 
 			_textInput = new AutoCompleteWithDropDown();
-			addChild(_textInput);
-			
-			if (_param.width)
+			addChild( _textInput );
+
+			if ( _param.width )
 			{
 				_textInput.width = _param.width;
 			}
@@ -31,8 +31,8 @@ package uieditor.editor.ui.inspector
 			{
 				_textInput.width = 200;
 			}
-			
-			if (_param.disable)
+
+			if ( _param.disable )
 			{
 				_textInput.isEnabled = false;
 			}
@@ -40,8 +40,8 @@ package uieditor.editor.ui.inspector
 			{
 				_textInput.isEnabled = true;
 			}
-			
-			if (_param.options)
+
+			if ( _param.options )
 			{
 				_textInput.autoCompleteSource = _param.options;
 			}
@@ -49,12 +49,23 @@ package uieditor.editor.ui.inspector
 			{
 				_textInput.autoCompleteSource = [];
 			}
-			
+
+			if ( _param.restrict )
+			{
+				_textInput.restrict = _param.restrict;
+			}
+			else
+			{
+				_textInput.restrict = null;
+			}
+
 			update();
-			
-			_textInput.addEventListener(FeathersEventType.FOCUS_OUT, onTextInput);
-			_textInput.addEventListener(FeathersEventType.ENTER, onTextInput);
-			_textInput.addEventListener(Event.CLOSE, onTextInput);
+
+			_textInput.addEventListener( FeathersEventType.FOCUS_OUT, onTextInputFocusOut );
+			_textInput.addEventListener( FeathersEventType.FOCUS_IN, onTextInputFocusIn );
+			_textInput.addEventListener( FeathersEventType.ENTER, onTextInput );
+			_textInput.addEventListener( Event.CHANGE, onTextInput );
+			_textInput.addEventListener( Event.CLOSE, onTextInput );
 
 			if ( _param.explicitField )
 			{
@@ -65,6 +76,34 @@ package uieditor.editor.ui.inspector
 			}
 		}
 
+		override public function dispose() : void
+		{
+			_textInput.removeEventListener( FeathersEventType.FOCUS_OUT, onTextInputFocusOut );
+			_textInput.removeEventListener( FeathersEventType.FOCUS_IN, onTextInputFocusIn );
+			_textInput.removeEventListener( FeathersEventType.ENTER, onTextInput );
+			_textInput.removeEventListener( Event.CHANGE, onTextInput );
+			_textInput.removeEventListener( Event.CLOSE, onTextInput );
+			_textInput = null;
+
+			if ( _check != null )
+			{
+				_check.removeEventListener( Event.CHANGE, onCheck );
+				_check = null;
+			}
+
+			super.dispose();
+		}
+
+		private function onTextInputFocusIn( event : Event ) : void
+		{
+			_textInput.selectRange( 0, _textInput.text.length );
+		}
+
+		private function onTextInputFocusOut( event : Event ) : void
+		{
+			changeValue( _textInput.text );
+		}
+
 		private function onTextInput( event : Event ) : void
 		{
 			changeValue( _textInput.text );
@@ -72,9 +111,15 @@ package uieditor.editor.ui.inspector
 
 		private function changeValue( value : Object ) : void
 		{
-			_oldValue = _propertyRetriever.get( _param.name );
-			_propertyRetriever.set( _param.name, value );
-			setChanged();
+			if ( !_param.disable )
+			{
+				if ( _textInput.text == "-" )
+					return;
+
+				_oldValue = _propertyRetriever.get( _param.name );
+				_propertyRetriever.set( _param.name, value );
+				setChanged();
+			}
 		}
 
 		override public function update() : void

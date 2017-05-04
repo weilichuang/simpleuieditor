@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -8,10 +8,10 @@ accordance with the terms of the accompanying license agreement.
 package feathers.utils.touch
 {
 	import feathers.events.FeathersEventType;
-
+	
 	import flash.geom.Point;
 	import flash.utils.getTimer;
-
+	
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.display.Stage;
@@ -19,7 +19,7 @@ package feathers.utils.touch
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
-
+	
 	/**
 	 * Dispatches <code>FeathersEventType.LONG_PRESS</code> from the target when
 	 * the target is long-pressed. Conveniently handles all
@@ -60,12 +60,12 @@ package feathers.utils.touch
 		{
 			this.target = target;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _target:DisplayObject;
-
+		
 		/**
 		 * The target component that should dispatch
 		 * <code>FeathersEventType.LONG_PRESS</code> when tapped.
@@ -74,7 +74,7 @@ package feathers.utils.touch
 		{
 			return this._target;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -97,12 +97,12 @@ package feathers.utils.touch
 				this._target.addEventListener(TouchEvent.TOUCH, target_touchHandler);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _longPressDuration:Number = 0.5;
-
+		
 		/**
 		 * The duration, in seconds, of a long press.
 		 *
@@ -117,7 +117,7 @@ package feathers.utils.touch
 		{
 			return this._longPressDuration;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -125,27 +125,27 @@ package feathers.utils.touch
 		{
 			this._longPressDuration = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _touchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _touchLastGlobalPosition:Point = new Point();
-
+		
 		/**
 		 * @private
 		 */
 		protected var _touchBeginTime:int;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isEnabled:Boolean = true;
-
+		
 		/**
 		 * May be set to <code>false</code> to disable the triggered event
 		 * temporarily until set back to <code>true</code>.
@@ -154,7 +154,7 @@ package feathers.utils.touch
 		{
 			return this._isEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -170,19 +170,22 @@ package feathers.utils.touch
 				this._touchPointID = -1;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _tapToTrigger:TapToTrigger;
-
+		
 		/**
+		 * If the target can be triggered by tapping, the
+		 * <code>TapToTrigger</code> instance should be passed in so that it can
+		 * be temporarily disabled when a long press is detected.
 		 */
 		public function get tapToTrigger():TapToTrigger
 		{
 			return this._tapToTrigger;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -190,19 +193,22 @@ package feathers.utils.touch
 		{
 			this._tapToTrigger = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _tapToSelect:TapToSelect;
-
+		
 		/**
+		 * If the target can be selected by tapping, the
+		 * <code>TapToSelect</code> instance should be passed in so that it can
+		 * be temporarily disabled when a long press is detected.
 		 */
 		public function get tapToSelect():TapToSelect
 		{
 			return this._tapToSelect;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -210,7 +216,7 @@ package feathers.utils.touch
 		{
 			this._tapToSelect = value
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -221,7 +227,7 @@ package feathers.utils.touch
 				this._touchPointID = -1;
 				return;
 			}
-
+			
 			if(this._touchPointID >= 0)
 			{
 				//a touch has begun, so we'll ignore all other touches.
@@ -231,7 +237,7 @@ package feathers.utils.touch
 					//this should not happen.
 					return;
 				}
-
+				
 				if(touch.phase == TouchPhase.MOVED)
 				{
 					this._touchLastGlobalPosition.x = touch.globalX;
@@ -250,7 +256,7 @@ package feathers.utils.touch
 					{
 						this._tapToSelect.isEnabled = true;
 					}
-
+					
 					//the touch has ended, so now we can start watching for a
 					//new one.
 					this._touchPointID = -1;
@@ -267,10 +273,10 @@ package feathers.utils.touch
 					//phases when we don't have a saved touch ID.
 					return;
 				}
-
+				
 				//save the touch ID so that we can track this touch's phases.
 				this._touchPointID = touch.id;
-
+				
 				//save the position so that we can do a final hit test
 				this._touchLastGlobalPosition.x = touch.globalX;
 				this._touchLastGlobalPosition.y = touch.globalY;
@@ -279,7 +285,7 @@ package feathers.utils.touch
 				this._target.addEventListener(Event.ENTER_FRAME, target_enterFrameHandler);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -289,7 +295,7 @@ package feathers.utils.touch
 			if(accumulatedTime >= this._longPressDuration)
 			{
 				this._target.removeEventListener(Event.ENTER_FRAME, target_enterFrameHandler);
-
+				
 				var stage:Stage = this._target.stage;
 				if(this._target is DisplayObjectContainer)
 				{
@@ -310,7 +316,7 @@ package feathers.utils.touch
 					{
 						this._tapToSelect.isEnabled = false;
 					}
-
+					
 					this._target.dispatchEventWith(FeathersEventType.LONG_PRESS);
 				}
 			}

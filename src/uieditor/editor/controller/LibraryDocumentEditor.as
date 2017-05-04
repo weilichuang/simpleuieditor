@@ -14,11 +14,12 @@ package uieditor.editor.controller
 	import uieditor.editor.UIEditorApp;
 	import uieditor.editor.UIEditorScreen;
 	import uieditor.editor.events.DocumentEventType;
+	import uieditor.editor.feathers.popup.MsgBox;
 	import uieditor.editor.ui.inspector.PropertyPanel;
 	import uieditor.editor.ui.inspector.UIMapperEventType;
 
 	/**
-	 * 库元件编辑场景，以后需要修改和场景编辑基于同一个父类，毕竟很多东西都是公用的
+	 * 库元件编辑场景
 	 */
 	public class LibraryDocumentEditor extends AbstractDocumentEditor implements IDocumentEditor, IDropTarget
 	{
@@ -73,7 +74,6 @@ package uieditor.editor.controller
 			hoverObject( null );
 
 			_mutliSelectBox.clean();
-			_selectRect.clear();
 
 			_historyManager.reset();
 
@@ -87,24 +87,15 @@ package uieditor.editor.controller
 			background = null;
 		}
 
-//		public function clear() : void
-//		{
-//			reset();
-//			createRoot( UIEditorScreen.instance.setting.rootContainerClass );
-//			refreshLabels();
-//			setChanged();
-//		}
-
-//		public function createNew( data:Object ) : void
-//		{
-//			_linkage = data.params.name;
-//			this.visible = true;
-//			reset();
-//			createRoot( data.cls, _linkage );
-//			canvasSize = new Point( data.params.width, data.params.height );
-//			refreshLabels();
-//			setChanged();
-//		}
+		override public function createComponentFromLibrary( linkage : String, x : Number, y : Number ) : void
+		{
+			if ( _linkage == linkage )
+			{
+				MsgBox.show( "提示", "不能在自身容器内加入自己" );
+				return;
+			}
+			super.createComponentFromLibrary( linkage, x, y );
+		}
 
 		public function importData( data : Object ) : void
 		{
@@ -132,6 +123,11 @@ package uieditor.editor.controller
 				addFrom( obj, result.params[ obj ], null );
 			}
 
+			if ( data.layout.setting )
+				importSetting( data.layout.setting );
+			else
+				importSetting({ canvasSize: { x: 500, y: 500 }, backgroundColor: 0x555555 });
+
 			resize();
 
 			setLayerChanged();
@@ -145,12 +141,12 @@ package uieditor.editor.controller
 
 		override public function set rootName( name : String ) : void
 		{
-			if(_linkage != name)
+			if ( _linkage != name )
 			{
 				_documentEditor.renameLibrary( _linkage, name );
 				_linkage = name;
 			}
-			
+
 			super.rootName = name;
 		}
 
@@ -159,8 +155,8 @@ package uieditor.editor.controller
 			if ( _linkage == null )
 				return;
 
-			var data : Object = _uiBuilder.saveLibrary( _layoutContainer, _extraParamsDict, _documentEditor.librarys );
-			_documentEditor.updateLibrary( _linkage, data );
+			var data : Object = _uiBuilder.saveLibrary( _layoutContainer, _extraParamsDict, _documentEditor.librarys, exportSetting());
+			_documentEditor.updateLibrary( _linkage, data, false );
 		}
 
 		override public function setChanged() : void

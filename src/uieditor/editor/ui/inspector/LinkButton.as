@@ -64,6 +64,7 @@ package uieditor.editor.ui.inspector
 		override public function dispose() : void
 		{
 			_linkButton.removeEventListener( Event.TRIGGERED, onLink );
+			_linkButton = null;
 
 			super.dispose();
 		}

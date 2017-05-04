@@ -57,7 +57,8 @@ package feathers.data
 		public function addItemAt(data:Object, item:Object, index:int):void
 		{
 			this.checkForCorrectDataType(data);
-			(data as Vector.<*>).insertAt(index, item);
+
+			(data as Vector.<*>).splice(index, 0,item);
 		}
 		
 		/**
@@ -66,7 +67,8 @@ package feathers.data
 		public function removeItemAt(data:Object, index:int):Object
 		{
 			this.checkForCorrectDataType(data);
-			return (data as Vector.<*>).removeAt(index);
+
+			return (data as Vector.<*>).splice(index, 1)[0];
 		}
 
 		/**

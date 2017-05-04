@@ -1,8 +1,5 @@
 package uieditor.editor.ui.inspector
 {
-	import uieditor.engine.UIElementFactory;
-	import uieditor.editor.feathers.FeathersUIUtil;
-
 	import feathers.controls.Label;
 	import feathers.controls.ScrollContainer;
 	import feathers.layout.HorizontalLayout;
@@ -10,6 +7,9 @@ package uieditor.editor.ui.inspector
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.events.Event;
+
+	import uieditor.editor.feathers.FeathersUIUtil;
+	import uieditor.engine.UIElementFactory;
 
 	public class BasePropertyUIMapper extends ScrollContainer implements IUIMapper
 	{
@@ -22,6 +22,8 @@ package uieditor.editor.ui.inspector
 
 		protected var _factory : UIPropertyComponentFactory;
 		protected var _setting : Object;
+
+		protected var _components : Vector.<BasePropertyComponent>;
 
 		public function BasePropertyUIMapper( target : Object, param : Object, propertyRetrieverFactory : Function = null, setting : Object = null )
 		{
@@ -49,6 +51,8 @@ package uieditor.editor.ui.inspector
 			label.wordWrap = true;
 			addChild( label );
 
+			_components = new Vector.<BasePropertyComponent>();
+
 			createComponents( param );
 		}
 
@@ -71,8 +75,8 @@ package uieditor.editor.ui.inspector
 		{
 			_propertyRetriever = value;
 		}
-		
-		public function set target(value:Object):void
+
+		public function set target( value : Object ) : void
 		{
 			_target = value;
 		}
@@ -101,6 +105,12 @@ package uieditor.editor.ui.inspector
 
 		private function createComponents( param : Object ) : void
 		{
+			for ( var i : int = 0; i < _components.length; i++ )
+			{
+				_components[ i ].removeEventListener( Event.CHANGE, onChange );
+			}
+			_components.length = 0;
+
 			var items : Array = _factory.getItems( param.component );
 
 			for each ( var item : String in items )
@@ -117,10 +127,33 @@ package uieditor.editor.ui.inspector
 			component = new cls( _propertyRetriever, param );
 			component.addEventListener( Event.CHANGE, onChange );
 			addChild( component );
+
+			_components.push( component );
+		}
+
+		override public function dispose() : void
+		{
+			for ( var i : int = 0; i < _components.length; i++ )
+			{
+				_components[ i ].removeEventListener( Event.CHANGE, onChange );
+			}
+			_components.length = 0;
+			_factory = null;
+			_propertyRetriever = null;
+			_target = null;
+			_param = null;
+
+			super.dispose();
 		}
 
 		private function onChange( event : Event ) : void
 		{
+			if ( _target == null )
+				return;
+
+			if ( _target is DisplayObject && DisplayObject( _target ).isDisposed())
+				return;
+
 			var data : Object = { target: _target, propertyName: _param.name };
 			if ( event.data && event.data.hasOwnProperty( "oldValue" ))
 				data.oldValue = event.data.oldValue;
@@ -141,7 +174,7 @@ package uieditor.editor.ui.inspector
 			return _factory;
 		}
 
-		public static function updateAll( container : DisplayObjectContainer, target:Object = null ) : void
+		public static function updateAll( container : DisplayObjectContainer, target : Object = null ) : void
 		{
 			var array : Array = [];
 			getAll( array, container, BasePropertyComponent );
@@ -168,6 +201,13 @@ package uieditor.editor.ui.inspector
 				{
 					item.target = target;
 				}
+
+				if ( item is BasePropertyComponent )
+				{
+					if ( !BasePropertyComponent( item ).isValid)
+						continue;
+				}
+
 				item.update();
 			}
 		}

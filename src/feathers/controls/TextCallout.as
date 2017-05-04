@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -12,12 +12,12 @@ package feathers.controls
 	import feathers.core.IToolTip;
 	import feathers.core.PopUpManager;
 	import feathers.skins.IStyleProvider;
-
+	
 	import flash.ui.Keyboard;
-
+	
 	import starling.display.DisplayObject;
 	import starling.events.EnterFrameEvent;
-
+	
 	[Exclude(name="content",kind="property")]
 	
 	/**
@@ -57,6 +57,15 @@ package feathers.controls
 	 *     Callout.show( "Hello World", button );
 	 * }</listing>
 	 *
+	 * <p><strong>Beta Component:</strong> This is a new component, and its APIs
+	 * may need some changes between now and the next version of Feathers to
+	 * account for overlooked requirements or other issues. Upgrading to future
+	 * versions of Feathers may involve manual changes to your code that uses
+	 * this component. The
+	 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>
+	 * will not go into effect until this component's status is upgraded from
+	 * beta to stable.</p>
+	 *
 	 * @see ../../../help/text-callout.html How to use the Feathers Callout component
 	 */
 	public class TextCallout extends Callout implements IToolTip
@@ -77,7 +86,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * Returns a new <code>TextCallout</code> instance when
 		 * <code>TextCallout.show()</code> is called. If one wishes to skin the
@@ -108,7 +117,7 @@ package feathers.controls
 		 * @see #show()
 		 */
 		public static var calloutFactory:Function = defaultCalloutFactory;
-
+		
 		/**
 		 * The default factory that creates callouts when
 		 * <code>TextCallout.show()</code> is called. To use a different
@@ -127,7 +136,7 @@ package feathers.controls
 		/**
 		 * Creates a callout that displays some text, and then positions and
 		 * sizes it automatically based on an origin rectangle and the specified
-		 * direction relative to the origin.
+		 * positions, relative to the origin.
 		 *
 		 * <p>In the following example, a text callout is shown when a
 		 * <code>Button</code> is triggered:</p>
@@ -141,26 +150,34 @@ package feathers.controls
 		 *     TextCallout.show( "Hello World", button );
 		 * }</listing>
 		 */
-		public static function show(text:String, origin:DisplayObject, supportedDirections:String = DIRECTION_ANY,
-			isModal:Boolean = true, customCalloutFactory:Function = null, customOverlayFactory:Function = null):TextCallout
+		public static function show(text:String, origin:DisplayObject, supportedPositions:Vector.<String> = null,
+									isModal:Boolean = true, customCalloutFactory:Function = null, customOverlayFactory:Function = null):TextCallout
 		{
 			if(!origin.stage)
 			{
 				throw new ArgumentError("TextCallout origin must be added to the stage.");
 			}
 			var factory:Function = customCalloutFactory;
-			if(factory == null)
+			if(factory === null)
 			{
-				factory = calloutFactory != null ? calloutFactory : defaultCalloutFactory;
+				factory = calloutFactory;
+				if(factory === null)
+				{
+					factory = defaultCalloutFactory;
+				}
 			}
 			var callout:TextCallout = TextCallout(factory());
 			callout.text = text;
-			callout.supportedDirections = supportedDirections;
+			callout.supportedPositions = supportedPositions;
 			callout.origin = origin;
 			factory = customOverlayFactory;
 			if(factory == null)
 			{
-				factory = calloutOverlayFactory != null ? calloutOverlayFactory : PopUpManager.defaultOverlayFactory;
+				factory = calloutOverlayFactory;
+				if(factory == null)
+				{
+					factory = PopUpManager.defaultOverlayFactory
+				}
 			}
 			PopUpManager.addPopUp(callout, isModal, false, factory);
 			callout.validate();
@@ -175,7 +192,7 @@ package feathers.controls
 			super();
 			this.isQuickHitAreaEnabled = true;
 		}
-
+		
 		/**
 		 * The text renderer.
 		 *
@@ -183,7 +200,7 @@ package feathers.controls
 		 * @see #textRendererFactory
 		 */
 		protected var textRenderer:ITextRenderer;
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the text
 		 * renderer sub-component. This variable is <code>protected</code> so
@@ -194,12 +211,12 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var textRendererStyleName:String = DEFAULT_CHILD_STYLE_NAME_TEXT_RENDERER;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _text:String;
-
+		
 		/**
 		 * The text to display in the callout.
 		 */
@@ -207,7 +224,7 @@ package feathers.controls
 		{
 			return this._text;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -220,12 +237,46 @@ package feathers.controls
 			this._text = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected var _wordWrap:Boolean = true;
+		
+		/**
+		 * Determines if the text wraps to the next line when it reaches the
+		 * width (or max width) of the component.
+		 *
+		 * <p>In the following example, the text is not wrapped:</p>
+		 *
+		 * <listing version="3.0">
+		 * label.wordWrap = false;</listing>
+		 *
+		 * @default true
+		 */
+		public function get wordWrap():Boolean
+		{
+			return this._wordWrap;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function set wordWrap(value:Boolean):void
+		{
+			if(this._wordWrap == value)
+			{
+				return;
+			}
+			this._wordWrap = value;
+			this.invalidate(INVALIDATION_FLAG_STYLES);
+		}
+		
 		/**
 		 * @private
 		 */
 		protected var _textRendererFactory:Function;
-
+		
 		/**
 		 * A function used to instantiate the callout's text renderer
 		 * sub-component. By default, the callout will use the global text
@@ -257,7 +308,7 @@ package feathers.controls
 		{
 			return this._textRendererFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -270,12 +321,12 @@ package feathers.controls
 			this._textRendererFactory = value;
 			this.invalidate(INVALIDATION_FLAG_TEXT_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customTextRendererStyleName:String;
-
+		
 		/**
 		 * A style name to add to the callout's text renderer sub-component.
 		 * Typically used by a theme to provide different styles to different
@@ -303,7 +354,7 @@ package feathers.controls
 		{
 			return this._customTextRendererStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -316,7 +367,7 @@ package feathers.controls
 			this._customTextRendererStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_TEXT_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -328,7 +379,7 @@ package feathers.controls
 			}
 			return Callout.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -336,20 +387,26 @@ package feathers.controls
 		{
 			var dataInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_DATA);
 			var stateInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STATE);
+			var stylesInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STYLES);
 			var textRendererInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_TEXT_RENDERER);
-
+			
 			if(textRendererInvalid)
 			{
 				this.createTextRenderer();
 			}
-
+			
 			if(textRendererInvalid || dataInvalid || stateInvalid)
 			{
 				this.refreshTextRendererData();
 			}
+			
+			if(textRendererInvalid || stylesInvalid)
+			{
+				this.refreshTextRendererStyles();
+			}
 			super.draw();
 		}
-
+		
 		/**
 		 * Creates and adds the <code>textRenderer</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -362,20 +419,19 @@ package feathers.controls
 		 */
 		protected function createTextRenderer():void
 		{
-			if(this.textRenderer)
+			if(this.textRenderer !== null)
 			{
 				this.removeChild(DisplayObject(this.textRenderer), true);
 				this.textRenderer = null;
 			}
-
+			
 			var factory:Function = this._textRendererFactory != null ? this._textRendererFactory : FeathersControl.defaultTextRendererFactory;
 			this.textRenderer = ITextRenderer(factory());
 			var textRendererStyleName:String = this._customTextRendererStyleName !== null ? this._customTextRendererStyleName : this.textRendererStyleName;
 			this.textRenderer.styleNameList.add(textRendererStyleName);
-			this._content = DisplayObject(this.textRenderer);
-			this.addChild(this._content);
+			this.content = DisplayObject(this.textRenderer);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -384,7 +440,15 @@ package feathers.controls
 			this.textRenderer.text = this._text;
 			this.textRenderer.visible = this._text && this._text.length > 0;
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected function refreshTextRendererStyles():void
+		{
+			this.textRenderer.wordWrap = this._wordWrap;
+		}
+		
 		/**
 		 * @private
 		 */
@@ -393,7 +457,7 @@ package feathers.controls
 			//wait for validation
 			if(this.isCreated)
 			{
-				this.positionToOrigin();
+				this.positionRelativeToOrigin();
 			}
 		}
 	}

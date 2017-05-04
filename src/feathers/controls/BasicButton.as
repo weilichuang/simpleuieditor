@@ -1,28 +1,31 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
 */
 package feathers.controls
 {
+	import flash.geom.Point;
+	
 	import feathers.core.FeathersControl;
+	import feathers.core.IFeathersControl;
 	import feathers.core.IMeasureDisplayObject;
 	import feathers.core.IStateContext;
 	import feathers.core.IStateObserver;
 	import feathers.core.IValidating;
 	import feathers.events.FeathersEventType;
+	import feathers.skins.IStyleProvider;
+	import feathers.utils.skins.resetFluidChildDimensionsForMeasurement;
 	import feathers.utils.touch.TapToTrigger;
-
-	import flash.geom.Point;
-
+	
 	import starling.display.DisplayObject;
 	import starling.events.Event;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
-
+	
 	/**
 	 * Dispatched when the the user taps or clicks the button. The touch must
 	 * remain within the bounds of the button on release to register as a tap
@@ -47,7 +50,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.TRIGGERED
 	 */
 	[Event(name="triggered",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the display object's state changes.
 	 *
@@ -87,6 +90,15 @@ package feathers.controls
 		private static const HELPER_POINT:Point = new Point();
 		
 		/**
+		 * The default <code>IStyleProvider</code> for all <code>BasicButton</code>
+		 * components.
+		 *
+		 * @default null
+		 * @see feathers.core.FeathersControl#styleProvider
+		 */
+		public static var globalStyleProvider:IStyleProvider;
+		
+		/**
 		 * Constructor.
 		 */
 		public function BasicButton()
@@ -96,12 +108,20 @@ package feathers.controls
 			this.addEventListener(Event.REMOVED_FROM_STAGE, basicButton_removedFromStageHandler);
 			this.addEventListener(TouchEvent.TOUCH, basicButton_touchHandler);
 		}
-
+		
+		/**
+		 * @private
+		 */
+		override protected function get defaultStyleProvider():IStyleProvider
+		{
+			return BasicButton.globalStyleProvider;
+		}
+		
 		/**
 		 * @private
 		 */
 		protected var tapToTrigger:TapToTrigger;
-
+		
 		/**
 		 * The saved ID of the currently active touch. The value will be
 		 * <code>-1</code> if there is no currently active touch.
@@ -109,12 +129,12 @@ package feathers.controls
 		 * <p>For internal use in subclasses.</p>
 		 */
 		protected var touchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _currentState:String = ButtonState.UP;
-
+		
 		/**
 		 * The current state of the button.
 		 *
@@ -125,7 +145,7 @@ package feathers.controls
 		{
 			return this._currentState;
 		}
-
+		
 		/**
 		 * The currently visible skin. The value will be <code>null</code> if
 		 * there is no currently visible skin.
@@ -133,7 +153,7 @@ package feathers.controls
 		 * <p>For internal use in subclasses.</p>
 		 */
 		protected var currentSkin:DisplayObject;
-
+		
 		/**
 		 * @private
 		 */
@@ -158,12 +178,12 @@ package feathers.controls
 				this.resetTouchState();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _keepDownStateOnRollOut:Boolean = false;
-
+		
 		/**
 		 * Determines if a pressed button should remain in the down state if a
 		 * touch moves outside of the button's bounds. Useful for controls like
@@ -181,7 +201,7 @@ package feathers.controls
 		{
 			return this._keepDownStateOnRollOut;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -189,12 +209,12 @@ package feathers.controls
 		{
 			this._keepDownStateOnRollOut = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _defaultSkin:DisplayObject;
-
+		
 		/**
 		 * The skin used when no other skin is defined for the current state.
 		 * Intended to be used when multiple states should share the same skin.
@@ -213,7 +233,7 @@ package feathers.controls
 		{
 			return this._defaultSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -223,26 +243,54 @@ package feathers.controls
 			{
 				return;
 			}
+			if(this._defaultSkin !== null &&
+				this.currentSkin === this._defaultSkin)
+			{
+				//if this skin needs to be reused somewhere else, we need to
+				//properly clean it up
+				this.removeCurrentSkin(this._defaultSkin);
+				this.currentSkin = null;
+			}
 			this._defaultSkin = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 * Chooses an appropriate skin based on the state and the selection.
 		 */
 		protected var _stateToSkin:Object = {};
-
+		
 		/**
 		 * @private
 		 */
-		protected var _originalSkinWidth:Number = NaN;
-
+		protected var _explicitSkinWidth:Number;
+		
 		/**
 		 * @private
 		 */
-		protected var _originalSkinHeight:Number = NaN;
-
+		protected var _explicitSkinHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitSkinMinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitSkinMinHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitSkinMaxWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitSkinMaxHeight:Number;
+		
 		/**
 		 * Gets the skin to be used by the button when its
 		 * <code>currentState</code> property matches the specified state value.
@@ -256,7 +304,7 @@ package feathers.controls
 		{
 			return this._stateToSkin[state] as DisplayObject;
 		}
-
+		
 		/**
 		 * Sets the skin to be used by the button when its
 		 * <code>currentState</code> property matches the specified state value.
@@ -270,6 +318,15 @@ package feathers.controls
 		 */
 		public function setSkinForState(state:String, skin:DisplayObject):void
 		{
+			var oldSkin:DisplayObject = this._stateToSkin[state] as DisplayObject;
+			if(oldSkin !== null &&
+				this.currentSkin === oldSkin)
+			{
+				//if this skin needs to be reused somewhere else, we need to
+				//properly clean it up
+				this.removeCurrentSkin(oldSkin);
+				this.currentSkin = null;
+			}
 			if(skin !== null)
 			{
 				this._stateToSkin[state] = skin;
@@ -280,12 +337,15 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override public function dispose():void
 		{
+			this.removeEventListener(Event.REMOVED_FROM_STAGE, basicButton_removedFromStageHandler);
+			this.removeEventListener(TouchEvent.TOUCH, basicButton_touchHandler);
+			
 			//we don't dispose it if the button is the parent because it'll
 			//already get disposed in super.dispose()
 			if(this._defaultSkin !== null && this._defaultSkin.parent !== this)
@@ -302,7 +362,7 @@ package feathers.controls
 			}
 			super.dispose();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -314,7 +374,7 @@ package feathers.controls
 				this.tapToTrigger = new TapToTrigger(this);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -323,21 +383,17 @@ package feathers.controls
 			var stylesInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STYLES);
 			var stateInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STATE);
 			var sizeInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_SIZE);
-
+			
 			if(stylesInvalid || stateInvalid)
 			{
-				this.tapToTrigger.isEnabled = this._isEnabled;
+				this.refreshTriggeredEvents();
 				this.refreshSkin();
 			}
-
+			
 			this.autoSizeIfNeeded();
-
-			if(stylesInvalid || stateInvalid || sizeInvalid)
-			{
-				this.scaleSkin();
-			}
+			this.scaleSkin();
 		}
-
+		
 		/**
 		 * If the component's dimensions have not been set explicitly, it will
 		 * measure its content and determine an ideal size for itself. If the
@@ -347,7 +403,7 @@ package feathers.controls
 		 * explicit value will not be measured, but the other non-explicit
 		 * dimension will still need measurement.
 		 *
-		 * <p>Calls <code>setSizeInternal()</code> to set up the
+		 * <p>Calls <code>saveMeasurements()</code> to set up the
 		 * <code>actualWidth</code> and <code>actualHeight</code> member
 		 * variables used for layout.</p>
 		 *
@@ -364,75 +420,84 @@ package feathers.controls
 			{
 				return false;
 			}
-
+			
+			resetFluidChildDimensionsForMeasurement(this.currentSkin,
+				this._explicitWidth, this._explicitHeight,
+				this._explicitMinWidth, this._explicitMinHeight,
+				this._explicitMaxWidth, this._explicitMaxHeight,
+				this._explicitSkinWidth, this._explicitSkinHeight,
+				this._explicitSkinMinWidth, this._explicitSkinMinHeight,
+				this._explicitSkinMaxWidth, this._explicitSkinMaxHeight);
+			var measureSkin:IMeasureDisplayObject = this.currentSkin as IMeasureDisplayObject;
+			
 			if(this.currentSkin is IValidating)
 			{
 				IValidating(this.currentSkin).validate();
 			}
-
+			
 			var newMinWidth:Number = this._explicitMinWidth;
 			if(needsMinWidth)
 			{
-				if(this.currentSkin is IMeasureDisplayObject)
+				if(measureSkin !== null)
 				{
-					newMinWidth = IMeasureDisplayObject(this.currentSkin).minWidth;
+					newMinWidth = measureSkin.minWidth;
 				}
-				else if(this._originalSkinWidth === this._originalSkinWidth) //!isNaN
+				else if(this.currentSkin !== null)
 				{
-					newMinWidth = this._originalSkinWidth;
+					newMinWidth = this._explicitSkinMinWidth;
 				}
 				else
 				{
 					newMinWidth = 0;
 				}
 			}
-
+			
 			var newMinHeight:Number = this._explicitMinHeight;
 			if(needsMinHeight)
 			{
-				if(this.currentSkin is IMeasureDisplayObject)
+				if(measureSkin !== null)
 				{
-					newMinHeight = IMeasureDisplayObject(this.currentSkin).minHeight;
+					newMinHeight = measureSkin.minHeight;
 				}
-				else if(this._originalSkinHeight === this._originalSkinHeight) //!isNaN
+				else if(this.currentSkin !== null)
 				{
-					newMinHeight = this._originalSkinHeight;
+					newMinHeight = this._explicitSkinMinHeight;
 				}
 				else
 				{
 					newMinHeight = 0;
 				}
 			}
-
+			
 			var newWidth:Number = this._explicitWidth;
 			if(needsWidth)
 			{
-				if(this._originalSkinWidth === this._originalSkinWidth) //!isNaN
+				if(this.currentSkin !== null)
 				{
-					newWidth = this._originalSkinWidth;
+					newWidth = this.currentSkin.width;
 				}
 				else
 				{
 					newWidth = 0;
 				}
 			}
-
+			
 			var newHeight:Number = this._explicitHeight;
 			if(needsHeight)
 			{
-				if(this._originalSkinHeight === this._originalSkinHeight) //!isNaN
+				if(this.currentSkin !== null)
 				{
-					newHeight = this._originalSkinHeight;
+					newHeight = this.currentSkin.height;
 				}
 				else
 				{
 					newHeight = 0;
 				}
 			}
-
+			
 			return this.saveMeasurements(newWidth, newHeight, newMinWidth, newMinHeight);
 		}
-
+		
 		/**
 		 * Sets the <code>currentSkin</code> property.
 		 *
@@ -444,16 +509,33 @@ package feathers.controls
 			this.currentSkin = this.getCurrentSkin();
 			if(this.currentSkin !== oldSkin)
 			{
-				if(oldSkin)
+				this.removeCurrentSkin(oldSkin);
+				if(this.currentSkin !== null)
 				{
-					if(oldSkin is IStateObserver)
+					if(this.currentSkin is IFeathersControl)
 					{
-						IStateObserver(oldSkin).stateContext = null;
+						IFeathersControl(this.currentSkin).initializeNow();
 					}
-					this.removeChild(oldSkin, false);
-				}
-				if(this.currentSkin)
-				{
+					
+					if(this.currentSkin is IMeasureDisplayObject)
+					{
+						var measureSkin:IMeasureDisplayObject = IMeasureDisplayObject(this.currentSkin);
+						this._explicitSkinWidth = measureSkin.explicitWidth;
+						this._explicitSkinHeight = measureSkin.explicitHeight;
+						this._explicitSkinMinWidth = measureSkin.explicitMinWidth;
+						this._explicitSkinMinHeight = measureSkin.explicitMinHeight;
+						this._explicitSkinMaxWidth = measureSkin.explicitMaxWidth;
+						this._explicitSkinMaxHeight = measureSkin.explicitMaxHeight;
+					}
+					else
+					{
+						this._explicitSkinWidth = this.currentSkin.width;
+						this._explicitSkinHeight = this.currentSkin.height;
+						this._explicitSkinMinWidth = this._explicitSkinWidth;
+						this._explicitSkinMinHeight = this._explicitSkinHeight;
+						this._explicitSkinMaxWidth = this._explicitSkinWidth;
+						this._explicitSkinMaxHeight = this._explicitSkinHeight;
+					}
 					if(this.currentSkin is IStateObserver)
 					{
 						IStateObserver(this.currentSkin).stateContext = this;
@@ -461,19 +543,8 @@ package feathers.controls
 					this.addChildAt(this.currentSkin, 0);
 				}
 			}
-			if(this.currentSkin &&
-				(this._originalSkinWidth !== this._originalSkinWidth || //isNaN
-				this._originalSkinHeight !== this._originalSkinHeight))
-			{
-				if(this.currentSkin is IValidating)
-				{
-					IValidating(this.currentSkin).validate();
-				}
-				this._originalSkinWidth = this.currentSkin.width;
-				this._originalSkinHeight = this.currentSkin.height;
-			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -486,7 +557,7 @@ package feathers.controls
 			}
 			return this._defaultSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -511,7 +582,34 @@ package feathers.controls
 				IValidating(this.currentSkin).validate();
 			}
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected function removeCurrentSkin(skin:DisplayObject):void
+		{
+			if(skin === null)
+			{
+				return;
+			}
+			if(skin is IStateObserver)
+			{
+				IStateObserver(skin).stateContext = null;
+			}
+			if(skin.parent === this)
+			{
+				this.removeChild(skin, false);
+			}
+		}
+		
+		/**
+		 * @private
+		 */
+		protected function refreshTriggeredEvents():void
+		{
+			this.tapToTrigger.isEnabled = this._isEnabled;
+		}
+		
 		/**
 		 * @private
 		 */
@@ -525,7 +623,7 @@ package feathers.controls
 			this.invalidate(INVALIDATION_FLAG_STATE);
 			this.dispatchEventWith(FeathersEventType.STATE_CHANGE);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -541,7 +639,7 @@ package feathers.controls
 				this.changeState(ButtonState.DISABLED);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -549,7 +647,7 @@ package feathers.controls
 		{
 			this.resetTouchState();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -560,7 +658,7 @@ package feathers.controls
 				this.touchPointID = -1;
 				return;
 			}
-
+			
 			if(this.touchPointID >= 0)
 			{
 				var touch:Touch = event.getTouch(this, null, this.touchPointID);
@@ -569,7 +667,7 @@ package feathers.controls
 					//this should never happen
 					return;
 				}
-
+				
 				touch.getLocation(this.stage, HELPER_POINT);
 				var isInBounds:Boolean = this.contains(this.stage.hitTest(HELPER_POINT));
 				if(touch.phase === TouchPhase.MOVED)
@@ -604,7 +702,7 @@ package feathers.controls
 					this.changeState(ButtonState.HOVER);
 					return;
 				}
-
+				
 				//end of hover
 				this.changeState(ButtonState.UP);
 			}

@@ -7,15 +7,14 @@ accordance with the terms of the accompanying license agreement.
 */
 package feathers.utils.text
 {
-	import feathers.core.IIMETextEditor;
-	import feathers.utils.display.stageToStarling;
-
 	import flash.display.Sprite;
 	import flash.events.IMEEvent;
 	import flash.geom.Rectangle;
 	import flash.text.ime.CompositionAttributeRange;
 	import flash.text.ime.IIMEClient;
-
+	
+	import feathers.core.IIMETextEditor;
+	
 	import starling.core.Starling;
 	import starling.display.Stage;
 
@@ -119,7 +118,7 @@ package feathers.utils.text
 				return new Rectangle();
 			}
 			var result:Rectangle = this._textEditor.getBounds(stage);
-			var starling:Starling = stageToStarling(stage);
+			var starling:Starling = Starling.current;
 			var nativeScaleFactor:Number = 1;
 			if(starling.supportHighResolutions)
 			{

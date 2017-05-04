@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -21,13 +21,14 @@ package feathers.controls
 	import feathers.layout.VerticalAlign;
 	import feathers.layout.VerticalLayout;
 	import feathers.skins.IStyleProvider;
-
+	
 	import flash.geom.Point;
 	import flash.ui.Keyboard;
-
+	
 	import starling.events.Event;
 	import starling.events.KeyboardEvent;
-
+	import starling.utils.Pool;
+	
 	/**
 	 * Dispatched when the selected item changes.
 	 *
@@ -49,7 +50,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.CHANGE
 	 */
 	[Event(name="change",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the the user taps or clicks an item renderer in the list.
 	 * The touch must remain within the bounds of the item renderer on release,
@@ -74,7 +75,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.TRIGGERED
 	 */
 	[Event(name="triggered",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when an item renderer is added to the list. When the layout is
 	 * virtualized, item renderers may not exist for every item in the data
@@ -99,7 +100,7 @@ package feathers.controls
 	 * @eventType feathers.events.FeathersEventType.RENDERER_ADD
 	 */
 	[Event(name="rendererAdd",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when an item renderer is removed from the list. When the layout is
 	 * virtualized, item renderers may not exist for every item in the data
@@ -124,7 +125,7 @@ package feathers.controls
 	 * @eventType feathers.events.FeathersEventType.RENDERER_REMOVE
 	 */
 	[Event(name="rendererRemove",type="starling.events.Event")]
-
+	
 	/**
 	 * Displays a one-dimensional list of items. Supports scrolling, custom
 	 * item renderers, and custom layouts.
@@ -172,11 +173,6 @@ package feathers.controls
 	{
 		/**
 		 * @private
-		 */
-		private static const HELPER_POINT:Point = new Point();
-
-		/**
-		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.AUTO</code>.
 		 *
 		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
@@ -185,7 +181,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_POLICY_AUTO:String = "auto";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.ON</code>.
@@ -196,7 +192,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_POLICY_ON:String = "on";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.OFF</code>.
@@ -207,7 +203,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_POLICY_OFF:String = "off";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FLOAT</code>.
@@ -218,7 +214,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_BAR_DISPLAY_MODE_FLOAT:String = "float";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FIXED</code>.
@@ -229,7 +225,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_BAR_DISPLAY_MODE_FIXED:String = "fixed";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FIXED_FLOAT</code>.
@@ -240,7 +236,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_BAR_DISPLAY_MODE_FIXED_FLOAT:String = "fixedFloat";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.NONE</code>.
@@ -251,7 +247,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_BAR_DISPLAY_MODE_NONE:String = "none";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT</code>.
@@ -262,7 +258,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_SCROLL_BAR_POSITION_RIGHT:String = "right";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT</code>.
@@ -273,7 +269,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_SCROLL_BAR_POSITION_LEFT:String = "left";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.TOUCH</code>.
@@ -284,7 +280,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const INTERACTION_MODE_TOUCH:String = "touch";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.MOUSE</code>.
@@ -295,7 +291,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const INTERACTION_MODE_MOUSE:String = "mouse";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.TOUCH_AND_SCROLL_BARS</code>.
@@ -306,7 +302,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const INTERACTION_MODE_TOUCH_AND_SCROLL_BARS:String = "touchAndScrollBars";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.VERTICAL</code>.
@@ -317,7 +313,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const MOUSE_WHEEL_SCROLL_DIRECTION_VERTICAL:String = "vertical";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.HORIZONTAL</code>.
@@ -328,7 +324,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const MOUSE_WHEEL_SCROLL_DIRECTION_HORIZONTAL:String = "horizontal";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.DecelerationRate.NORMAL</code>.
@@ -339,7 +335,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DECELERATION_RATE_NORMAL:Number = 0.998;
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.DecelerationRate.FAST</code>.
@@ -350,7 +346,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DECELERATION_RATE_FAST:Number = 0.99;
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>List</code>
 		 * components.
@@ -359,7 +355,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -368,13 +364,13 @@ package feathers.controls
 			super();
 			this._selectedIndices.addEventListener(Event.CHANGE, selectedIndices_changeHandler);
 		}
-
+		
 		/**
 		 * @private
 		 * The guts of the List's functionality. Handles layout and selection.
 		 */
 		protected var dataViewPort:ListDataViewPort;
-
+		
 		/**
 		 * @private
 		 */
@@ -382,7 +378,7 @@ package feathers.controls
 		{
 			return List.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -390,14 +386,14 @@ package feathers.controls
 		{
 			return (this._isSelectable || this._minHorizontalScrollPosition != this._maxHorizontalScrollPosition ||
 				this._minVerticalScrollPosition != this._maxVerticalScrollPosition) &&
-				this._isEnabled && this._isFocusEnabled;
+					this._isEnabled && this._isFocusEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isChildFocusEnabled:Boolean = true;
-
+		
 		/**
 		 * @copy feathers.core.IFocusContainer#isChildFocusEnabled
 		 *
@@ -409,7 +405,7 @@ package feathers.controls
 		{
 			return this._isEnabled && this._isChildFocusEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -417,12 +413,12 @@ package feathers.controls
 		{
 			this._isChildFocusEnabled = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _layout:ILayout;
-
+		
 		/**
 		 * The layout algorithm used to position and, optionally, size the
 		 * list's items.
@@ -445,7 +441,7 @@ package feathers.controls
 		{
 			return this._layout;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -552,15 +548,15 @@ package feathers.controls
 				this._dataProvider.addEventListener(CollectionEventType.RESET, dataProvider_resetHandler);
 				this._dataProvider.addEventListener(Event.CHANGE, dataProvider_changeHandler);
 			}
-
+			
 			//reset the scroll position because this is a drastic change and
 			//the data is probably completely different
 			this.horizontalScrollPosition = 0;
 			this.verticalScrollPosition = 0;
-
+			
 			//clear the selection for the same reason
 			this.selectedIndex = -1;
-
+			
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
 		
@@ -670,7 +666,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_SELECTED);
 		}
-
+		
 		/**
 		 * The currently selected item. Returns <code>null</code> if no item is
 		 * selected.
@@ -710,10 +706,10 @@ package feathers.controls
 			{
 				return null;
 			}
-
+			
 			return this._dataProvider.getItemAt(this._selectedIndex);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -726,12 +722,12 @@ package feathers.controls
 			}
 			this.selectedIndex = this._dataProvider.getItemIndex(value);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _allowMultipleSelection:Boolean = false;
-
+		
 		/**
 		 * If <code>true</code> multiple items may be selected at a time. If
 		 * <code>false</code>, then only a single item may be selected at a
@@ -753,7 +749,7 @@ package feathers.controls
 		{
 			return this._allowMultipleSelection;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -766,12 +762,12 @@ package feathers.controls
 			this._allowMultipleSelection = value;
 			this.invalidate(INVALIDATION_FLAG_SELECTED);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectedIndices:ListCollection = new ListCollection(new <int>[]);
-
+		
 		/**
 		 * The indices of the currently selected items. Returns an empty <code>Vector.&lt;int&gt;</code>
 		 * if no items are selected. If <code>allowMultipleSelection</code> is
@@ -808,7 +804,7 @@ package feathers.controls
 		{
 			return this._selectedIndices.data as Vector.<int>;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -837,7 +833,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_SELECTED);
 		}
-
+		
 		/**
 		 * The currently selected item. The getter returns an empty
 		 * <code>Vector.&lt;Object&gt;</code> if no item is selected. If any
@@ -876,7 +872,7 @@ package feathers.controls
 		{
 			return this.getSelectedItems(new <Object>[]);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -900,7 +896,7 @@ package feathers.controls
 			}
 			this.selectedIndices = indices;
 		}
-
+		
 		/**
 		 * Returns the selected items, with the ability to pass in an optional
 		 * result vector. Better for performance than the <code>selectedItems</code>
@@ -973,7 +969,7 @@ package feathers.controls
 			this._itemRendererType = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1029,12 +1025,12 @@ package feathers.controls
 			this._itemRendererFactory = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _factoryIDFunction:Function;
-
+		
 		/**
 		 * When a list requires multiple item renderer types, this function is
 		 * used to determine which type of item renderer is required for a
@@ -1081,7 +1077,7 @@ package feathers.controls
 		{
 			return this._factoryIDFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1137,12 +1133,12 @@ package feathers.controls
 			this._typicalItem = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customItemRendererStyleName:String;
-
+		
 		/**
 		 * A style name to add to all item renderers in this list. Typically
 		 * used by a theme to provide different skins to different lists.
@@ -1166,7 +1162,7 @@ package feathers.controls
 		{
 			return this._customItemRendererStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1179,12 +1175,12 @@ package feathers.controls
 			this._customItemRendererStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _itemRendererProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for all of the list's item
 		 * renderers, and the properties will be passed down to every item
@@ -1235,7 +1231,7 @@ package feathers.controls
 			}
 			return this._itemRendererProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1269,12 +1265,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _keyScrollDuration:Number = 0.25;
-
+		
 		/**
 		 * The duration, in seconds, of the animation when the selected item is
 		 * changed by keyboard navigation and the item scrolls into view.
@@ -1291,7 +1287,7 @@ package feathers.controls
 		{
 			return this._keyScrollDuration;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1299,14 +1295,14 @@ package feathers.controls
 		{
 			this._keyScrollDuration = value;
 		}
-
+		
 		/**
 		 * The pending item index to scroll to after validating. A value of
 		 * <code>-1</code> means that the scroller won't scroll to an item after
 		 * validating.
 		 */
 		protected var pendingItemIndex:int = -1;
-
+		
 		/**
 		 * @private
 		 */
@@ -1315,7 +1311,7 @@ package feathers.controls
 			this.pendingItemIndex = -1;
 			super.scrollToPosition(horizontalScrollPosition, verticalScrollPosition, animationDuration);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1366,7 +1362,7 @@ package feathers.controls
 			this.pendingScrollDuration = animationDuration;
 			this.invalidate(INVALIDATION_FLAG_PENDING_SCROLL);
 		}
-
+		
 		/**
 		 * Returns the item renderer factory associated with a specific ID.
 		 * Returns <code>null</code> if no factory is associated with the ID.
@@ -1381,7 +1377,7 @@ package feathers.controls
 			}
 			return null;
 		}
-
+		
 		/**
 		 * Associates an item renderer factory with an ID to allow multiple
 		 * types of item renderers may be displayed in the list. A custom
@@ -1411,7 +1407,7 @@ package feathers.controls
 				delete this._itemRendererFactories[id];
 			}
 		}
-
+		
 		/**
 		 * Returns the current item renderer used to render a specific item. May
 		 * return <code>null</code> if an item doesn't currently have an item
@@ -1425,7 +1421,7 @@ package feathers.controls
 		{
 			return this.dataViewPort.itemToItemRenderer(item);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1446,7 +1442,7 @@ package feathers.controls
 		override protected function initialize():void
 		{
 			var hasLayout:Boolean = this._layout != null;
-
+			
 			super.initialize();
 			
 			if(!this.dataViewPort)
@@ -1455,7 +1451,7 @@ package feathers.controls
 				this.dataViewPort.owner = this;
 				this.viewPort = this.dataViewPort;
 			}
-
+			
 			if(!hasLayout)
 			{
 				if(this._hasElasticEdges &&
@@ -1466,7 +1462,7 @@ package feathers.controls
 					//position is 0, similar to iOS.
 					this.verticalScrollPolicy = ScrollPolicy.ON;
 				}
-
+				
 				var layout:VerticalLayout = new VerticalLayout();
 				layout.useVirtualLayout = true;
 				layout.padding = 0;
@@ -1485,7 +1481,7 @@ package feathers.controls
 			this.refreshDataViewPortProperties();
 			super.draw();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1504,7 +1500,7 @@ package feathers.controls
 			this.dataViewPort.typicalItem = this._typicalItem;
 			this.dataViewPort.layout = this._layout;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1515,10 +1511,13 @@ package feathers.controls
 				var item:Object = this._dataProvider.getItemAt(this.pendingItemIndex);
 				if(item is Object)
 				{
-					this.dataViewPort.getScrollPositionForIndex(this.pendingItemIndex, HELPER_POINT);
+					var point:Point = Pool.getPoint();
+					this.dataViewPort.getScrollPositionForIndex(this.pendingItemIndex, point);
 					this.pendingItemIndex = -1;
-
-					var targetHorizontalScrollPosition:Number = HELPER_POINT.x;
+					
+					var targetHorizontalScrollPosition:Number = point.x;
+					var targetVerticalScrollPosition:Number = point.y;
+					Pool.putPoint(point);
 					if(targetHorizontalScrollPosition < this._minHorizontalScrollPosition)
 					{
 						targetHorizontalScrollPosition = this._minHorizontalScrollPosition;
@@ -1527,7 +1526,6 @@ package feathers.controls
 					{
 						targetHorizontalScrollPosition = this._maxHorizontalScrollPosition;
 					}
-					var targetVerticalScrollPosition:Number = HELPER_POINT.y;
 					if(targetVerticalScrollPosition < this._minVerticalScrollPosition)
 					{
 						targetVerticalScrollPosition = this._minVerticalScrollPosition;
@@ -1541,7 +1539,7 @@ package feathers.controls
 			}
 			super.handlePendingScroll();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1583,11 +1581,13 @@ package feathers.controls
 			}
 			if(changedSelection)
 			{
-				this.dataViewPort.getNearestScrollPositionForIndex(this.selectedIndex, HELPER_POINT);
-				this.scrollToPosition(HELPER_POINT.x, HELPER_POINT.y, this._keyScrollDuration);
+				var point:Point = Pool.getPoint();
+				this.dataViewPort.getNearestScrollPositionForIndex(this.selectedIndex, point);
+				this.scrollToPosition(point.x, point.y, this._keyScrollDuration);
+				Pool.putPoint(point);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1595,7 +1595,7 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1603,11 +1603,11 @@ package feathers.controls
 		{
 			this.horizontalScrollPosition = 0;
 			this.verticalScrollPosition = 0;
-
+			
 			//the entire data provider was replaced. select no item.
 			this._selectedIndices.removeAll();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1635,7 +1635,7 @@ package feathers.controls
 				this._selectedIndices.data = newIndices;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1670,7 +1670,7 @@ package feathers.controls
 				this._selectedIndices.data = newIndices;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1707,7 +1707,7 @@ package feathers.controls
 			}
 			this.dispatchEventWith(Event.CHANGE);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1718,7 +1718,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			var scrollOffsetX:Number = scrollOffset.x;
 			this._startHorizontalScrollPosition += scrollOffsetX;
 			this._horizontalScrollPosition += scrollOffsetX;
@@ -1727,7 +1727,7 @@ package feathers.controls
 				this._targetHorizontalScrollPosition += scrollOffsetX;
 				this.throwTo(this._targetHorizontalScrollPosition, NaN, this._horizontalAutoScrollTween.totalTime - this._horizontalAutoScrollTween.currentTime);
 			}
-
+			
 			var scrollOffsetY:Number = scrollOffset.y;
 			this._startVerticalScrollPosition += scrollOffsetY;
 			this._verticalScrollPosition += scrollOffsetY;

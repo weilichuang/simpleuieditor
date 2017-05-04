@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -14,7 +14,7 @@ package feathers.controls.text
 	import feathers.skins.IStyleProvider;
 	import feathers.utils.text.TextInputNavigation;
 	import feathers.utils.text.TextInputRestrict;
-
+	
 	import flash.desktop.Clipboard;
 	import flash.desktop.ClipboardFormats;
 	import flash.display.InteractiveObject;
@@ -25,7 +25,7 @@ package feathers.controls.text
 	import flash.geom.Point;
 	import flash.text.TextFormatAlign;
 	import flash.ui.Keyboard;
-
+	
 	import starling.core.Starling;
 	import starling.display.DisplayObject;
 	import starling.display.Quad;
@@ -37,7 +37,7 @@ package feathers.controls.text
 	import starling.rendering.Painter;
 	import starling.text.BitmapChar;
 	import starling.text.BitmapFont;
-
+	
 	/**
 	 * Dispatched when the text property changes.
 	 *
@@ -57,7 +57,7 @@ package feathers.controls.text
 	 * </table>
 	 */
 	[Event(name="change",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the user presses the Enter key while the editor has
 	 * focus.
@@ -80,7 +80,7 @@ package feathers.controls.text
 	 * @eventType feathers.events.FeathersEventType.ENTER
 	 */
 	[Event(name="enter",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the text editor receives focus.
 	 *
@@ -102,7 +102,7 @@ package feathers.controls.text
 	 * @eventType feathers.events.FeathersEventType.FOCUS_IN
 	 */
 	[Event(name="focusIn",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the text editor loses focus.
 	 *
@@ -124,7 +124,7 @@ package feathers.controls.text
 	 * @eventType feathers.events.FeathersEventType.FOCUS_OUT
 	 */
 	[Event(name="focusOut",type="starling.events.Event")]
-
+	
 	/**
 	 * Text that may be edited at runtime by the user with the
 	 * <code>TextInput</code> component, rendered with
@@ -155,17 +155,17 @@ package feathers.controls.text
 		 * @private
 		 */
 		private static const HELPER_POINT:Point = new Point();
-
+		
 		/**
 		 * @private
 		 */
 		protected static const LINE_FEED:String = "\n";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const CARRIAGE_RETURN:String = "\r";
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>BitmapFontTextEditor</code>
 		 * components.
@@ -174,7 +174,7 @@ package feathers.controls.text
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -186,7 +186,7 @@ package feathers.controls.text
 			this.truncateToFit = false;
 			this.addEventListener(TouchEvent.TOUCH, textEditor_touchHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -194,12 +194,12 @@ package feathers.controls.text
 		{
 			return globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectionSkin:DisplayObject;
-
+		
 		/**
 		 * The skin that indicates the currently selected range of text.
 		 */
@@ -207,7 +207,7 @@ package feathers.controls.text
 		{
 			return this._selectionSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -229,12 +229,12 @@ package feathers.controls.text
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _cursorSkin:DisplayObject;
-
+		
 		/**
 		 * The skin that indicates the current position where text may be
 		 * entered.
@@ -243,7 +243,7 @@ package feathers.controls.text
 		{
 			return this._cursorSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -265,17 +265,17 @@ package feathers.controls.text
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _unmaskedText:String;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _displayAsPassword:Boolean = false;
-
+		
 		/**
 		 * <p>This property is managed by the <code>TextInput</code>.</p>
 		 *
@@ -288,7 +288,7 @@ package feathers.controls.text
 		{
 			return this._displayAsPassword;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -311,12 +311,12 @@ package feathers.controls.text
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _passwordCharCode:int = 42; //asterisk
-
+		
 		/**
 		 * The character code of the character used to display a password.
 		 *
@@ -335,7 +335,7 @@ package feathers.controls.text
 		{
 			return this._passwordCharCode;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -352,12 +352,12 @@ package feathers.controls.text
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isEditable:Boolean = true;
-
+		
 		/**
 		 * <p>This property is managed by the <code>TextInput</code>.</p>
 		 * 
@@ -369,7 +369,7 @@ package feathers.controls.text
 		{
 			return this._isEditable;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -382,12 +382,12 @@ package feathers.controls.text
 			this._isEditable = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isSelectable:Boolean = true;
-
+		
 		/**
 		 * <p>This property is managed by the <code>TextInput</code>.</p>
 		 * 
@@ -399,7 +399,7 @@ package feathers.controls.text
 		{
 			return this._isSelectable;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -412,7 +412,7 @@ package feathers.controls.text
 			this._isSelectable = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 *
@@ -422,7 +422,7 @@ package feathers.controls.text
 		{
 			return false;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -434,7 +434,7 @@ package feathers.controls.text
 			}
 			return this._text;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -482,12 +482,12 @@ package feathers.controls.text
 			}
 			this.dispatchEventWith(starling.events.Event.CHANGE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _maxChars:int = 0;
-
+		
 		/**
 		 * <p>This property is managed by the <code>TextInput</code>.</p>
 		 * 
@@ -499,7 +499,7 @@ package feathers.controls.text
 		{
 			return this._maxChars;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -512,12 +512,12 @@ package feathers.controls.text
 			this._maxChars = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _restrict:TextInputRestrict;
-
+		
 		/**
 		 * <p>This property is managed by the <code>TextInput</code>.</p>
 		 * 
@@ -533,7 +533,7 @@ package feathers.controls.text
 			}
 			return this._restrict.restrict;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -559,18 +559,18 @@ package feathers.controls.text
 				}
 				else
 				{
-
+					
 					this._restrict = new TextInputRestrict(value);
 				}
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectionBeginIndex:int = 0;
-
+		
 		/**
 		 * @inheritDoc
 		 *
@@ -580,12 +580,12 @@ package feathers.controls.text
 		{
 			return this._selectionBeginIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectionEndIndex:int = 0;
-
+		
 		/**
 		 * @inheritDoc
 		 *
@@ -595,65 +595,59 @@ package feathers.controls.text
 		{
 			return this._selectionEndIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectionAnchorIndex:int = 0;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _scrollX:Number = 0;
-
+		
 		/**
 		 * @private
 		 */
 		protected var touchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _nativeFocus:Sprite;
-
+		
 		/**
 		 * @copy feathers.core.INativeFocusOwner#nativeFocus
 		 */
-		public function get nativeFocus():InteractiveObject
+		public function get nativeFocus():Object
 		{
 			return this._nativeFocus;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isWaitingToSetFocus:Boolean = false;
-
+		
 		/**
 		 * @inheritDoc
 		 */
 		public function setFocus(position:Point = null):void
 		{
-			if(!this._isEditable && !this._isSelectable)
-			{
-				//if the text can't be edited or selected, then all focus is
-				//disabled.
-				return;
-			}
 			if(this._hasFocus && !position)
 			{
 				//we already have focus, and there isn't a touch position, we
 				//can ignore this because nothing would change
 				return;
 			}
-			if(this._nativeFocus)
+			if(this._nativeFocus !== null)
 			{
-				if(!this._nativeFocus.parent)
+				if(this._nativeFocus.parent === null)
 				{
 					Starling.current.nativeStage.addChild(this._nativeFocus);
 				}
 				var newIndex:int = -1;
-				if(position)
+				if(position !== null)
 				{
 					newIndex = this.getSelectionIndexAtPoint(position.x, position.y);
 				}
@@ -668,7 +662,7 @@ package feathers.controls.text
 				this._isWaitingToSetFocus = true;
 			}
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -689,7 +683,7 @@ package feathers.controls.text
 			{
 				//only clear the native focus when our native target has focus
 				//because otherwise another component may lose focus.
-
+				
 				//for consistency with StageTextTextEditor and
 				//TextFieldTextEditor, we set the native stage's focus to null
 				//here instead of setting it to the native stage due to issues
@@ -698,7 +692,7 @@ package feathers.controls.text
 			}
 			this.dispatchEventWith(FeathersEventType.FOCUS_OUT);
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -716,7 +710,7 @@ package feathers.controls.text
 			}
 			this._selectionBeginIndex = beginIndex;
 			this._selectionEndIndex = endIndex;
-			if(beginIndex == endIndex)
+			if(beginIndex === endIndex)
 			{
 				this._selectionAnchorIndex = beginIndex;
 				if(beginIndex < 0)
@@ -725,7 +719,9 @@ package feathers.controls.text
 				}
 				else
 				{
-					this._cursorSkin.visible = this._hasFocus;
+					//cursor skin is not shown if isSelectable === true and
+					//isEditable is false
+					this._cursorSkin.visible = this._hasFocus && this._isEditable;
 				}
 				this._selectionSkin.visible = false;
 			}
@@ -736,7 +732,7 @@ package feathers.controls.text
 			}
 			this.invalidate(INVALIDATION_FLAG_SELECTED);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -749,7 +745,7 @@ package feathers.controls.text
 			this._nativeFocus = null;
 			super.dispose();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -763,7 +759,7 @@ package feathers.controls.text
 			this._batchX = oldBatchX;
 			this._cursorSkin.x = oldCursorX;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -795,7 +791,7 @@ package feathers.controls.text
 			}
 			super.initialize();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -811,7 +807,7 @@ package feathers.controls.text
 				this.positionCursorAtCharIndex(this.getCursorIndexFromSelectionRange());
 				this.positionSelectionBackground();
 			}
-
+			
 			var mask:Quad = this.mask as Quad;
 			if(mask)
 			{
@@ -830,15 +826,15 @@ package feathers.controls.text
 				this.mask = mask;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
-		override protected function layoutCharacters(result:Point = null):Point
+		override protected function layoutCharacters(result:MeasureTextResult = null):MeasureTextResult
 		{
 			result = super.layoutCharacters(result);
 			if(this._explicitWidth === this._explicitWidth && //!isNaN
-				result.x > this._explicitWidth)
+				result.width > this._explicitWidth)
 			{
 				this._characterBatch.clear();
 				var oldTextAlign:String = this.currentTextFormat.align;
@@ -848,7 +844,7 @@ package feathers.controls.text
 			}
 			return result;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -867,7 +863,7 @@ package feathers.controls.text
 				this._cursorSkin.height = font.lineHeight * scale;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -881,15 +877,20 @@ package feathers.controls.text
 				this._text += maskChar;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function focusIn():void
 		{
-			var showCursor:Boolean = this._selectionBeginIndex >= 0 && this._selectionBeginIndex == this._selectionEndIndex;
+			var showSelection:Boolean = (this._isEditable || this._isSelectable) &&
+				this._selectionBeginIndex >= 0 &&
+				this._selectionBeginIndex !== this._selectionEndIndex;
+			var showCursor:Boolean = this._isEditable &&
+				this._selectionBeginIndex >= 0 &&
+				this._selectionBeginIndex === this._selectionEndIndex;
 			this._cursorSkin.visible = showCursor;
-			this._selectionSkin.visible = !showCursor;
+			this._selectionSkin.visible = showSelection;
 			if(!FocusManager.isEnabledForStage(this.stage))
 			{
 				//if there isn't a focus manager, we need to set focus manually
@@ -907,7 +908,7 @@ package feathers.controls.text
 			this.addEventListener(starling.events.Event.ENTER_FRAME, hasFocus_enterFrameHandler);
 			this.dispatchEventWith(FeathersEventType.FOCUS_IN);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -931,7 +932,7 @@ package feathers.controls.text
 			{
 				var lineWidth:Number = this.measureText(HELPER_POINT).x;
 				var hasExplicitWidth:Boolean = this._explicitWidth === this._explicitWidth; //!isNaN
-				var maxLineWidth:Number = hasExplicitWidth ? this._explicitWidth : this._maxWidth;
+				var maxLineWidth:Number = hasExplicitWidth ? this._explicitWidth : this._explicitMaxWidth;
 				if(maxLineWidth > lineWidth)
 				{
 					if(align == TextFormatAlign.RIGHT)
@@ -979,7 +980,7 @@ package feathers.controls.text
 			}
 			return 0;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1000,7 +1001,7 @@ package feathers.controls.text
 			{
 				var lineWidth:Number = this.measureText(HELPER_POINT).x;
 				var hasExplicitWidth:Boolean = this._explicitWidth === this._explicitWidth; //!isNaN
-				var maxLineWidth:Number = hasExplicitWidth ? this._explicitWidth : this._maxWidth;
+				var maxLineWidth:Number = hasExplicitWidth ? this._explicitWidth : this._explicitMaxWidth;
 				if(maxLineWidth > lineWidth)
 				{
 					if(align == TextFormatAlign.RIGHT)
@@ -1039,7 +1040,7 @@ package feathers.controls.text
 			}
 			return currentX + xPositionOffset;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1053,7 +1054,7 @@ package feathers.controls.text
 			cursorX = int(cursorX - (this._cursorSkin.width / 2));
 			this._cursorSkin.x = cursorX;
 			this._cursorSkin.y = 0;
-
+			
 			//then we update the scroll to always show the cursor
 			var minScrollX:Number = cursorX + this._cursorSkin.width - this.actualWidth;
 			var maxScrollX:Number = this.getXPositionOfIndex(this._text.length) - this.actualWidth;
@@ -1074,7 +1075,7 @@ package feathers.controls.text
 				this._scrollX = maxScrollX;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1087,7 +1088,7 @@ package feathers.controls.text
 			}
 			return cursorIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1100,7 +1101,7 @@ package feathers.controls.text
 			{
 				scale = 1;
 			}
-
+			
 			var startX:Number = this.getXPositionOfIndex(this._selectionBeginIndex) - this._scrollX;
 			if(startX < 0)
 			{
@@ -1116,7 +1117,7 @@ package feathers.controls.text
 			this._selectionSkin.y = 0;
 			this._selectionSkin.height = font.lineHeight * scale;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1128,7 +1129,7 @@ package feathers.controls.text
 			}
 			return this._text.substr(this._selectionBeginIndex, this._selectionEndIndex - this._selectionBeginIndex);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1142,7 +1143,7 @@ package feathers.controls.text
 			this.text = currentValue.substr(0, this._selectionBeginIndex) + currentValue.substr(this._selectionEndIndex);
 			this.selectRange(this._selectionBeginIndex, this._selectionBeginIndex);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1162,7 +1163,7 @@ package feathers.controls.text
 			var selectionIndex:int = this._selectionBeginIndex + text.length;
 			this.selectRange(selectionIndex, selectionIndex);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1180,7 +1181,7 @@ package feathers.controls.text
 			}
 			while(target)
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1213,6 +1214,18 @@ package feathers.controls.text
 				{
 					return;
 				}
+				if(touch.tapCount === 2)
+				{
+					var start:int = TextInputNavigation.findCurrentWordStartIndex(this._text, this._selectionBeginIndex);
+					var end:int = TextInputNavigation.findCurrentWordEndIndex(this._text, this._selectionEndIndex);
+					this.selectRange(start, end);
+					return;
+				}
+				else if(touch.tapCount > 2)
+				{
+					this.selectRange(0, this._text.length);
+					return;
+				}
 				this.touchPointID = touch.id;
 				touch.getLocation(this, HELPER_POINT);
 				HELPER_POINT.x += this._scrollX;
@@ -1230,7 +1243,7 @@ package feathers.controls.text
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1250,7 +1263,7 @@ package feathers.controls.text
 			//if the touch begins anywhere else, it's a focus out!
 			this.clearFocus();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1420,7 +1433,7 @@ package feathers.controls.text
 				this.selectRange(newIndex, newIndex);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1442,7 +1455,7 @@ package feathers.controls.text
 				this.replaceSelectedText(text);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1455,7 +1468,7 @@ package feathers.controls.text
 			this._selectionAnchorIndex = 0;
 			this.selectRange(0, this._text.length);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1473,7 +1486,7 @@ package feathers.controls.text
 			}
 			this.deleteSelectedText();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1486,7 +1499,7 @@ package feathers.controls.text
 			}
 			Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT, this.getSelectedText());
 		}
-
+		
 		/**
 		 * @private
 		 */

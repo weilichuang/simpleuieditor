@@ -1,1440 +1,1461 @@
 ﻿{
-    "supported_components": [
+    "supported_components":[
         {
-            "cls": "starling.display.Image", 
-            "params": [
+            "cls":"starling.display.Image",
+            "params":[
                 {
-                    "label": "宽度", 
-                    "name": "width", 
-                    "component": "numericStepper", 
-                    "min": 1, 
-                    "max": 2000, 
-                    "step": 1, 
-                    "link": true
-                }, 
+                    "label":"宽度",
+                    "name":"width",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":2000,
+                    "step":1,
+                    "link":true,
+					"restrict":"0123456789."
+                },
                 {
-                    "label": "高度", 
-                    "name": "height", 
-                    "component": "numericStepper", 
-                    "min": 1, 
-                    "max": 2000, 
-                    "step": 1, 
-                    "link": true
-                }, 
+                    "label":"高度",
+                    "name":"height",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":2000,
+                    "step":1,
+                    "link":true,
+					"restrict":"0123456789."
+                },
                 {
-                    "label": "缩放x", 
-                    "name": "scaleX", 
-                    "step": 0.01, 
-                    "default_value": 1
-                }, 
+                    "label":"缩放x",
+                    "name":"scaleX",
+                    "step":0.01,
+                    "default_value":1,
+					"restrict":"-0123456789."
+                },
                 {
-                    "label": "缩放y", 
-                    "name": "scaleY", 
-                    "step": 0.01, 
-                    "default_value": 1
-                }, 
+                    "label":"缩放y",
+                    "name":"scaleY",
+                    "step":0.01,
+                    "default_value":1,
+					"restrict":"-0123456789."
+                },
                 {
-                    "label": "颜色", 
-                    "name": "color", 
-                    "component": "colorPicker", 
-                    "default_value": 16777215
-                }, 
-				{
-                    "name": "scale9Grid", 
-                    "component": "popup", 
-                    "default_value": null,
-					"disable": true, 
-					"editPropertyClass": "uieditor.editor.ui.property.Scale9GridTexturePopup"
-                }, 
-				{
-                    "name": "tileGrid", 
-                    "component": "popup", 
-                    "default_value": null,
-					"disable": true, 
-					"editPropertyClass": "uieditor.editor.ui.property.TileGridTexturePopup"
-                },                 
-				{
-                    "name": "texture", 
-                    "read_only": true, 
-                    "component": "popup", 
-                    "cls": true, 
-                    "disable": true, 
-                    "default_value": null, 
-                    "editPropertyClass": "uieditor.editor.ui.property.TextureConstructorPopup"
+                    "label":"批处理",
+                    "name":"batchable",
+                    "component":"check",
+                    "default_value":false
+                },
+                {
+                    "label":"颜色",
+                    "name":"color",
+                    "component":"colorPicker",
+                    "default_value":16777215,
+					"restrict":"xX0123456789"
+                },
+                {
+                    "name":"scale9Grid",
+                    "component":"popup",
+                    "cls":true,
+                    "default_value":null,
+                    "disable":true,
+                    "editPropertyClass":"uieditor.editor.ui.property.Scale9GridTexturePopup"
+                },
+                {
+                    "name":"tileGrid",
+                    "component":"popup",
+                    "cls":true,
+                    "default_value":null,
+                    "disable":true,
+                    "editPropertyClass":"uieditor.editor.ui.property.TileGridTexturePopup"
+                },
+                {
+                    "name":"texture",
+                    "read_only":true,
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.TextureConstructorPopup"
                 }
-            ], 
-            "constructorParams": [
+            ],
+            "constructorParams":[
                 {
-                    "cls": "starling.textures.Texture"
+                    "cls":"starling.textures.Texture"
                 }
-            ], 
-            "icon": "component_image", 
-            "tag": "asset"
-        }, 
+            ],
+            "icon":"component_image",
+            "tag":"asset"
+        },
         {
-            "cls": "starling.display.Quad", 
-            "params": [
+            "cls":"starling.display.Quad",
+            "params":[
                 {
-                    "label": "宽度", 
-                    "name": "width", 
-                    "component": "numericStepper", 
-                    "min": 1, 
-                    "max": 2000, 
-                    "step": 1, 
-                    "link": true
-                }, 
+                    "label":"宽度",
+                    "name":"width",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":2000,
+                    "step":1,
+                    "link":true
+                },
                 {
-                    "label": "高度", 
-                    "name": "height", 
-                    "component": "numericStepper", 
-                    "min": 1, 
-                    "max": 2000, 
-                    "step": 1, 
-                    "link": true
-                }, 
+                    "label":"高度",
+                    "name":"height",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":2000,
+                    "step":1,
+                    "link":true
+                },
                 {
-                    "label": "缩放x", 
-                    "name": "scaleX", 
-                    "step": 0.01, 
-                    "default_value": 1
-                }, 
+                    "label":"缩放x",
+                    "name":"scaleX",
+                    "step":0.01,
+                    "default_value":1,
+					"restrict":"-0123456789."
+                },
                 {
-                    "label": "缩放y", 
-                    "name": "scaleY", 
-                    "step": 0.01, 
-                    "default_value": 1
-                }, 
+                    "label":"缩放y",
+                    "name":"scaleY",
+                    "step":0.01,
+                    "default_value":1,
+					"restrict":"-0123456789."
+                },
                 {
-                    "label": "颜色", 
-                    "name": "color", 
-                    "component": "colorPicker", 
-                    "default_value": 16777215
+                    "label":"颜色",
+                    "name":"color",
+                    "component":"colorPicker",
+                    "default_value":16777215
                 }
-            ], 
-            "constructorParams": [
+            ],
+            "constructorParams":[
                 {
-                    "type": "Number", 
-                    "value": 50
-                }, 
+                    "type":"Number",
+                    "value":50
+                },
                 {
-                    "type": "Number", 
-                    "value": 50
+                    "type":"Number",
+                    "value":50
                 }
-            ], 
-            "icon": "component_quad", 
-            "createButton": true, 
-            "tag": "asset"
-        }, 
+            ],
+            "icon":"component_quad",
+            "createButton":true,
+            "tag":"asset"
+        },
         {
-            "cls": "starling.display.Button", 
-            "params": [
+            "cls":"starling.display.Button",
+            "params":[
                 {
-                    "label": "宽度", 
-                    "name": "width", 
-                    "component": "numericStepper", 
-                    "min": 1, 
-                    "max": 2000, 
-                    "step": 1, 
-                    "link": true
-                }, 
+                    "label":"宽度",
+                    "name":"width",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":2000,
+                    "step":1,
+                    "link":true
+                },
                 {
-                    "label": "高度", 
-                    "name": "height", 
-                    "component": "numericStepper", 
-                    "min": 1, 
-                    "max": 2000, 
-                    "step": 1, 
-                    "link": true
-                }, 
+                    "label":"高度",
+                    "name":"height",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":2000,
+                    "step":1,
+                    "link":true
+                },
                 {
-                    "label": "文本", 
-                    "name": "text", 
-                    "default_value": ""
-                }, 
+                    "label":"文本",
+                    "name":"text",
+                    "default_value":""
+                },
                 {
-                    "label": "字体", 
-                    "name": "fontName", 
-                    "component": "textInput", 
-                    "options": [ ], 
-                    "default_value": "SimHei"
-                }, 
+                    "label":"缩放x",
+                    "name":"scaleX",
+                    "step":0.01,
+                    "default_value":1,
+					"restrict":"-0123456789."
+                },
                 {
-                    "label": "字体大小", 
-                    "name": "fontSize", 
-                    "component": "numericStepper", 
-                    "min": 1, 
-                    "max": 100, 
-                    "step": 1, 
-                    "default_value": 12
-                }, 
+                    "label":"缩放y",
+                    "name":"scaleY",
+                    "step":0.01,
+                    "default_value":1,
+					"restrict":"-0123456789."
+                },
                 {
-                    "label": "字体颜色", 
-                    "name": "fontColor", 
-                    "component": "colorPicker", 
-                    "default_value": 0
-                }, 
+                    "name":"upState",
+                    "read_only":true,
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.TextureConstructorPopup"
+                },
                 {
-                    "label": "缩放x", 
-                    "name": "scaleX", 
-                    "step": 0.01, 
-                    "default_value": 1
-                }, 
+                    "name":"downState",
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.TexturePropertyPopup"
+                },
                 {
-                    "label": "缩放y", 
-                    "name": "scaleY", 
-                    "step": 0.01, 
-                    "default_value": 1
-                }, 
+                    "name":"overState",
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.TexturePropertyPopup"
+                },
                 {
-                    "name": "upState", 
-                    "read_only": true, 
-                    "component": "popup", 
-                    "cls": true, 
-                    "disable": true, 
-                    "default_value": null, 
-                    "editPropertyClass": "uieditor.editor.ui.property.TextureConstructorPopup"
-                }, 
-                {
-                    "name": "downState", 
-                    "component": "popup", 
-                    "cls": true, 
-                    "disable": true, 
-                    "default_value": null, 
-                    "editPropertyClass": "uieditor.editor.ui.property.TexturePropertyPopup"
+                    "name":"disabledState",
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.TexturePropertyPopup"
                 }
-            ], 
-            "constructorParams": [
+            ],
+            "constructorParams":[
                 {
-                    "cls": "starling.textures.Texture"
+                    "cls":"starling.textures.Texture"
                 }
-            ], 
-            "icon": "component_button", 
-            "tag": "asset"
-        }, 
+            ],
+            "icon":"component_button",
+            "tag":"asset"
+        },
         {
-            "cls": "starling.text.TextField", 
-            "params": [
+            "cls":"starling.text.TextField",
+            "params":[
                 {
-                    "label": "宽度", 
-                    "name": "width", 
-                    "component": "numericStepper", 
-                    "min": 1, 
-                    "max": 2000, 
-                    "step": 1
-                }, 
+                    "label":"宽度",
+                    "name":"width",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":2000,
+                    "step":1
+                },
                 {
-                    "label": "高度", 
-                    "name": "height", 
-                    "component": "numericStepper", 
-                    "min": 1, 
-                    "max": 2000, 
-                    "step": 1
-                }, 
+                    "label":"高度",
+                    "name":"height",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":2000,
+                    "step":1
+                },
                 {
-                    "label": "文本", 
-                    "name": "text"
-                }, 
+                    "label":"文本",
+                    "name":"text"
+                },
                 {
-                    "label": "字体", 
-                    "name": "fontName", 
-                    "component": "textInput", 
-                    "options": [ ], 
-                    "default_value": "SimHei"
-                }, 
+                    "label":"批处理",
+                    "name":"batchable",
+                    "component":"check",
+                    "default_value":false
+                },
                 {
-                    "label": "字体大小", 
-                    "name": "fontSize", 
-                    "component": "numericStepper", 
-                    "min": 1, 
-                    "max": 100, 
-                    "step": 1
-                }, 
+                    "name":"autoScale",
+                    "component":"check",
+                    "default_value":false
+                },
                 {
-                    "label": "批量处理", 
-                    "name": "batchable", 
-                    "component": "check", 
-                    "default_value": false
-                }, 
+                    "name":"bold",
+                    "component":"check",
+                    "default_value":false
+                },
                 {
-                    "label": "颜色", 
-                    "name": "color", 
-                    "component": "colorPicker", 
-                    "default_value": 16777215
-                }, 
-                {
-                    "name": "autoScale", 
-                    "component": "check", 
-                    "default_value": false
-                }, 
-                {
-                    "name": "bold", 
-                    "component": "check", 
-                    "default_value": false
-                }, 
-                {
-                    "name": "autoSize", 
-                    "component": "pickerList", 
-                    "options": [
-                        "none", 
-                        "horizontal", 
-                        "vertical", 
+                    "name":"autoSize",
+                    "component":"pickerList",
+                    "options":[
+                        "none",
+                        "horizontal",
+                        "vertical",
                         "bothDirections"
-                    ], 
-                    "default_value": "bothDirections"
-                }, 
-                {
-                    "name": "hAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "left", 
-                        "center", 
-                        "right"
-                    ], 
-                    "default_value": "center"
-                }, 
-                {
-                    "name": "vAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "top", 
-                        "center", 
-                        "bottom"
-                    ], 
-                    "default_value": "center"
-                }
-            ], 
-            "constructorParams": [
-                {
-                    "value": 100
-                }, 
-                {
-                    "value": 20
-                }, 
-                {
-                    "value": ""
-                }
-            ], 
-            "icon": "component-text", 
-            "tag": "starling"
-        }, 
-        {
-            "cls": "feathers.controls.LayoutGroup", 
-            "params": [
-                {
-                    "name": "width", 
-                    "min": 0, 
-                    "explicitField": "explicitWidth"
-                }, 
-                {
-                    "name": "height", 
-                    "min": 0, 
-                    "explicitField": "explicitHeight"
-                }, 
-                {
-                    "name": "backgroundSkin", 
-                    "component": "popup", 
-                    "cls": true, 
-                    "disable": true, 
-                    "default_value": null, 
-                    "editPropertyClass": "uieditor.editor.ui.property.DisplayObjectPropertyPopup"
-                }, 
-                {
-                    "label": "布局", 
-                    "name": "layout", 
-                    "component": "popup", 
-                    "cls": true, 
-                    "disable": true, 
-                    "default_value": null, 
-                    "editPropertyClass": "uieditor.editor.ui.property.DefaultEditPropertyPopup", 
-                    "supportedClasses": [
-                        null, 
-                        "feathers.layout.HorizontalLayout", 
-                        "feathers.layout.VerticalLayout", 
-                        "feathers.layout.AnchorLayout", 
-                        "feathers.layout.FlowLayout", 
-                        "feathers.layout.TiledRowsLayout", 
-                        "feathers.layout.TiledColumnsLayout", 
-                        "feathers.layout.WaterfallLayout"
-                    ]
-                }, 
-                {
-                    "label": "布局数据", 
-                    "name": "layoutData", 
-                    "component": "popup", 
-                    "cls": true, 
-                    "disable": true, 
-                    "default_value": null, 
-                    "editPropertyClass": "uieditor.editor.ui.property.DefaultEditPropertyPopup", 
-                    "supportedClasses": [
-                        null, 
-                        "feathers.layout.AnchorLayoutData"
-                    ]
-                }, 
-                {
-                    "label": "使用布局", 
-                    "name": "includeInLayout", 
-                    "component": "check", 
-                    "default_value": true
-                }
-            ], 
-            "container": true, 
-            "icon": "component_group", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.ScrollContainer", 
-            "params": [
-                {
-                    "name": "width", 
-                    "min": 0, 
-                    "explicitField": "explicitWidth"
-                }, 
-                {
-                    "name": "height", 
-                    "min": 0, 
-                    "explicitField": "explicitHeight"
-                }, 
-                {
-                    "label": "布局", 
-                    "name": "layout", 
-                    "component": "popup", 
-                    "cls": true, 
-                    "disable": true, 
-                    "default_value": null, 
-                    "editPropertyClass": "uieditor.editor.ui.property.DefaultEditPropertyPopup", 
-                    "supportedClasses": [
-                        null, 
-                        "feathers.layout.HorizontalLayout", 
-                        "feathers.layout.VerticalLayout", 
-                        "feathers.layout.AnchorLayout", 
-                        "feathers.layout.FlowLayout", 
-                        "feathers.layout.TiledRowsLayout", 
-                        "feathers.layout.TiledColumnsLayout", 
-                        "feathers.layout.WaterfallLayout"
-                    ]
-                }, 
-                {
-                    "label": "布局数据", 
-                    "name": "layoutData", 
-                    "component": "popup", 
-                    "cls": true, 
-                    "disable": true, 
-                    "default_value": null, 
-                    "editPropertyClass": "uieditor.editor.ui.property.DefaultEditPropertyPopup", 
-                    "supportedClasses": [
-                        null, 
-                        "feathers.layout.AnchorLayoutData"
-                    ]
-                }
-            ], 
-            "container": true, 
-            "icon": "component_scrollcontainer", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "starling.display.Sprite", 
-            "params": [
-                {
-                    "name": "width", 
-                    "min": 0, 
-                    "read_only": true, 
-                    "link": true
-                }, 
-                {
-                    "name": "height", 
-                    "min": 0, 
-                    "read_only": true, 
-                    "link": true
-                }, 
-                {
-                    "name": "scaleX", 
-                    "step": 0.01, 
-                    "default_value": 1
-                }, 
-                {
-                    "name": "scaleY", 
-                    "step": 0.01, 
-                    "default_value": 1
-                }
-            ], 
-            "container": true, 
-            "icon": "component_sprite", 
-            "tag": "starling"
-        }, 
-        {
-            "cls": "starling.display.Sprite3D", 
-            "params": [
-                {
-                    "name": "width", 
-                    "min": 0, 
-                    "read_only": true, 
-                    "link": true
-                }, 
-                {
-                    "name": "height", 
-                    "min": 0, 
-                    "read_only": true, 
-                    "link": true
-                }, 
-                {
-                    "name": "scaleX", 
-                    "step": 0.01, 
-                    "default_value": 1
-                }, 
-                {
-                    "name": "scaleY", 
-                    "step": 0.01, 
-                    "default_value": 1
-                }, 
-                {
-                    "name": "z", 
-                    "default_value": 0
-                }, 
-                {
-                    "name": "rotationX", 
-                    "component": "slider", 
-                    "min": -3.14, 
-                    "max": 3.14, 
-                    "step": 0.01, 
-                    "default_value": 0
-                }, 
-                {
-                    "name": "rotationY", 
-                    "component": "slider", 
-                    "min": -3.14, 
-                    "max": 3.14, 
-                    "step": 0.01, 
-                    "default_value": 0
-                }, 
-                {
-                    "name": "scaleZ", 
-                    "default_value": 1
-                }, 
-                {
-                    "name": "pivotZ", 
-                    "default_value": 0
-                }
-            ], 
-            "container": true, 
-            "icon": "component_sprite3d", 
-            "tag": "starling"
-        }, 
-        {
-            "cls": "starling.display.MovieClip", 
-            "constructorParams": [
-                {
-                    "cls": "__AS3__.vec.Vector.<starling.textures.Texture>", 
-                    "name": "textures", 
-					"label":"prefix",
-                    "value": ""
-                }
-            ], 
-            "params": [
-                {
-                    "name": "fps", 
-                    "min": 1, 
-                    "default_value": 12
-                }, 
-                {
-                    "name": "loop", 
-                    "component": "check", 
-                    "default_value": true
-                }, 
-                {
-                    "name": "currentFrame", 
-                    "default_value": 0
-                }, 
-                {
-                    "name": "numFrames", 
-                    "read_only": true, 
-                    "disable": true
-                }
-            ], 
-            "createComponentClass": "uieditor.editor.ui.DefaultCreateComponentPopup", 
-            "createButton": true, 
-            "icon": "component_movieclip", 
-            "tag": "asset"
-        }, 
-        {
-            "cls": "feathers.controls.Button", 
-            "params": [
-                {
-                    "label": "标签", 
-                    "name": "label"
-                }
-            ], 
-            "icon": "component_button", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.Check", 
-            "params": [
-                {
-                    "label": "标签", 
-                    "name": "label"
-                }
-            ], 
-            "icon": "component_checkBox", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.DateTimeSpinner", 
-            "params": [
-                {
-                    "name": "label"
-                }, 
-                {
-                    "name": "editingMode", 
-                    "component": "pickerList", 
-                    "options": [
-                        "dateAndTime", 
-                        "date", 
-                        "time"
-                    ], 
-                    "default_value": "dateAndTime"
-                }
-            ], 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.GroupedList", 
-            "params": [ ], 
-            "icon": "component_list", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.Header", 
-            "params": [
-                {
-                    "label": "标题", 
-                    "name": "title"
-                }
-            ], 
-            "icon": "component-header", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.ImageLoader", 
-            "params": [
-                {
-                    "label": "源", 
-                    "name": "source"
-                }
-            ], 
-            "icon": "component-image", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.Label", 
-            "params": [
-                {
-                    "label": "文本", 
-                    "name": "text", 
-                    "default_value": "label"
-                }, 
-                {
-                    "label": "背景皮肤", 
-                    "name": "backgroundSkin", 
-                    "component": "popup", 
-                    "cls": true, 
-                    "disable": true, 
-                    "default_value": null, 
-                    "editPropertyClass": "uieditor.editor.ui.property.DisplayObjectPropertyPopup"
-                }
-            ], 
-            "icon": "component_label", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.List", 
-            "params": [ ], 
-            "icon": "component-list", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.NumericStepper", 
-            "params": [
-                {
-                    "label": "最小值", 
-                    "name": "minimum", 
-                    "default_value": 0
-                }, 
-                {
-                    "label": "最大值", 
-                    "name": "maximum", 
-                    "default_value": 100
-                }, 
-                {
-                    "label": "步数", 
-                    "name": "step", 
-                    "default_value": 1
-                }, 
-                {
-                    "label": "当前值", 
-                    "name": "value", 
-                    "default_value": 0
-                }
-            ], 
-            "icon": "component_numericStepper", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.PickerList", 
-            "params": [ ], 
-            "icon": "component_comboBox", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.PageIndicator", 
-            "params": [ ], 
-            "icon": "component_pageIndicator", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.Panel", 
-            "params": [
-                {
-                    "name": "title"
-                }, 
-                {
-                    "name": "layout", 
-                    "component": "popup", 
-                    "cls": true, 
-                    "disable": true, 
-                    "default_value": null, 
-                    "editPropertyClass": "uieditor.editor.ui.property.DefaultEditPropertyPopup", 
-                    "supportedClasses": [
-                        null, 
-                        "feathers.layout.HorizontalLayout", 
-                        "feathers.layout.VerticalLayout", 
-                        "feathers.layout.AnchorLayout", 
-                        "feathers.layout.FlowLayout", 
-                        "feathers.layout.TiledRowsLayout", 
-                        "feathers.layout.TiledColumnsLayout", 
-                        "feathers.layout.WaterfallLayout"
-                    ]
-                }
-            ], 
-			"icon": "component_panel", 
-            "container": true, 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.ProgressBar", 
-            "params": [
-                {
-                    "label": "最小值", 
-                    "name": "minimum", 
-                    "default_value": 0
-                }, 
-                {
-                    "label": "最大值", 
-                    "name": "maximum", 
-                    "default_value": 100
-                }, 
-                {
-                    "label": "当前值", 
-                    "name": "value", 
-                    "default_value": 0
-                }
-            ], 
-            "icon": "component_progressBar", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.Radio", 
-            "params": [
-                {
-                    "label": "标签", 
-                    "name": "label"
-                }, 
-                {
-                    "label": "选中", 
-                    "name": "isSelected", 
-                    "component": "check", 
-                    "default_value": false
-                }
-            ], 
-            "icon": "component_radioButton", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.Slider", 
-            "params": [
-                {
-                    "label": "最小值", 
-                    "name": "minimum", 
-                    "default_value": 0
-                }, 
-                {
-                    "label": "最大值", 
-                    "name": "maximum", 
-                    "default_value": 100
-                }, 
-                {
-                    "label": "步数", 
-                    "name": "step", 
-                    "default_value": 1
-                }, 
-                {
-                    "label": "当前值", 
-                    "name": "value", 
-                    "default_value": 0
-                }
-            ], 
-            "icon": "component-slider", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.TextArea", 
-            "params": [
-                {
-                    "label": "文本", 
-                    "name": "text", 
-                    "default_value": "textArea"
-                }
-            ], 
-            "icon": "component_textArea", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.TextInput", 
-            "params": [
-                {
-                    "label": "文本", 
-                    "name": "text"
-                }
-            ], 
-            "icon": "component_textInput", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.ToggleButton", 
-            "params": [
-                {
-                    "label": "标签", 
-                    "name": "label"
-                }, 
-                {
-                    "label": "选中", 
-                    "name": "isSelected", 
-                    "component": "check", 
-                    "default_value": false
-                }
-            ], 
-            "icon": "component_toggleButton", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.controls.ToggleSwitch", 
-            "params": [
-                {
-                    "label": "文本", 
-                    "name": "text", 
-                    "default_value": "toggleSwitch"
-                }, 
-                {
-                    "label": "选中", 
-                    "name": "isSelected", 
-                    "component": "check", 
-                    "default_value": false
-                }
-            ], 
-            "icon": "component-switch", 
-            "tag": "feathers"
-        }, 
-        {
-            "cls": "feathers.layout.HorizontalLayout", 
-            "params": [
-                {
-                    "label": "间距", 
-                    "name": "gap", 
-                    "component": "numericStepper", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
-                {
-                    "label": "填充", 
-                    "name": "padding", 
-                    "component": "numericStepper", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
-                {
-                    "name": "distributeWidths", 
-                    "component": "check", 
-                    "default_value": false
-                }, 
-                {
-                    "label": "水平对齐", 
-                    "name": "horizontalAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "left", 
-                        "center", 
-                        "right"
-                    ], 
-                    "default_value": "left"
-                }, 
-                {
-                    "label": "垂直对齐", 
-                    "name": "verticalAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "top", 
-                        "middle", 
-                        "bottom", 
-                        "justify"
-                    ], 
-                    "default_value": "top"
-                }, 
-                {
-                    "name": "requestedRowCount", 
-                    "default_value": 0
-                }, 
-                {
-                    "name": "requestedColumnCount", 
-                    "default_value": 0
-                }
-            ]
-        }, 
-        {
-            "cls": "feathers.layout.VerticalLayout", 
-            "params": [
-                {
-                    "label": "间距", 
-                    "name": "gap", 
-                    "component": "numericStepper", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
-                {
-                    "label": "填充", 
-                    "name": "padding", 
-                    "component": "numericStepper", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
-                {
-                    "name": "distributeHeights", 
-                    "component": "check", 
-                    "default_value": false
-                }, 
-                {
-                    "label": "水平对齐", 
-                    "name": "horizontalAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "left", 
-                        "center", 
-                        "right", 
-                        "justify"
-                    ], 
-                    "default_value": "left"
-                }, 
-                {
-                    "label": "垂直对齐", 
-                    "name": "verticalAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "top", 
-                        "middle", 
-                        "bottom"
-                    ], 
-                    "default_value": "top"
-                }, 
-                {
-                    "name": "requestedRowCount", 
-                    "default_value": 0
-                }, 
-                {
-                    "name": "requestedColumnCount", 
-                    "default_value": 0
-                }
-            ]
-        }, 
-        {
-            "cls": "feathers.layout.TiledRowsLayout", 
-            "params": [
-                {
-                    "label": "间距", 
-                    "name": "gap", 
-                    "component": "numericStepper", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
-                {
-                    "label": "填充", 
-                    "name": "padding", 
-                    "component": "numericStepper", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
-				{
-                    "label": "使用正方形格子", 
-                    "name": "useSquareTiles", 
-                    "component": "check", 
-                    "default_value": true
+                    ],
+                    "default_value":"bothDirections"
                 },
                 {
-                    "label": "水平对齐", 
-                    "name": "horizontalAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "left", 
-                        "center", 
-                        "right"
-                    ], 
-                    "default_value": "center"
-                }, 
-                {
-                    "label": "垂直对齐", 
-                    "name": "verticalAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "top", 
-                        "middle", 
-                        "bottom"
-                    ], 
-                    "default_value": "top"
-                }, 
-                {
-                    "name": "requestedRowCount", 
-                    "default_value": 0
-                }, 
-                {
-                    "name": "requestedColumnCount", 
-                    "default_value": 0
+                    "name":"format",
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.DefaultEditPropertyPopup",
+                    "supportedClasses":[
+                        "starling.text.TextFormat"
+                    ]
                 }
-            ]
-        }, 
-        {
-            "cls": "feathers.layout.TiledColumnsLayout", 
-            "params": [
+            ],
+            "constructorParams":[
                 {
-                    "label": "间距", 
-                    "name": "gap", 
-                    "component": "numericStepper", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
-                {
-                    "label": "填充", 
-                    "name": "padding", 
-                    "component": "numericStepper", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
-				{
-                    "label": "使用正方形格子", 
-                    "name": "useSquareTiles", 
-                    "component": "check", 
-                    "default_value": true
+                    "value":100
                 },
                 {
-                    "label": "水平对齐", 
-                    "name": "horizontalAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "left", 
-                        "center", 
-                        "right"
-                    ], 
-                    "default_value": "center"
-                }, 
+                    "value":20
+                },
                 {
-                    "label": "垂直对齐", 
-                    "name": "verticalAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "top", 
-                        "middle", 
+                    "value":""
+                }
+            ],
+            "icon":"component-text",
+            "tag":"starling"
+        },
+		{
+            "cls":"starling.text.SimpleBitmapText",
+            "params":[
+                {
+                    "label":"宽度",
+                    "name":"width",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":2000,
+                    "step":1
+                },
+                {
+                    "label":"高度",
+                    "name":"height",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":2000,
+                    "step":1
+                },
+                {
+                    "label":"文本",
+                    "name":"text"
+                },
+                {
+                    "name":"format",
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.DefaultEditPropertyPopup",
+                    "supportedClasses":[
+                        "starling.text.TextFormat"
+                    ]
+                },
+				{
+                    "name":"maxChar",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":50,
+                    "step":1
+                }
+            ],
+            "constructorParams":[
+                {
+                    "value":100
+                },
+                {
+                    "value":20
+                },
+				{
+                    "value":10
+                },
+                {
+                    "value":""
+                }
+            ],
+            "icon":"component-text",
+            "tag":"starling"
+        },
+        {
+            "cls":"feathers.controls.LayoutGroup",
+            "params":[
+                {
+                    "name":"width",
+                    "min":0,
+                    "explicitField":"explicitWidth"
+                },
+                {
+                    "name":"height",
+                    "min":0,
+                    "explicitField":"explicitHeight"
+                },
+                {
+                    "name":"backgroundSkin",
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.DisplayObjectPropertyPopup"
+                },
+                {
+                    "label":"布局",
+                    "name":"layout",
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.DefaultEditPropertyPopup",
+                    "supportedClasses":[
+                        null,
+                        "feathers.layout.HorizontalLayout",
+                        "feathers.layout.VerticalLayout",
+                        "feathers.layout.AnchorLayout",
+                        "feathers.layout.FlowLayout",
+                        "feathers.layout.TiledRowsLayout",
+                        "feathers.layout.TiledColumnsLayout",
+                        "feathers.layout.WaterfallLayout"
+                    ]
+                },
+                {
+                    "label":"布局数据",
+                    "name":"layoutData",
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.DefaultEditPropertyPopup",
+                    "supportedClasses":[
+                        null,
+                        "feathers.layout.AnchorLayoutData"
+                    ]
+                },
+                {
+                    "label":"使用布局",
+                    "name":"includeInLayout",
+                    "component":"check",
+                    "default_value":true
+                }
+            ],
+            "container":true,
+            "icon":"component_group",
+            "tag":"feathers"
+        },
+        {
+            "cls":"feathers.controls.ScrollContainer",
+            "params":[
+                {
+                    "name":"width",
+                    "min":0,
+                    "explicitField":"explicitWidth"
+                },
+                {
+                    "name":"height",
+                    "min":0,
+                    "explicitField":"explicitHeight"
+                },
+                {
+                    "label":"布局",
+                    "name":"layout",
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.DefaultEditPropertyPopup",
+                    "supportedClasses":[
+                        null,
+                        "feathers.layout.HorizontalLayout",
+                        "feathers.layout.VerticalLayout",
+                        "feathers.layout.AnchorLayout",
+                        "feathers.layout.FlowLayout",
+                        "feathers.layout.TiledRowsLayout",
+                        "feathers.layout.TiledColumnsLayout",
+                        "feathers.layout.WaterfallLayout"
+                    ]
+                },
+                {
+                    "label":"布局数据",
+                    "name":"layoutData",
+                    "component":"popup",
+                    "cls":true,
+                    "disable":true,
+                    "default_value":null,
+                    "editPropertyClass":"uieditor.editor.ui.property.DefaultEditPropertyPopup",
+                    "supportedClasses":[
+                        null,
+                        "feathers.layout.AnchorLayoutData"
+                    ]
+                }
+            ],
+            "container":true,
+            "icon":"component_scrollcontainer",
+            "tag":"feathers"
+        },
+        {
+            "cls":"starling.display.Sprite",
+            "params":[
+                {
+                    "name":"width",
+                    "min":0,
+                    "read_only":true,
+                    "link":true
+                },
+                {
+                    "name":"height",
+                    "min":0,
+                    "read_only":true,
+                    "link":true
+                },
+                {
+                    "name":"scaleX",
+                    "step":0.01,
+                    "default_value":1,
+					"restrict":"-0123456789."
+                },
+                {
+                    "name":"scaleY",
+                    "step":0.01,
+                    "default_value":1,
+					"restrict":"-0123456789."
+                }
+            ],
+            "container":true,
+            "icon":"component_sprite",
+            "tag":"starling"
+        },
+        {
+            "cls":"starling.display.MovieClip",
+            "constructorParams":[
+                {
+                    "cls":"__AS3__.vec.Vector.<starling.textures.Texture>",
+                    "name":"textures",
+                    "label":"prefix",
+                    "value":""
+                }
+            ],
+            "params":[
+                {
+                    "name":"fps",
+                    "min":1,
+                    "default_value":12
+                },
+                {
+                    "name":"loop",
+                    "component":"check",
+                    "default_value":true
+                },
+                {
+                    "name":"currentFrame",
+                    "default_value":0
+                },
+                {
+                    "name":"numFrames",
+                    "read_only":true,
+                    "disable":true
+                }
+            ],
+            "createComponentClass":"uieditor.editor.ui.DefaultCreateComponentPopup",
+            "createButton":true,
+            "icon":"component_movieclip",
+            "tag":"asset"
+        },
+        {
+            "cls":"feathers.controls.ImageLoader",
+            "params":[
+                {
+                    "label":"源",
+                    "name":"source"
+                },
+                {
+                    "label":"批处理",
+                    "name":"batchable",
+                    "component":"check",
+                    "default_value":false
+                }
+            ],
+            "icon":"component-image",
+            "tag":"feathers"
+        },
+        {
+            "cls":"feathers.controls.TextArea",
+            "params":[
+                {
+                    "label":"文本",
+                    "name":"text",
+                    "default_value":"textArea"
+                }
+            ],
+            "icon":"component_textArea",
+            "tag":"feathers"
+        },
+        {
+            "cls":"feathers.controls.TextInput",
+            "params":[
+                {
+                    "label":"文本",
+                    "name":"text"
+                }
+            ],
+            "icon":"component_textInput",
+            "tag":"feathers"
+        },
+		{
+            "cls":"feathers.controls.ScrollText",
+            "params":[
+                {
+                    "label":"文本",
+                    "name":"text"
+                },
+                {
+                    "name":"isHTML",
+                    "component":"check",
+                    "default_value":false
+                },
+				{
+                    "name":"scrollBarDisplayMode",
+                    "component":"pickerList",
+                    "options":[
+                        "float",
+                        "fixed",
+                        "fixedFloat",
+						"none"
+                    ],
+                    "default_value":"float"
+                },
+				{
+                    "name":"verticalScrollPolicy",
+                    "component":"pickerList",
+                    "options":[
+                        "auto",
+                        "on",
+                        "off"
+                    ],
+                    "default_value":"auto"
+                },
+				{
+                    "name":"horizontalScrollPolicy",
+                    "component":"pickerList",
+                    "options":[
+                        "auto",
+                        "on",
+                        "off"
+                    ],
+                    "default_value":"auto"
+                }
+            ],
+            "icon":"component_textArea",
+            "tag":"feathers"
+        },
+        {
+            "cls":"feathers.layout.HorizontalLayout",
+            "params":[
+                {
+                    "label":"间距",
+                    "name":"gap",
+                    "component":"numericStepper",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
+                {
+                    "label":"填充",
+                    "name":"padding",
+                    "component":"numericStepper",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
+                {
+                    "name":"distributeWidths",
+                    "component":"check",
+                    "default_value":false
+                },
+                {
+                    "label":"水平对齐",
+                    "name":"horizontalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "left",
+                        "center",
+                        "right"
+                    ],
+                    "default_value":"left"
+                },
+                {
+                    "label":"垂直对齐",
+                    "name":"verticalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "top",
+                        "middle",
+                        "bottom",
+                        "justify"
+                    ],
+                    "default_value":"top"
+                },
+                {
+                    "name":"requestedRowCount",
+                    "default_value":0
+                },
+                {
+                    "name":"requestedColumnCount",
+                    "default_value":0
+                }
+            ]
+        },
+        {
+            "cls":"feathers.layout.VerticalLayout",
+            "params":[
+                {
+                    "label":"间距",
+                    "name":"gap",
+                    "component":"numericStepper",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
+                {
+                    "label":"填充",
+                    "name":"padding",
+                    "component":"numericStepper",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
+                {
+                    "name":"distributeHeights",
+                    "component":"check",
+                    "default_value":false
+                },
+                {
+                    "label":"水平对齐",
+                    "name":"horizontalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "left",
+                        "center",
+                        "right",
+                        "justify"
+                    ],
+                    "default_value":"left"
+                },
+                {
+                    "label":"垂直对齐",
+                    "name":"verticalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "top",
+                        "middle",
                         "bottom"
-                    ], 
-                    "default_value": "top"
-                }, 
+                    ],
+                    "default_value":"top"
+                },
                 {
-                    "name": "requestedRowCount", 
-                    "default_value": 0
-                }, 
+                    "name":"requestedRowCount",
+                    "default_value":0
+                },
                 {
-                    "name": "requestedColumnCount", 
-                    "default_value": 0
+                    "name":"requestedColumnCount",
+                    "default_value":0
                 }
             ]
-        }, 
+        },
         {
-            "cls": "feathers.layout.FlowLayout", 
-            "params": [
+            "cls":"feathers.layout.TiledRowsLayout",
+            "params":[
                 {
-                    "name": "gap", 
-                    "component": "slider", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
+                    "label":"间距",
+                    "name":"gap",
+                    "component":"numericStepper",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
                 {
-                    "name": "padding", 
-                    "component": "slider", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
+                    "label":"填充",
+                    "name":"padding",
+                    "component":"numericStepper",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
                 {
-                    "name": "horizontalAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "left", 
-                        "center", 
+                    "label":"使用正方形格子",
+                    "name":"useSquareTiles",
+                    "component":"check",
+                    "default_value":true
+                },
+                {
+                    "label":"水平对齐",
+                    "name":"horizontalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "left",
+                        "center",
                         "right"
-                    ], 
-                    "default_value": "center"
-                }, 
+                    ],
+                    "default_value":"center"
+                },
                 {
-                    "name": "verticalAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "top", 
-                        "middle", 
+                    "label":"垂直对齐",
+                    "name":"verticalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "top",
+                        "middle",
                         "bottom"
-                    ], 
-                    "default_value": "top"
+                    ],
+                    "default_value":"top"
+                },
+                {
+                    "name":"requestedRowCount",
+                    "default_value":0
+                },
+                {
+                    "name":"requestedColumnCount",
+                    "default_value":0
                 }
             ]
-        }, 
+        },
         {
-            "cls": "feathers.layout.WaterfallLayout", 
-            "params": [
+            "cls":"feathers.layout.TiledColumnsLayout",
+            "params":[
                 {
-                    "name": "gap", 
-                    "component": "slider", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
+                    "label":"间距",
+                    "name":"gap",
+                    "component":"numericStepper",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
                 {
-                    "name": "padding", 
-                    "component": "slider", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": 0
-                }, 
+                    "label":"填充",
+                    "name":"padding",
+                    "component":"numericStepper",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
                 {
-                    "name": "horizontalAlign", 
-                    "component": "pickerList", 
-                    "options": [
-                        "left", 
-                        "center", 
+                    "label":"使用正方形格子",
+                    "name":"useSquareTiles",
+                    "component":"check",
+                    "default_value":true
+                },
+                {
+                    "label":"水平对齐",
+                    "name":"horizontalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "left",
+                        "center",
                         "right"
-                    ], 
-                    "default_value": "center"
-                }, 
+                    ],
+                    "default_value":"center"
+                },
                 {
-                    "name": "requestedColumnCount", 
-                    "default_value": 0
+                    "label":"垂直对齐",
+                    "name":"verticalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "top",
+                        "middle",
+                        "bottom"
+                    ],
+                    "default_value":"top"
+                },
+                {
+                    "name":"requestedRowCount",
+                    "default_value":0
+                },
+                {
+                    "name":"requestedColumnCount",
+                    "default_value":0
                 }
             ]
-        }, 
+        },
         {
-            "cls": "feathers.layout.AnchorLayoutData", 
-            "params": [
+            "cls":"feathers.layout.FlowLayout",
+            "params":[
                 {
-                    "label": "顶", 
-                    "name": "top", 
-                    "component": "slider", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": "NaN"
-                }, 
+                    "name":"gap",
+                    "component":"slider",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
                 {
-                    "label": "右", 
-                    "name": "right", 
-                    "component": "slider", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": "NaN"
-                }, 
+                    "name":"padding",
+                    "component":"slider",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
                 {
-                    "label": "底", 
-                    "name": "bottom", 
-                    "component": "slider", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": "NaN"
-                }, 
+                    "name":"horizontalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "left",
+                        "center",
+                        "right"
+                    ],
+                    "default_value":"center"
+                },
                 {
-                    "label": "左", 
-                    "name": "left", 
-                    "component": "slider", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": "NaN"
-                }, 
+                    "name":"verticalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "top",
+                        "middle",
+                        "bottom"
+                    ],
+                    "default_value":"top"
+                }
+            ]
+        },
+        {
+            "cls":"feathers.layout.WaterfallLayout",
+            "params":[
                 {
-                    "name": "horizontalCenter", 
-                    "component": "slider", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": "NaN"
-                }, 
+                    "name":"gap",
+                    "component":"slider",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
                 {
-                    "name": "verticalCenter", 
-                    "component": "slider", 
-                    "min": -200, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": "NaN"
-                }, 
+                    "name":"padding",
+                    "component":"slider",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":0
+                },
                 {
-                    "name": "percentWidth", 
-                    "component": "slider", 
-                    "min": 0, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": "NaN"
-                }, 
+                    "name":"horizontalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "left",
+                        "center",
+                        "right"
+                    ],
+                    "default_value":"center"
+                },
                 {
-                    "name": "percentHeight", 
-                    "component": "slider", 
-                    "min": 0, 
-                    "max": 200, 
-                    "step": 1, 
-                    "default_value": "NaN"
+                    "name":"requestedColumnCount",
+                    "default_value":0
+                }
+            ]
+        },
+        {
+            "cls":"feathers.layout.AnchorLayoutData",
+            "params":[
+                {
+                    "label":"顶",
+                    "name":"top",
+                    "component":"slider",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":"NaN"
+                },
+                {
+                    "label":"右",
+                    "name":"right",
+                    "component":"slider",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":"NaN"
+                },
+                {
+                    "label":"底",
+                    "name":"bottom",
+                    "component":"slider",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":"NaN"
+                },
+                {
+                    "label":"左",
+                    "name":"left",
+                    "component":"slider",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":"NaN"
+                },
+                {
+                    "name":"horizontalCenter",
+                    "component":"slider",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":"NaN"
+                },
+                {
+                    "name":"verticalCenter",
+                    "component":"slider",
+                    "min":-200,
+                    "max":200,
+                    "step":1,
+                    "default_value":"NaN"
+                },
+                {
+                    "name":"percentWidth",
+                    "component":"slider",
+                    "min":0,
+                    "max":200,
+                    "step":1,
+                    "default_value":"NaN"
+                },
+                {
+                    "name":"percentHeight",
+                    "component":"slider",
+                    "min":0,
+                    "max":200,
+                    "step":1,
+                    "default_value":"NaN"
+                }
+            ]
+        },
+        {
+            "cls":"flash.geom.Rectangle",
+            "params":[
+                {
+                    "name":"x",
+                    "component":"slider",
+                    "min":0,
+                    "max":10000,
+                    "step":1,
+                    "default_value":"0"
+                },
+                {
+                    "name":"y",
+                    "component":"slider",
+                    "min":0,
+                    "max":10000,
+                    "step":1,
+                    "default_value":"0"
+                },
+                {
+                    "name":"width",
+                    "component":"slider",
+                    "min":0,
+                    "max":10000,
+                    "step":1,
+                    "default_value":"0"
+                },
+                {
+                    "name":"height",
+                    "component":"slider",
+                    "min":0,
+                    "max":10000,
+                    "step":1,
+                    "default_value":"0"
+                }
+            ]
+        },
+        {
+            "cls":"starling.text.TextFormat",
+            "params":[
+                {
+                    "label":"字体",
+                    "name":"font",
+                    "component":"textInput",
+                    "options":[
+
+                    ],
+                    "default_value":"SimHei"
+                },
+                {
+                    "label":"大小",
+                    "name":"size",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":100,
+                    "step":1,
+                    "default_value":12
+                },
+                {
+                    "label":"颜色",
+                    "name":"color",
+                    "component":"colorPicker",
+                    "default_value":0
+                },
+                {
+                    "name":"horizontalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "left",
+                        "center",
+                        "right"
+                    ],
+                    "default_value":"center"
+                },
+                {
+                    "name":"verticalAlign",
+                    "component":"pickerList",
+                    "options":[
+                        "top",
+                        "center",
+                        "bottom"
+                    ],
+                    "default_value":"center"
+                },
+                {
+                    "name":"kerning",
+                    "component":"check",
+                    "default_value":true
+                },
+                {
+                    "name":"leading",
+                    "default_value":0
+                },
+                {
+                    "name":"bold",
+                    "component":"check",
+                    "default_value":false
+                },
+                {
+                    "name":"italic",
+                    "component":"check",
+                    "default_value":false
+                },
+                {
+                    "name":"underline",
+                    "component":"check",
+                    "default_value":false
+                }
+            ],
+            "constructorParams":[
+
+            ]
+        },
+		{
+            "cls":"flash.text.TextFormat",
+            "params":[
+                {
+                    "label":"字体",
+                    "name":"font",
+                    "component":"textInput",
+                    "options":[
+
+                    ],
+                    "default_value":"SimHei"
+                },
+                {
+                    "label":"大小",
+                    "name":"size",
+                    "component":"numericStepper",
+                    "min":1,
+                    "max":100,
+                    "step":1,
+                    "default_value":12
+                },
+                {
+                    "label":"颜色",
+                    "name":"color",
+                    "component":"colorPicker",
+                    "default_value":0
+                },
+                {
+                    "name":"kerning",
+                    "component":"check",
+                    "default_value":true
+                },
+                {
+                    "name":"leading",
+                    "default_value":0
+                },
+                {
+                    "name":"bold",
+                    "component":"check",
+                    "default_value":false
+                },
+                {
+                    "name":"italic",
+                    "component":"check",
+                    "default_value":false
+                },
+                {
+                    "name":"underline",
+                    "component":"check",
+                    "default_value":false
+                }
+            ],
+            "constructorParams":[
+
+            ]
+        },
+        {
+            "cls":"starling.filters.BlurFilter",
+            "params":[
+                {
+                    "name":"blurX",
+                    "default_value":1
+                },
+                {
+                    "name":"blurY",
+                    "default_value":1
+                }
+            ]
+        },
+        {
+            "cls":"starling.filters.GlowFilter",
+            "params":[
+                {
+                    "name":"color",
+                    "component":"colorPicker",
+                    "default_value":16776960
+                },
+                {
+                    "name":"alpha",
+                    "default_value":1
+                },
+                {
+                    "name":"blur",
+                    "default_value":1
+                }
+            ]
+        },
+        {
+            "cls":"starling.filters.DropShadowFilter",
+            "params":[
+                {
+                    "name":"color",
+                    "component":"colorPicker",
+                    "default_value":16776960
+                },
+                {
+                    "name":"alpha",
+                    "default_value":1
+                },
+                {
+                    "name":"distance",
+                    "default_value":4
+                },
+                {
+                    "name":"angle",
+                    "default_value":0.785
+                },
+                {
+                    "name":"blur",
+                    "default_value":1
                 }
             ]
         }
-    ], 
-    "default_component": {
-        "params": [
+    ],
+    "default_component":{
+        "params":[
             {
-                "label": "名字", 
-                "name": "name", 
-                "default_value": null
-            }, 
+                "label":"名字",
+                "name":"name",
+                "default_value":null
+            },
             {
-                "label": "x", 
-                "name": "x", 
-                "component": "numericStepper", 
-                "min": -2000, 
-                "max": 2000, 
-                "step": 1, 
-                "default_value": 0
-            }, 
+                "label":"x",
+                "name":"x",
+                "component":"numericStepper",
+                "min":-2000,
+                "max":2000,
+                "step":1,
+                "default_value":0,
+				"restrict":"-0123456789."
+            },
             {
-                "label": "y", 
-                "name": "y", 
-                "component": "numericStepper", 
-                "min": -2000, 
-                "max": 2000, 
-                "step": 1, 
-                "default_value": 0
-            }, 
+                "label":"y",
+                "name":"y",
+                "component":"numericStepper",
+                "min":-2000,
+                "max":2000,
+                "step":1,
+                "default_value":0,
+				"restrict":"-0123456789."
+            },
             {
-                "label": "注册点x", 
-                "name": "pivotX", 
-                "component": "numericStepper", 
-                "min": -2000, 
-                "max": 2000, 
-                "step": 1, 
-                "default_value": 0
-            }, 
+                "label":"注册点x",
+                "name":"pivotX",
+                "component":"numericStepper",
+                "min":-2000,
+                "max":2000,
+                "step":1,
+                "default_value":0,
+				"restrict":"-0123456789."
+            },
             {
-                "label": "注册点y", 
-                "name": "pivotY", 
-                "component": "numericStepper", 
-                "min": -2000, 
-                "max": 2000, 
-                "step": 1, 
-                "default_value": 0
-            }, 
+                "label":"注册点y",
+                "name":"pivotY",
+                "component":"numericStepper",
+                "min":-2000,
+                "max":2000,
+                "step":1,
+                "default_value":0,
+				"restrict":"-0123456789."
+            },
             {
-                "label": "旋转", 
-                "name": "rotation", 
-                "component": "numericStepper", 
-                "min": -3.14, 
-                "max": 3.14, 
-                "step": 0.01, 
-                "default_value": 0
-            }, 
+                "label":"透明度",
+                "name":"alpha",
+                "component":"numericStepper",
+                "min":0,
+                "max":1,
+                "step":0.01,
+                "default_value":1,
+				"restrict":"0123456789."
+            },
             {
-                "label": "透明度", 
-                "name": "alpha", 
-                "component": "numericStepper", 
-                "min": 0, 
-                "max": 1, 
-                "step": 0.01, 
-                "default_value": 1
-            }, 
+                "label":"可点击",
+                "name":"touchable",
+                "component":"check",
+                "default_value":true
+            },
             {
-                "label": "可点击", 
-                "name": "touchable", 
-                "component": "check", 
-                "default_value": true
-            }, 
+                "label":"可见",
+                "name":"visible",
+                "component":"check",
+                "default_value":true
+            },
             {
-                "label": "可见", 
-                "name": "visible", 
-                "component": "check", 
-                "default_value": true
-            }, 
-            {
-                "label": "混合模式", 
-                "name": "blendMode", 
-                "component": "pickerList", 
-                "options": [
-                    "auto", 
-                    "normal", 
-                    "add", 
-                    "multiply", 
-                    "screen", 
-                    "erase", 
-                    "mask", 
+                "label":"混合模式",
+                "name":"blendMode",
+                "component":"pickerList",
+                "options":[
+                    "auto",
+                    "normal",
+                    "add",
+                    "multiply",
+                    "screen",
+                    "erase",
+                    "mask",
                     "below"
-                ], 
-                "default_value": "auto"
-            }, 
+                ],
+                "default_value":"auto"
+            },
             {
-                "label": "useHandCursor", 
-                "name": "useHandCursor", 
-                "component": "check", 
-                "default_value": false
+                "label":"useHandCursor",
+                "name":"useHandCursor",
+                "component":"check",
+                "default_value":false
+            },
+            {
+                "name":"filter",
+                "component":"popup",
+                "cls":true,
+                "disable":true,
+                "default_value":null,
+                "editPropertyClass":"uieditor.editor.ui.property.DefaultEditPropertyPopup",
+                "supportedClasses":[
+                    "null",
+                    "starling.filters.BlurFilter",
+                    "starling.filters.DropShadowFilter",
+                    "starling.filters.GlowFilter"
+                ]
             }
-        ], 
-        "customParams": [
+        ],
+        "customParams":[
             {
-                "label": "自定义参数", 
-                "name": "customParams", 
-                "component": "textArea", 
-                "disable": "true"
-            }, 
+                "label":"自定义参数",
+                "name":"customParams",
+                "component":"textArea",
+                "disable":"true"
+            },
             {
-                "label": "构造函数参数", 
-                "name": "constructorParams", 
-                "component": "textArea", 
-                "disable": "true"
-            }, 
+                "label":"构造函数参数",
+                "name":"constructorParams",
+                "component":"textArea",
+                "disable":"true"
+            },
             {
-                "label": "自定义类", 
-                "name": "customParams.customComponentClass", 
-                "component": "textInput", 
-                "width": 200, 
-                "default_value": "null"
-            }, 
+                "label":"自定义类",
+                "name":"customParams.customComponentClass",
+                "component":"textInput",
+                "width":200,
+                "default_value":"null"
+            },
             {
-                "label": "仅供编辑器", 
-                "name": "customParams.forEditor", 
-                "component": "check", 
-                "default_value": false
+                "label":"仅供编辑器",
+                "name":"customParams.forEditor",
+                "component":"check",
+                "default_value":false
             }
-        ], 
-        "tweenParams": [
+        ],
+        "tweenParams":[
             {
-                "name": "tweenData", 
-                "component": "textArea"
+                "name":"tweenData",
+                "component":"textArea"
             }
         ]
-    }, 
-    "default_feathers_component": {
-        "params": [
+    },
+    "default_feathers_component":{
+        "params":[
             {
-                "label": "宽度", 
-                "name": "width", 
-                "component": "numericStepper", 
-                "min": 0, 
-                "max": 2000, 
-                "step": 1, 
-                "explicitField": "explicitWidth"
-            }, 
+                "label":"宽度",
+                "name":"width",
+                "component":"numericStepper",
+                "min":0,
+                "max":2000,
+                "step":1,
+                "explicitField":"explicitWidth",
+				"restrict":"0123456789."
+            },
             {
-                "label": "高度", 
-                "name": "height", 
-                "component": "numericStepper", 
-                "min": 0, 
-                "max": 2000, 
-                "step": 1, 
-                "explicitField": "explicitHeight"
-            }, 
+                "label":"高度",
+                "name":"height",
+                "component":"numericStepper",
+                "min":0,
+                "max":2000,
+                "step":1,
+                "explicitField":"explicitHeight",
+				"restrict":"0123456789."
+            },
             {
-                "name": "toolTip", 
-                "component": "textInput", 
-                "default_value": ""
-            }, 
+                "name":"toolTip",
+                "component":"textInput",
+                "default_value":""
+            },
             {
-                "label": "样式名", 
-                "name": "styleName", 
-                "default_value": ""
-            }, 
+                "label":"样式名",
+                "name":"styleName",
+                "default_value":""
+            },
             {
-                "label": "布局数据", 
-                "name": "layoutData", 
-                "component": "popup", 
-                "cls": true, 
-                "disable": true, 
-                "default_value": null, 
-                "editPropertyClass": "uieditor.editor.ui.property.DefaultEditPropertyPopup", 
-                "supportedClasses": [
-                    null, 
+                "label":"布局数据",
+                "name":"layoutData",
+                "component":"popup",
+                "cls":true,
+                "disable":true,
+                "default_value":null,
+                "editPropertyClass":"uieditor.editor.ui.property.DefaultEditPropertyPopup",
+                "supportedClasses":[
+                    null,
                     "feathers.layout.AnchorLayoutData"
                 ]
-            }, 
+            },
             {
-                "label": "使用布局", 
-                "name": "includeInLayout", 
-                "component": "check", 
-                "default_value": true
+                "label":"使用布局",
+                "name":"includeInLayout",
+                "component":"check",
+                "default_value":true
             }
         ]
-    }, 
-    "background": {
-        "params": [
+    },
+    "background":{
+        "params":[
             {
-                "name": "name"
-            }, 
+                "name":"name"
+            },
             {
-                "name": "x", 
-                "step": 10
-            }, 
+                "name":"x",
+                "step":10
+            },
             {
-                "name": "y", 
-                "step": 10
-            }, 
+                "name":"y",
+                "step":10
+            },
             {
-                "name": "width", 
-                "min": 0, 
-                "step": 10
-            }, 
+                "name":"width",
+                "min":0,
+                "step":10
+            },
             {
-                "name": "height", 
-                "min": 0, 
-                "step": 10
+                "name":"height",
+                "min":0,
+                "step":10
             }
         ]
-    }, 
-    "version": 1, 
-    "revision": 25
+    },
+    "version":1,
+    "revision":26
 }

@@ -11,8 +11,9 @@ package uieditor.editor.model
 					"feathers.controls.ScrollContainer" ]},
 			{ "label": "UI资源", "name": "atlasFile",
 				"component": "popup", "cls": true,
+				"disable":true,
 				"editPropertyClass": "uieditor.editor.ui.property.ChooseFilePropertyPopup",
-				"extension": [ "*.jpeg" ]
+				"extension": [ "*.jpeg;*.png" ]
 			},
 			{ "label": "宽度", "name": "width" },
 			{ "label": "高度", "name": "height" }

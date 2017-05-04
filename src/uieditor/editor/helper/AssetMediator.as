@@ -19,6 +19,11 @@ package uieditor.editor.helper
 		{
 			_assetManager = assetManager;
 		}
+		
+		public function dispose():void
+		{
+			_assetManager = null;
+		}
 
 		public function getTexture( name : String ) : Texture
 		{

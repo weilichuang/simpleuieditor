@@ -24,24 +24,33 @@ package uieditor.editor.ui.inspector
 				_textArea.isEnabled = false;
 			}
 
-			function onTextInput( event : Event ) : void
-			{
-				try
-				{
-					var value : Object = JSON.parse( _textArea.text );
-					_oldValue = _propertyRetriever.get( name );
-					_propertyRetriever.set( name, value );
-					setChanged();
-				}
-				catch ( e : Error )
-				{
-					trace( "Invalid JSON object!" )
-				}
-			}
-
 			addChild( _textArea );
 
 			update();
+		}
+
+		private function onTextInput( event : Event ) : void
+		{
+			try
+			{
+				var value : Object = JSON.parse( _textArea.text );
+				_oldValue = _propertyRetriever.get( _param.name );
+				_propertyRetriever.set( _param.name, value );
+				setChanged();
+			}
+			catch ( e : Error )
+			{
+				trace( "Invalid JSON object!" )
+			}
+		}
+
+		override public function dispose() : void
+		{
+			_textArea.removeEventListener( FeathersEventType.FOCUS_OUT, onTextInput );
+			_textArea.removeEventListener( FeathersEventType.ENTER, onTextInput );
+			_textArea = null;
+
+			super.dispose();
 		}
 
 		override public function update() : void

@@ -177,7 +177,7 @@ class FadeTween extends Tween
 		}
 		this._onCompleteCallback = onCompleteCallback;
 		this.onComplete = this.cleanupTween;
-		Starling.juggler.add(this);
+		Starling.current.juggler.add(this);
 	}
 
 	private var _otherTarget:DisplayObject;

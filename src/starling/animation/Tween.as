@@ -14,6 +14,7 @@ package starling.animation
     import starling.core.starling_internal;
     import starling.events.Event;
     import starling.events.EventDispatcher;
+    import starling.utils.Color;
 
     /** A Tween animates numeric properties of objects. It uses different transition functions
      *  to give the animations various styles.
@@ -31,7 +32,7 @@ package starling.animation
      *  tween.animate("x", object.x + 50);
      *  tween.animate("rotation", deg2rad(45));
      *  tween.fadeTo(0);    // equivalent to 'animate("alpha", 0)'
-     *  Starling.juggler.add(tween);</listing> 
+     *  Starling.current.juggler.add(tween);</listing> 
      *  
      *  <p>Note that the object is added to a juggler at the end of this sample. That's because a 
      *  tween will only be executed if its "advanceTime" method is executed regularly - the 
@@ -231,6 +232,7 @@ package starling.animation
                     // executing 'onComplete'.
                     dispatchEventWith(Event.REMOVE_FROM_JUGGLER);
                     if (onComplete != null) onComplete.apply(this, onCompleteArgs);
+                    if (_currentTime == 0) carryOverTime = 0; // tween was reset
                 }
             }
             
@@ -288,25 +290,7 @@ package starling.animation
 
         private function updateRgb(property:String, startValue:Number, endValue:Number):void
         {
-            var startColor:uint = uint(startValue);
-            var endColor:uint   = uint(endValue);
-
-            var startA:uint = (startColor >> 24) & 0xff;
-            var startR:uint = (startColor >> 16) & 0xff;
-            var startG:uint = (startColor >>  8) & 0xff;
-            var startB:uint = (startColor      ) & 0xff;
-
-            var endA:uint = (endColor >> 24) & 0xff;
-            var endR:uint = (endColor >> 16) & 0xff;
-            var endG:uint = (endColor >>  8) & 0xff;
-            var endB:uint = (endColor      ) & 0xff;
-
-            var newA:uint = startA + (endA - startA) * _progress;
-            var newR:uint = startR + (endR - startR) * _progress;
-            var newG:uint = startG + (endG - startG) * _progress;
-            var newB:uint = startB + (endB - startB) * _progress;
-
-            _target[property] = (newA << 24) | (newR << 16) | (newG << 8) | newB;
+            _target[property] = Color.interpolate(uint(startValue), uint(endValue), _progress);
         }
 
         private function updateRad(property:String, startValue:Number, endValue:Number):void

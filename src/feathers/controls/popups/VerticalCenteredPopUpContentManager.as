@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -12,12 +12,12 @@ package feathers.controls.popups
 	import feathers.core.PopUpManager;
 	import feathers.events.FeathersEventType;
 	import feathers.utils.display.getDisplayObjectDepthFromStage;
-
+	
 	import flash.errors.IllegalOperationError;
 	import flash.events.KeyboardEvent;
 	import flash.geom.Point;
 	import flash.ui.Keyboard;
-
+	
 	import starling.core.Starling;
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
@@ -28,7 +28,8 @@ package feathers.controls.popups
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
-
+	import starling.utils.Pool;
+	
 	/**
 	 * Dispatched when the pop-up content opens.
 	 *
@@ -50,7 +51,7 @@ package feathers.controls.popups
 	 * @eventType starling.events.Event.OPEN
 	 */
 	[Event(name="open",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the pop-up content closes.
 	 *
@@ -72,7 +73,7 @@ package feathers.controls.popups
 	 * @eventType starling.events.Event.CLOSE
 	 */
 	[Event(name="close",type="starling.events.Event")]
-
+	
 	/**
 	 * Displays a pop-up at the center of the stage, filling the vertical space.
 	 * The content will be sized horizontally so that it is no larger than the
@@ -81,17 +82,12 @@ package feathers.controls.popups
 	public class VerticalCenteredPopUpContentManager extends EventDispatcher implements IPopUpContentManager
 	{
 		/**
-		 * @private
-		 */
-		private static const HELPER_POINT:Point = new Point();
-
-		/**
 		 * Constructor.
 		 */
 		public function VerticalCenteredPopUpContentManager()
 		{
 		}
-
+		
 		/**
 		 * Quickly sets all margin properties to the same value. The
 		 * <code>margin</code> getter always returns the value of
@@ -115,7 +111,7 @@ package feathers.controls.popups
 		{
 			return this.marginTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -126,7 +122,7 @@ package feathers.controls.popups
 			this.marginBottom = 0;
 			this.marginLeft = 0;
 		}
-
+		
 		/**
 		 * The minimum space, in pixels, between the top edge of the content and
 		 * the top edge of the stage.
@@ -142,7 +138,7 @@ package feathers.controls.popups
 		 * @see #margin
 		 */
 		public var marginTop:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the right edge of the content
 		 * and the right edge of the stage.
@@ -158,7 +154,7 @@ package feathers.controls.popups
 		 * @see #margin
 		 */
 		public var marginRight:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the bottom edge of the content
 		 * and the bottom edge of the stage.
@@ -174,7 +170,7 @@ package feathers.controls.popups
 		 * @see #margin
 		 */
 		public var marginBottom:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the left edge of the content
 		 * and the left edge of the stage.
@@ -190,17 +186,58 @@ package feathers.controls.popups
 		 * @see #margin
 		 */
 		public var marginLeft:Number = 0;
-
+		
+		/**
+		 * @private
+		 */
+		protected var _overlayFactory:Function = null;
+		
+		/**
+		 * This function may be used to customize the modal overlay displayed by
+		 * the pop-up manager. If the value of <code>overlayFactory</code> is
+		 * <code>null</code>, the pop-up manager's default overlay factory will
+		 * be used instead.
+		 *
+		 * <p>This function is expected to have the following signature:</p>
+		 * <pre>function():DisplayObject</pre>
+		 *
+		 * <p>In the following example, the overlay is customized:</p>
+		 *
+		 * <listing version="3.0">
+		 * manager.overlayFactory = function():DisplayObject
+		 * {
+		 *     var quad:Quad = new Quad(1, 1, 0xff00ff);
+		 *     quad.alpha = 0;
+		 *     return quad;
+		 * };</listing>
+		 *
+		 * @default null
+		 *
+		 * @see feathers.core.PopUpManager#overlayFactory
+		 */
+		public function get overlayFactory():Function
+		{
+			return this._overlayFactory;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function set overlayFactory(value:Function):void
+		{
+			this._overlayFactory = value;
+		}
+		
 		/**
 		 * @private
 		 */
 		protected var content:DisplayObject;
-
+		
 		/**
 		 * @private
 		 */
 		protected var touchPointID:int = -1;
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -208,7 +245,7 @@ package feathers.controls.popups
 		{
 			return this.content !== null;
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -218,9 +255,9 @@ package feathers.controls.popups
 			{
 				throw new IllegalOperationError("Pop-up content is already open. Close the previous content before opening new content.");
 			}
-
+			
 			this.content = content;
-			PopUpManager.addPopUp(this.content, true, false);
+			PopUpManager.addPopUp(this.content, true, false, this._overlayFactory);
 			if(this.content is IFeathersControl)
 			{
 				this.content.addEventListener(FeathersEventType.RESIZE, content_resizeHandler);
@@ -230,14 +267,14 @@ package feathers.controls.popups
 			var stage:Stage = Starling.current.stage;
 			stage.addEventListener(TouchEvent.TOUCH, stage_touchHandler);
 			stage.addEventListener(ResizeEvent.RESIZE, stage_resizeHandler);
-
+			
 			//using priority here is a hack so that objects higher up in the
 			//display list have a chance to cancel the event first.
 			var priority:int = -getDisplayObjectDepthFromStage(this.content);
 			Starling.current.nativeStage.addEventListener(KeyboardEvent.KEY_DOWN, nativeStage_keyDownHandler, false, priority, true);
 			this.dispatchEventWith(Event.OPEN);
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -264,7 +301,7 @@ package feathers.controls.popups
 			}
 			this.dispatchEventWith(Event.CLOSE);
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -272,7 +309,7 @@ package feathers.controls.popups
 		{
 			this.close();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -319,7 +356,7 @@ package feathers.controls.popups
 			this.content.x = Math.round((stage.stageWidth - this.content.width) / 2);
 			this.content.y = Math.round((stage.stageHeight - this.content.height) / 2);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -327,7 +364,7 @@ package feathers.controls.popups
 		{
 			this.layout();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -335,7 +372,7 @@ package feathers.controls.popups
 		{
 			this.close();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -352,10 +389,10 @@ package feathers.controls.popups
 			}
 			//don't let the OS handle the event
 			event.preventDefault();
-
+			
 			this.close();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -363,7 +400,7 @@ package feathers.controls.popups
 		{
 			this.layout();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -381,8 +418,10 @@ package feathers.controls.popups
 				{
 					return;
 				}
-				touch.getLocation(stage, HELPER_POINT);
-				var hitTestResult:DisplayObject = stage.hitTest(HELPER_POINT);
+				var point:Point = Pool.getPoint();
+				touch.getLocation(stage, point);
+				var hitTestResult:DisplayObject = stage.hitTest(point);
+				Pool.putPoint(point);
 				var isInBounds:Boolean = false;
 				if(this.content is DisplayObjectContainer)
 				{
@@ -405,8 +444,10 @@ package feathers.controls.popups
 				{
 					return;
 				}
-				touch.getLocation(stage, HELPER_POINT);
-				hitTestResult = stage.hitTest(HELPER_POINT);
+				point = Pool.getPoint();
+				touch.getLocation(stage, point);
+				hitTestResult = stage.hitTest(point);
+				Pool.putPoint(point);
 				isInBounds = false;
 				if(this.content is DisplayObjectContainer)
 				{
@@ -423,7 +464,7 @@ package feathers.controls.popups
 				this.touchPointID = touch.id;
 			}
 		}
-
-
+		
+		
 	}
 }

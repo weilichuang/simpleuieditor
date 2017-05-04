@@ -161,7 +161,7 @@ package feathers.motion.transitions
 			if(this._activeTransition)
 			{
 				this._savedOtherTarget  = null;
-				Starling.juggler.remove(this._activeTransition);
+				Starling.current.juggler.remove(this._activeTransition);
 				this._activeTransition = null;
 			}
 
@@ -203,7 +203,7 @@ package feathers.motion.transitions
 				this._activeTransition.delay = this.delay;
 				this._activeTransition.onUpdate = activeTransition_onUpdate;
 				this._activeTransition.onComplete = activeTransition_onComplete;
-				Starling.juggler.add(this._activeTransition);
+				Starling.current.juggler.add(this._activeTransition);
 			}
 
 			this._oldScreen = null;

@@ -39,11 +39,14 @@ package starling.filters
             }
 
             updatePadding();
+			addEventListener(Event.ENTER_FRAME, onEnterFrame);
         }
 
         /** Disposes the filter chain itself as well as all contained filters. */
         override public function dispose():void
         {
+			removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			
             for each (var filter:FragmentFilter in _filters)
                 filter.dispose();
 
@@ -60,7 +63,7 @@ package starling.filters
         }
 
         /** @private */
-        override public function process(painter:Painter, pool:ITexturePool,
+        override public function process(painter:Painter, helper:IFilterHelper,
                                          input0:Texture = null, input1:Texture = null,
                                          input2:Texture = null, input3:Texture = null):Texture
         {
@@ -71,13 +74,25 @@ package starling.filters
             for (var i:int=0; i<numFilters; ++i)
             {
                 inTexture = outTexture;
-                outTexture = _filters[i].process(painter, pool, inTexture);
+                outTexture = _filters[i].process(painter, helper, inTexture);
 
-                if (i) pool.putTexture(inTexture);
+                if (i) helper.putTexture(inTexture);
             }
 
             return outTexture;
         }
+		
+		/** @private */
+		override public function get numPasses():int
+		{
+			var numPasses:int = 0;
+			var numFilters:int = _filters.length;
+			
+			for (var i:int=0; i<numFilters; ++i)
+				numPasses += _filters[i].numPasses;
+			
+			return numPasses;
+		}
 
         /** Returns the filter at a certain index. If you pass a negative index,
          *  '-1' will return the last filter, '-2' the second to last filter, etc. */
@@ -96,7 +111,7 @@ package starling.filters
         /** Adds a filter to the chain at the given index. */
         public function addFilterAt(filter:FragmentFilter, index:int):void
         {
-            _filters.insertAt(index, filter);
+            _filters.splice(index,0, filter);
             filter.addEventListener(Event.CHANGE, setRequiresRedraw);
             setRequiresRedraw();
         }
@@ -114,7 +129,7 @@ package starling.filters
          *  are decremented. If requested, the filter will be disposed right away. */
         public function removeFilterAt(index:int, dispose:Boolean=false):FragmentFilter
         {
-            var filter:FragmentFilter = _filters.removeAt(index) as FragmentFilter;
+            var filter:FragmentFilter = _filters.splice(index,1)[0] as FragmentFilter;
             filter.removeEventListener(Event.CHANGE, setRequiresRedraw);
             if (dispose) filter.dispose();
             setRequiresRedraw();
@@ -142,6 +157,12 @@ package starling.filters
 
             this.padding.copyFrom(sPadding);
         }
+		
+		private function onEnterFrame(event:Event):void
+		{
+			var i:int, numFilters:int = _filters.length;
+			for (i=0; i<numFilters; ++i) _filters[i].dispatchEvent(event);
+		}
 
         /** Indicates the current chain length. */
         public function get numFilters():int { return _filters.length; }

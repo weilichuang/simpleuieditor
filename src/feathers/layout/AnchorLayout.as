@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -8,13 +8,13 @@ accordance with the terms of the accompanying license agreement.
 package feathers.layout
 {
 	import feathers.core.IFeathersControl;
-
+	
 	import flash.errors.IllegalOperationError;
 	import flash.geom.Point;
-
+	
 	import starling.display.DisplayObject;
 	import starling.events.EventDispatcher;
-
+	
 	/**
 	 * Dispatched when a property of the layout changes, indicating that a
 	 * redraw is probably needed.
@@ -37,7 +37,7 @@ package feathers.layout
 	 * @eventType starling.events.Event.CHANGE
 	 */
 	[Event(name="change",type="starling.events.Event")]
-
+	
 	/**
 	 * Positions and sizes items by anchoring their edges (or center points)
 	 * to their parent container or to other items.
@@ -51,29 +51,29 @@ package feathers.layout
 		 * @private
 		 */
 		protected static const CIRCULAR_REFERENCE_ERROR:String = "It is impossible to create this layout due to a circular reference in the AnchorLayoutData.";
-
+		
 		/**
 		 * @private
 		 */
 		private static const HELPER_POINT:Point = new Point();
-
+		
 		/**
 		 * Constructor.
 		 */
 		public function AnchorLayout()
 		{
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _helperVector1:Vector.<DisplayObject> = new <DisplayObject>[];
-
+		
 		/**
 		 * @private
 		 */
 		protected var _helperVector2:Vector.<DisplayObject> = new <DisplayObject>[];
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -81,7 +81,7 @@ package feathers.layout
 		{
 			return false;
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -95,34 +95,52 @@ package feathers.layout
 			var maxHeight:Number = viewPortBounds ? viewPortBounds.maxHeight : Number.POSITIVE_INFINITY;
 			var explicitWidth:Number = viewPortBounds ? viewPortBounds.explicitWidth : NaN;
 			var explicitHeight:Number = viewPortBounds ? viewPortBounds.explicitHeight : NaN;
-
+			
 			var viewPortWidth:Number = explicitWidth;
 			var viewPortHeight:Number = explicitHeight;
-
+			
 			var needsWidth:Boolean = explicitWidth !== explicitWidth; //isNaN
 			var needsHeight:Boolean = explicitHeight !== explicitHeight; //isNaN
 			if(needsWidth || needsHeight)
 			{
-				this.validateItems(items, true);
+				this.validateItems(items, explicitWidth, explicitHeight,
+					maxWidth, maxHeight, true);
 				this.measureViewPort(items, viewPortWidth, viewPortHeight, HELPER_POINT);
 				if(needsWidth)
 				{
-					viewPortWidth = Math.min(maxWidth, Math.max(minWidth, HELPER_POINT.x));
+					viewPortWidth = HELPER_POINT.x;
+					if(viewPortWidth < minWidth)
+					{
+						viewPortWidth = minWidth;
+					}
+					else if(viewPortWidth > maxWidth)
+					{
+						viewPortWidth = maxWidth;
+					}
 				}
 				if(needsHeight)
 				{
-					viewPortHeight = Math.min(maxHeight, Math.max(minHeight, HELPER_POINT.y));
+					viewPortHeight = HELPER_POINT.y;
+					if(viewPortHeight < minHeight)
+					{
+						viewPortHeight = minHeight;
+					}
+					else if(viewPortHeight > maxHeight)
+					{
+						viewPortHeight = maxHeight;
+					}
 				}
 			}
 			else
 			{
-				this.validateItems(items, false);
+				this.validateItems(items, explicitWidth, explicitHeight,
+					maxWidth, maxHeight, false);
 			}
-
+			
 			this.layoutWithBounds(items, boundsX, boundsY, viewPortWidth, viewPortHeight);
-
+			
 			this.measureContent(items, viewPortWidth, viewPortHeight, HELPER_POINT);
-
+			
 			if(!result)
 			{
 				result = new LayoutBoundsResult();
@@ -133,7 +151,7 @@ package feathers.layout
 			result.viewPortHeight = viewPortHeight;
 			return result;
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -141,7 +159,7 @@ package feathers.layout
 		{
 			return this.getScrollPositionForIndex(index, items, x, y, width, height, result);
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -155,7 +173,7 @@ package feathers.layout
 			result.y = 0;
 			return result;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -193,14 +211,14 @@ package feathers.layout
 			}
 			this._helperVector1.length = 0;
 			this._helperVector2.length = 0;
-
+			
 			if(!result)
 			{
 				result = HELPER_POINT.clone();
 			}
 			return result;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -210,7 +228,7 @@ package feathers.layout
 			{
 				result = new Point();
 			}
-
+			
 			unpositionedItems.length = 0;
 			var itemCount:int = items.length;
 			var pushIndex:int = 0;
@@ -234,13 +252,13 @@ package feathers.layout
 					pushIndex++;
 					continue;
 				}
-
+				
 				this.measureItem(item, result);
 			}
-
+			
 			return result;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -281,11 +299,11 @@ package feathers.layout
 					maxY = measurement;
 				}
 			}
-
+			
 			result.x = maxX;
 			result.y = maxY;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -312,7 +330,7 @@ package feathers.layout
 			var right:Number = this.getRightOffset(displayItem);
 			return itemWidth + left + right;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -339,14 +357,14 @@ package feathers.layout
 			var bottom:Number = this.getBottomOffset(displayItem);
 			return itemHeight + top + bottom;
 		}
-
+		
 		/**
 		 * @private
 		 * This function is here to work around a bug in the Flex 4.6 SDK
 		 * compiler. For explanation, see the places where it gets called.
 		 */
 		protected function doNothing():void {}
-
+		
 		/**
 		 * @private
 		 */
@@ -406,7 +424,7 @@ package feathers.layout
 			}
 			return 0;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -466,7 +484,7 @@ package feathers.layout
 			}
 			return 0;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -526,7 +544,7 @@ package feathers.layout
 			}
 			return 0;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -586,7 +604,7 @@ package feathers.layout
 			}
 			return 0;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -623,7 +641,7 @@ package feathers.layout
 			this._helperVector1.length = 0;
 			this._helperVector2.length = 0;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -645,7 +663,7 @@ package feathers.layout
 				{
 					continue;
 				}
-
+				
 				var isReadyForLayout:Boolean = this.isReadyForLayout(layoutData, i, items, unpositionedItems);
 				if(!isReadyForLayout)
 				{
@@ -657,7 +675,7 @@ package feathers.layout
 				this.positionVertically(layoutItem, layoutData, boundsX, boundsY, viewPortWidth, viewPortHeight);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -665,10 +683,13 @@ package feathers.layout
 		{
 			var uiItem:IFeathersControl = item as IFeathersControl;
 			var percentWidth:Number = layoutData.percentWidth;
-			var checkWidth:Boolean = false;
 			if(percentWidth === percentWidth) //!isNaN
 			{
-				if(percentWidth > 100)
+				if(percentWidth < 0)
+				{
+					percentWidth = 0;
+				}
+				else if(percentWidth > 100)
 				{
 					percentWidth = 100;
 				}
@@ -686,8 +707,11 @@ package feathers.layout
 						itemWidth = maxWidth;
 					}
 				}
+				if(itemWidth > viewPortWidth)
+				{
+					itemWidth = viewPortWidth;
+				}
 				item.width = itemWidth;
-				checkWidth = true;
 			}
 			var left:Number = layoutData.left;
 			var hasLeftPosition:Boolean = left === left; //!isNaN
@@ -721,7 +745,6 @@ package feathers.layout
 					{
 						leftRightWidth -= (leftAnchorDisplayObject.x - leftAnchorDisplayObject.pivotX + leftAnchorDisplayObject.width);
 					}
-					checkWidth = false;
 					item.width = leftRightWidth - right - left;
 				}
 				else if(hasHorizontalCenterPosition)
@@ -745,7 +768,6 @@ package feathers.layout
 					{
 						xPositionOfRight = viewPortWidth - right;
 					}
-					checkWidth = false;
 					item.width = 2 * (xPositionOfRight - xPositionOfCenter);
 					item.x = item.pivotX + viewPortWidth - right - item.width;
 				}
@@ -772,10 +794,9 @@ package feathers.layout
 				{
 					xPositionOfCenter = Math.round(viewPortWidth / 2) + horizontalCenter;
 				}
-
+				
 				if(hasLeftPosition)
 				{
-					checkWidth = false;
 					item.width = 2 * (xPositionOfCenter - item.x + item.pivotX);
 				}
 				else
@@ -783,25 +804,8 @@ package feathers.layout
 					item.x = item.pivotX + xPositionOfCenter - Math.round(item.width / 2);
 				}
 			}
-			if(checkWidth)
-			{
-				var itemX:Number = item.x;
-				itemWidth = item.width;
-				if(itemX + itemWidth > viewPortWidth)
-				{
-					itemWidth = viewPortWidth - itemX;
-					if(uiItem)
-					{
-						if(itemWidth < minWidth)
-						{
-							itemWidth = minWidth;
-						}
-					}
-					item.width = itemWidth;
-				}
-			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -809,10 +813,13 @@ package feathers.layout
 		{
 			var uiItem:IFeathersControl = item as IFeathersControl;
 			var percentHeight:Number = layoutData.percentHeight;
-			var checkHeight:Boolean = false;
 			if(percentHeight === percentHeight) //!isNaN
 			{
-				if(percentHeight > 100)
+				if(percentHeight < 0)
+				{
+					percentHeight = 0;
+				}
+				else if(percentHeight > 100)
 				{
 					percentHeight = 100;
 				}
@@ -830,8 +837,11 @@ package feathers.layout
 						itemHeight = maxHeight;
 					}
 				}
+				if(itemHeight > viewPortHeight)
+				{
+					itemHeight = viewPortHeight;
+				}
 				item.height = itemHeight;
-				checkHeight = true;
 			}
 			var top:Number = layoutData.top;
 			var hasTopPosition:Boolean = top === top; //!isNaN
@@ -865,7 +875,6 @@ package feathers.layout
 					{
 						topBottomHeight -= (topAnchorDisplayObject.y - topAnchorDisplayObject.pivotY + topAnchorDisplayObject.height);
 					}
-					checkHeight = false;
 					item.height = topBottomHeight - bottom - top;
 				}
 				else if(hasVerticalCenterPosition)
@@ -889,7 +898,6 @@ package feathers.layout
 					{
 						yPositionOfBottom = viewPortHeight - bottom;
 					}
-					checkHeight = false;
 					item.height = 2 * (yPositionOfBottom - yPositionOfCenter);
 					item.y = item.pivotY + viewPortHeight - bottom - item.height;
 				}
@@ -916,10 +924,9 @@ package feathers.layout
 				{
 					yPositionOfCenter = Math.round(viewPortHeight / 2) + verticalCenter;
 				}
-
+				
 				if(hasTopPosition)
 				{
-					checkHeight = false;
 					item.height = 2 * (yPositionOfCenter - item.y + item.pivotY);
 				}
 				else
@@ -927,25 +934,8 @@ package feathers.layout
 					item.y = item.pivotY + yPositionOfCenter - Math.round(item.height / 2);
 				}
 			}
-			if(checkHeight)
-			{
-				var itemY:Number = item.y;
-				itemHeight = item.height;
-				if(itemY + itemHeight > viewPortHeight)
-				{
-					itemHeight = viewPortHeight - itemY;
-					if(uiItem)
-					{
-						if(itemHeight < minHeight)
-						{
-							itemHeight = minHeight;
-						}
-					}
-					item.height = itemHeight;
-				}
-			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -974,7 +964,7 @@ package feathers.layout
 			result.y = maxY;
 			return result;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1013,7 +1003,7 @@ package feathers.layout
 			}
 			return true;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1041,23 +1031,32 @@ package feathers.layout
 			}
 			return false;
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected function validateItems(items:Vector.<DisplayObject>, force:Boolean):void
+		protected function validateItems(items:Vector.<DisplayObject>,
+										 explicitWidth:Number, explicitHeight:Number,
+										 maxWidth:Number, maxHeight:Number, force:Boolean):void
 		{
+			var needsWidth:Boolean = explicitWidth !== explicitWidth; //isNaN
+			var needsHeight:Boolean = explicitHeight !== explicitHeight; //isNaN
+			var containerWidth:Number = explicitWidth;
+			if(needsWidth && maxWidth < Number.POSITIVE_INFINITY)
+			{
+				containerWidth = maxWidth;
+			}
+			var containerHeight:Number = explicitHeight;
+			if(needsHeight && maxHeight < Number.POSITIVE_INFINITY)
+			{
+				containerHeight = maxHeight;
+			}
 			var itemCount:int = items.length;
 			for(var i:int = 0; i < itemCount; i++)
 			{
 				var control:IFeathersControl = items[i] as IFeathersControl;
 				if(control)
 				{
-					if(force)
-					{
-						control.validate();
-						continue;
-					}
 					if(control is ILayoutDisplayObject)
 					{
 						var layoutControl:ILayoutDisplayObject = ILayoutDisplayObject(control);
@@ -1070,23 +1069,79 @@ package feathers.layout
 						{
 							var left:Number = layoutData.left;
 							var hasLeftPosition:Boolean = left === left; //!isNaN
+							var leftAnchor:DisplayObject = layoutData.leftAnchorDisplayObject;
 							var right:Number = layoutData.right;
+							var rightAnchor:DisplayObject = layoutData.rightAnchorDisplayObject;
 							var hasRightPosition:Boolean = right === right; //!isNaN
+							var percentWidth:Number = layoutData.percentWidth;
+							var hasPercentWidth:Boolean = percentWidth === percentWidth; //!isNaN
+							if(!needsWidth)
+							{
+								//optimization: set the child width before
+								//validation if the container width is explicit
+								//or has a maximum
+								if(hasLeftPosition && leftAnchor === null &&
+									hasRightPosition && rightAnchor === null)
+								{
+									control.width = containerWidth - left - right;
+								}
+								else if(hasPercentWidth)
+								{
+									if(percentWidth < 0)
+									{
+										percentWidth = 0;
+									}
+									else if(percentWidth > 100)
+									{
+										percentWidth = 100;
+									}
+									control.width = percentWidth * 0.01 * containerWidth;
+								}
+							}
 							var horizontalCenter:Number = layoutData.horizontalCenter;
 							var hasHorizontalCenterPosition:Boolean = horizontalCenter === horizontalCenter; //!isNaN
+							
+							var top:Number = layoutData.top;
+							var hasTopPosition:Boolean = top === top; //!isNaN
+							var topAnchor:DisplayObject = layoutData.topAnchorDisplayObject;
+							var bottom:Number = layoutData.bottom;
+							var hasBottomPosition:Boolean = bottom === bottom; //!isNaN
+							var bottomAnchor:DisplayObject = layoutData.bottomAnchorDisplayObject;
+							var percentHeight:Number = layoutData.percentHeight;
+							var hasPercentHeight:Boolean = percentHeight === percentHeight; //!isNaN
+							if(!needsHeight)
+							{
+								//optimization: set the child height before
+								//validation if the container height is explicit
+								//or has a maximum.
+								if(hasTopPosition && topAnchor === null &&
+									hasBottomPosition && bottomAnchor === null)
+								{
+									control.height = containerHeight - top - bottom;
+								}
+								else if(hasPercentHeight)
+								{
+									if(percentHeight < 0)
+									{
+										percentHeight = 0;
+									}
+									else if(percentHeight > 100)
+									{
+										percentHeight = 100;
+									}
+									control.height = percentHeight * 0.01 * containerHeight; 
+								}
+							}
+							var verticalCenter:Number = layoutData.verticalCenter;
+							var hasVerticalCenterPosition:Boolean = verticalCenter === verticalCenter; //!isNaN
+							
 							if((hasRightPosition && !hasLeftPosition && !hasHorizontalCenterPosition) ||
 								hasHorizontalCenterPosition)
 							{
 								control.validate();
 								continue;
 							}
-							var top:Number = layoutData.top;
-							var hasTopPosition:Boolean = top === top; //!isNaN
-							var bottom:Number = layoutData.bottom;
-							var hasBottomPosition:Boolean = bottom === bottom; //!isNaN
-							var verticalCenter:Number = layoutData.verticalCenter;
-							var hasVerticalCenterPosition:Boolean = verticalCenter === verticalCenter; //!isNaN
-							if((hasBottomPosition && !hasTopPosition && !hasVerticalCenterPosition) ||
+							else if((hasBottomPosition && !hasTopPosition && !hasVerticalCenterPosition) ||
 								hasVerticalCenterPosition)
 							{
 								control.validate();
@@ -1094,9 +1149,15 @@ package feathers.layout
 							}
 						}
 					}
+					if(force)
+					{
+						control.validate();
+						continue;
+					}
 					if(this.isReferenced(DisplayObject(control), items))
 					{
 						control.validate();
+						continue;
 					}
 				}
 			}

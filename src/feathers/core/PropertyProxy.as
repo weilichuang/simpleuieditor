@@ -117,7 +117,7 @@ package feathers.core
 			var index:int = this._names.indexOf(nameAsString);
 			if(index >= 0)
 			{
-				this._names.removeAt(index);
+				this._names.splice(index,1);
 			}
 			var result:Boolean = delete this._storage[nameAsString];
 			if(result)
@@ -185,7 +185,8 @@ package feathers.core
 				this._onChangeCallbacks.pop();
 				return;
 			}
-			this._onChangeCallbacks.removeAt(index);
+
+			_onChangeCallbacks.splice(index, 1);
 		}
 
 		/**

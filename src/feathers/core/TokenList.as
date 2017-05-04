@@ -174,7 +174,8 @@ package feathers.core
 				return;
 			}
 			this._joinedNames = null;
-			this.names.removeAt(index);
+			
+			this.names.splice(index, 1);
 			this.dispatchEventWith(Event.CHANGE);
 		}
 

@@ -105,7 +105,7 @@ package starling.display
 
             var frame:MovieClipFrame = new MovieClipFrame(texture, duration);
             frame.sound = sound;
-            _frames.insertAt(frameID, frame);
+            _frames.splice(frameID,0, frame);
 
             if (frameID == numFrames)
             {
@@ -123,7 +123,7 @@ package starling.display
             if (frameID < 0 || frameID >= numFrames) throw new ArgumentError("Invalid frame id");
             if (numFrames == 1) throw new IllegalOperationError("Movie clip must not be empty");
 
-            _frames.removeAt(frameID);
+            _frames.splice(frameID,1);
 
             if (frameID != numFrames)
                 updateStartTimes();
@@ -338,6 +338,10 @@ package starling.display
                 }
 
                 restTimeInFrame = frame.duration;
+				
+				// prevent a mean floating point problem (issue #851)
+				if (passedTime + 0.0001 > restTimeInFrame && passedTime - 0.0001 < restTimeInFrame)
+					passedTime = restTimeInFrame;
             }
 
             if (previousFrameID != _currentFrameID)

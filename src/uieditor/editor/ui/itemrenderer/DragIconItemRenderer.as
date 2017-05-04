@@ -7,7 +7,7 @@ package uieditor.editor.ui.itemrenderer
 	import starling.events.TouchEvent;
 	import starling.events.Touch;
 	import starling.events.TouchPhase;
-	import uieditor.editor.ui.AssetTab;
+	import uieditor.editor.ui.tabpanel.AssetTab;
 	import uieditor.editor.UIEditorApp;
 	import uieditor.editor.UIEditorScreen;
 

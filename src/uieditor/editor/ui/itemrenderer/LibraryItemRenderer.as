@@ -8,7 +8,7 @@ package uieditor.editor.ui.itemrenderer
 	import feathers.dragDrop.IDropTarget;
 	import feathers.events.DragDropEvent;
 	import feathers.layout.HorizontalLayout;
-	
+
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.display.Image;
@@ -17,105 +17,117 @@ package uieditor.editor.ui.itemrenderer
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
 	import starling.textures.Texture;
-	
+
+	import uieditor.editor.UIEditorApp;
 	import uieditor.editor.controller.DragFormat;
 	import uieditor.editor.data.EmbedAsset;
-	
+	import uieditor.editor.events.DocumentEventType;
+
 	public class LibraryItemRenderer extends DefaultListItemRenderer implements IDragSource, IDropTarget
 	{
-		public static const SOURCE:String = "source";
-		public static const TARGET:String = "target";
-		public static const INDEX:String = "index";
-		
-		public static const DROP_ABOVE:String = "above";
-		public static const DROP_BELOW:String = "below";
-		
-		private var _group : LayoutGroup;
-		private var _iconImage:Image;
+		public static const SOURCE : String = "source";
+		public static const TARGET : String = "target";
+		public static const INDEX : String = "index";
 
-		private var _dropLine:Quad;
-		
+		public static const DROP_ABOVE : String = "above";
+		public static const DROP_BELOW : String = "below";
+
+		private var _group : LayoutGroup;
+		private var _iconImage : Image;
+
+		private var _dropLine : Quad;
+
 		public function LibraryItemRenderer()
 		{
 			super();
-			
+
 			createIconGroup();
 			_iconFunction = layoutIconFunction;
-			
-			addEventListener(TouchEvent.TOUCH, onTouch);
-			addEventListener(DragDropEvent.DRAG_ENTER, onDragEnter);
-			addEventListener(DragDropEvent.DRAG_MOVE, onDragMove);
-			addEventListener(DragDropEvent.DRAG_EXIT, onDragExit);
-			addEventListener(DragDropEvent.DRAG_DROP, onDragDrop);
+
+			addEventListener( TouchEvent.TOUCH, onTouch );
+			addEventListener( DragDropEvent.DRAG_ENTER, onDragEnter );
+			addEventListener( DragDropEvent.DRAG_MOVE, onDragMove );
+			addEventListener( DragDropEvent.DRAG_EXIT, onDragExit );
+			addEventListener( DragDropEvent.DRAG_DROP, onDragDrop );
 		}
-		
+
 		private function createIconGroup() : void
 		{
 			_group = new LayoutGroup();
 			_group.layout = new HorizontalLayout();
 			( _group.layout as HorizontalLayout ).gap = 2;
-			
-			var texture : Texture = EmbedAsset.getEditorTextureAtlas().getTexture("component_sprite");
-			_iconImage = new Image(texture);
+
+			var texture : Texture = EmbedAsset.getEditorTextureAtlas().getTexture( "component_sprite" );
+			_iconImage = new Image( texture );
 			_group.addChild( _iconImage );
 		}
-	
+
 		private function layoutIconFunction( item : Object ) : DisplayObject
 		{
 			return _group;
 		}
-		
+
 		override public function set data( value : Object ) : void
 		{
 			super.data = value;
 		}
-		
-		private function onTouch(event:TouchEvent):void
+
+		private function onTouch( event : TouchEvent ) : void
 		{
-			if (DragDropManager.isDragging)
+			if ( DragDropManager.isDragging )
 			{
 				return;
 			}
-			
-			var touch:Touch = event.getTouch(this);
-			if (touch && touch.phase == TouchPhase.MOVED)
+
+			var touch : Touch = event.getTouch( this );
+			if ( touch )
 			{
-				var clone:LibraryItemRenderer = new LibraryItemRenderer();
-				clone.width = width;
-				clone.height = height;
-				clone.styleName = this.styleName;
-				clone.data = _data;
-				clone.owner = owner;
-				clone.alpha = 0.5;
-				
-				var dragData:DragData = new DragData();
-				dragData.setDataForFormat(DragFormat.FORMAT_LIBRARY, _data);
-				
-				DragDropManager.startDrag(this, touch, dragData, clone);
+				if ( touch.phase == TouchPhase.MOVED )
+				{
+					var clone : LibraryItemRenderer = new LibraryItemRenderer();
+					clone.width = width;
+					clone.height = height;
+					clone.styleName = this.styleName;
+					clone.data = _data;
+					clone.owner = owner;
+					clone.alpha = 0.5;
+
+					var dragData : DragData = new DragData();
+					dragData.setDataForFormat( DragFormat.FORMAT_LIBRARY, _data );
+
+					DragDropManager.startDrag( this, touch, dragData, clone );
+				}
+				else if ( touch.phase == TouchPhase.ENDED )
+				{
+					if ( touch.tapCount >= 2 )
+					{
+						UIEditorApp.instance.notificationDispatcher.dispatchEventWith( DocumentEventType.EDIT_LIBRARY_ITEM, false, this.data );
+					}
+				}
 			}
 		}
-		
-		private function onDragEnter(event:DragDropEvent, dragData:DragData):void
+
+		private function onDragEnter( event : DragDropEvent, dragData : DragData ) : void
 		{
-			DragDropManager.acceptDrag(this);
-			showDropLine(event, dragData);
+			DragDropManager.acceptDrag( this );
+			showDropLine( event, dragData );
 		}
-		
-		private function onDragMove(event:DragDropEvent, dragData:DragData):void
+
+		private function onDragMove( event : DragDropEvent, dragData : DragData ) : void
 		{
-			showDropLine(event, dragData);
+			showDropLine( event, dragData );
 		}
-		
-		private function onDragDrop(event:DragDropEvent, dragData:DragData):void
+
+		private function onDragDrop( event : DragDropEvent, dragData : DragData ) : void
 		{
-			hideDropLine(event);
-			
+			hideDropLine( event );
+
 //			var target:DisplayObjectContainer = dragData.getDataForFormat(TARGET);
 //			var source:DisplayObject = dragData.getDataForFormat(SOURCE);
 //			var index:int = dragData.getDataForFormat(INDEX);
 //			
 //			if (target === source) return;
-			
+
 //			if (canDrop(target, source))
 //			{
 //				UIEditorApp.instance.documentManager.historyManager.add(new MoveLayerOperation(source, target, source.parent.getChildIndex(source), index));
@@ -126,14 +138,14 @@ package uieditor.editor.ui.itemrenderer
 //				UIEditorApp.instance.documentManager.setChanged();
 //			}
 		}
-		
-		private function canDrop(target:DisplayObjectContainer, source:DisplayObject):Boolean
+
+		private function canDrop( target : DisplayObjectContainer, source : DisplayObject ) : Boolean
 		{
-			if (target === source)
+			if ( target === source )
 			{
 				return false;
 			}
-			else if (source is DisplayObjectContainer && (source as DisplayObjectContainer).contains(target))
+			else if ( source is DisplayObjectContainer && ( source as DisplayObjectContainer ).contains( target ))
 			{
 				return false;
 			}
@@ -142,21 +154,21 @@ package uieditor.editor.ui.itemrenderer
 				return true;
 			}
 		}
-		
-		private function onDragExit(event:DragDropEvent, dragData:DragData):void
+
+		private function onDragExit( event : DragDropEvent, dragData : DragData ) : void
 		{
-			hideDropLine(event);
+			hideDropLine( event );
 		}
-		
-		private function showDropLine(event:DragDropEvent, dragData:DragData):void
+
+		private function showDropLine( event : DragDropEvent, dragData : DragData ) : void
 		{
 			createDropLine();
-			
-			var dropPosition:String;
-			var target:DisplayObjectContainer;
-			var index:int;
-			
-			if (event.localY < height / 2)
+
+			var dropPosition : String;
+			var target : DisplayObjectContainer;
+			var index : int;
+
+			if ( event.localY < height / 2 )
 			{
 				dropPosition = DROP_ABOVE;
 			}
@@ -164,7 +176,7 @@ package uieditor.editor.ui.itemrenderer
 			{
 				dropPosition = DROP_BELOW;
 			}
-			
+
 //			if (dropPosition == DROP_ABOVE)
 //			{
 //				_dropLine.visible = true;
@@ -184,21 +196,21 @@ package uieditor.editor.ui.itemrenderer
 //			dragData.setDataForFormat(TARGET, target);
 //			dragData.setDataForFormat(INDEX, index);
 		}
-		
-		private function hideDropLine(event:DragDropEvent):void
+
+		private function hideDropLine( event : DragDropEvent ) : void
 		{
 			createDropLine();
-			
+
 			_dropLine.visible = false;
 			alpha = 1;
 		}
-		
-		private function createDropLine():void
+
+		private function createDropLine() : void
 		{
-			if (!_dropLine)
+			if ( !_dropLine )
 			{
-				_dropLine = new Quad(width, 1,0x0);
-				addChild(_dropLine);
+				_dropLine = new Quad( width, 1, 0x0 );
+				addChild( _dropLine );
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -9,13 +9,15 @@ package feathers.controls
 {
 	import feathers.core.FeathersControl;
 	import feathers.core.IFeathersControl;
+	import feathers.core.IMeasureDisplayObject;
 	import feathers.core.IValidating;
 	import feathers.layout.Direction;
 	import feathers.skins.IStyleProvider;
 	import feathers.utils.math.clamp;
-
+	import feathers.utils.skins.resetFluidChildDimensionsForMeasurement;
+	
 	import starling.display.DisplayObject;
-
+	
 	/**
 	 * Displays the progress of a task over time. Non-interactive.
 	 *
@@ -42,7 +44,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_HORIZONTAL:String = "horizontal";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.VERTICAL</code>.
@@ -53,7 +55,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_VERTICAL:String = "vertical";
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>ProgressBar</code>
 		 * components.
@@ -62,7 +64,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -70,7 +72,7 @@ package feathers.controls
 		{
 			super();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -78,12 +80,12 @@ package feathers.controls
 		{
 			return ProgressBar.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _direction:String = Direction.HORIZONTAL;
-
+		
 		[Inspectable(type="String",enumeration="horizontal,vertical")]
 		/**
 		 * Determines the direction that the progress bar fills. When this value
@@ -104,7 +106,7 @@ package feathers.controls
 		{
 			return this._direction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -117,12 +119,12 @@ package feathers.controls
 			this._direction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _value:Number = 0;
-
+		
 		/**
 		 * The value of the progress bar, between the minimum and maximum.
 		 *
@@ -142,7 +144,7 @@ package feathers.controls
 		{
 			return this._value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -156,12 +158,12 @@ package feathers.controls
 			this._value = newValue;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minimum:Number = 0;
-
+		
 		/**
 		 * The progress bar's value will not go lower than the minimum.
 		 *
@@ -181,7 +183,7 @@ package feathers.controls
 		{
 			return this._minimum;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -194,12 +196,12 @@ package feathers.controls
 			this._minimum = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _maximum:Number = 1;
-
+		
 		/**
 		 * The progress bar's value will not go higher than the maximum.
 		 *
@@ -219,7 +221,7 @@ package feathers.controls
 		{
 			return this._maximum;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -232,29 +234,47 @@ package feathers.controls
 			this._maximum = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
-		 * The width of the first background skin that was displayed.
 		 */
-		protected var _originalBackgroundWidth:Number = NaN;
-
+		protected var _explicitBackgroundWidth:Number;
+		
 		/**
 		 * @private
-		 * The height of the first background skin that was displayed.
 		 */
-		protected var _originalBackgroundHeight:Number = NaN;
-
+		protected var _explicitBackgroundHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMinHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMaxWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMaxHeight:Number;
+		
 		/**
 		 * @private
 		 */
 		protected var currentBackground:DisplayObject;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _backgroundSkin:DisplayObject;
-
+		
 		/**
 		 * The primary background to display in the progress bar. The background
 		 * skin is displayed below the fill skin, and the fill skin is affected
@@ -285,7 +305,7 @@ package feathers.controls
 		{
 			return this._backgroundSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -295,7 +315,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			if(this._backgroundSkin && this._backgroundSkin != this._backgroundDisabledSkin)
 			{
 				this.removeChild(this._backgroundSkin);
@@ -308,12 +328,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _backgroundDisabledSkin:DisplayObject;
-
+		
 		/**
 		 * A background to display when the progress bar is disabled.
 		 *
@@ -331,7 +351,7 @@ package feathers.controls
 		{
 			return this._backgroundDisabledSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -341,7 +361,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			if(this._backgroundDisabledSkin && this._backgroundDisabledSkin != this._backgroundSkin)
 			{
 				this.removeChild(this._backgroundDisabledSkin);
@@ -354,29 +374,29 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 * The width of the first fill skin that was displayed.
 		 */
 		protected var _originalFillWidth:Number = NaN;
-
+		
 		/**
 		 * @private
 		 * The width of the first fill skin that was displayed.
 		 */
 		protected var _originalFillHeight:Number = NaN;
-
+		
 		/**
 		 * @private
 		 */
 		protected var currentFill:DisplayObject;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _fillSkin:DisplayObject;
-
+		
 		/**
 		 * The primary fill to display in the progress bar. The fill skin is
 		 * displayed over the background skin, with padding around the edges of
@@ -407,7 +427,7 @@ package feathers.controls
 		{
 			return this._fillSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -417,7 +437,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			if(this._fillSkin && this._fillSkin != this._fillDisabledSkin)
 			{
 				this.removeChild(this._fillSkin);
@@ -430,12 +450,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _fillDisabledSkin:DisplayObject;
-
+		
 		/**
 		 * A fill to display when the progress bar is disabled.
 		 *
@@ -453,7 +473,7 @@ package feathers.controls
 		{
 			return this._fillDisabledSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -463,7 +483,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			if(this._fillDisabledSkin && this._fillDisabledSkin != this._fillSkin)
 			{
 				this.removeChild(this._fillDisabledSkin);
@@ -476,7 +496,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * Quickly sets all padding properties to the same value. The
 		 * <code>padding</code> getter always returns the value of
@@ -499,7 +519,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -510,12 +530,12 @@ package feathers.controls
 			this.paddingBottom = value;
 			this.paddingLeft = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingTop:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the progress bar's top edge and
 		 * the progress bar's content.
@@ -531,7 +551,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -544,12 +564,12 @@ package feathers.controls
 			this._paddingTop = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingRight:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the progress bar's right edge
 		 * and the progress bar's content.
@@ -565,7 +585,7 @@ package feathers.controls
 		{
 			return this._paddingRight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -578,12 +598,12 @@ package feathers.controls
 			this._paddingRight = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingBottom:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the progress bar's bottom edge
 		 * and the progress bar's content.
@@ -599,7 +619,7 @@ package feathers.controls
 		{
 			return this._paddingBottom;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -612,12 +632,12 @@ package feathers.controls
 			this._paddingBottom = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingLeft:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the progress bar's left edge
 		 * and the progress bar's content.
@@ -633,7 +653,7 @@ package feathers.controls
 		{
 			return this._paddingLeft;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -646,7 +666,7 @@ package feathers.controls
 			this._paddingLeft = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -655,15 +675,15 @@ package feathers.controls
 			var stylesInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STYLES);
 			var stateInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STATE);
 			var sizeInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_SIZE);
-
+			
 			if(stylesInvalid || stateInvalid)
 			{
 				this.refreshBackground();
 				this.refreshFill();
 			}
-
+			
 			this.autoSizeIfNeeded();
-
+			
 			this.layoutChildren();
 			
 			if(this.currentBackground is IValidating)
@@ -675,7 +695,7 @@ package feathers.controls
 				IValidating(this.currentFill).validate();
 			}
 		}
-
+		
 		/**
 		 * If the component's dimensions have not been set explicitly, it will
 		 * measure its content and determine an ideal size for itself. If the
@@ -685,7 +705,7 @@ package feathers.controls
 		 * explicit value will not be measured, but the other non-explicit
 		 * dimension will still need measurement.
 		 *
-		 * <p>Calls <code>setSizeInternal()</code> to set up the
+		 * <p>Calls <code>saveMeasurements()</code> to set up the
 		 * <code>actualWidth</code> and <code>actualHeight</code> member
 		 * variables used for layout.</p>
 		 *
@@ -702,6 +722,15 @@ package feathers.controls
 			{
 				return false;
 			}
+			
+			var measureBackground:IMeasureDisplayObject = this.currentBackground as IMeasureDisplayObject;
+			resetFluidChildDimensionsForMeasurement(this.currentBackground,
+				this._explicitWidth, this._explicitHeight,
+				this._explicitMinWidth, this._explicitMinHeight,
+				this._explicitMaxWidth, this._explicitMaxHeight,
+				this._explicitBackgroundWidth, this._explicitBackgroundHeight,
+				this._explicitBackgroundMinWidth, this._explicitBackgroundMinHeight,
+				this._explicitBackgroundMaxWidth, this._explicitBackgroundMaxHeight);
 			if(this.currentBackground is IValidating)
 			{
 				IValidating(this.currentBackground).validate();
@@ -715,10 +744,17 @@ package feathers.controls
 			var newMinWidth:Number = this._explicitMinWidth;
 			if(needsMinWidth)
 			{
-				var backgroundMinWidth:Number = this._originalBackgroundWidth;
-				if(this.currentBackground is IFeathersControl)
+				if(measureBackground !== null)
 				{
-					backgroundMinWidth = IFeathersControl(this.currentBackground).minWidth;
+					newMinWidth = measureBackground.minWidth;
+				}
+				else if(this.currentBackground !== null)
+				{
+					newMinWidth = this._explicitBackgroundMinWidth;
+				}
+				else
+				{
+					newMinWidth = 0;
 				}
 				var fillMinWidth:Number = this._originalFillWidth;
 				if(this.currentFill is IFeathersControl)
@@ -726,7 +762,6 @@ package feathers.controls
 					fillMinWidth = IFeathersControl(this.currentFill).minWidth;
 				}
 				fillMinWidth += this._paddingLeft + this._paddingRight;
-				newMinWidth = backgroundMinWidth;
 				if(fillMinWidth > newMinWidth)
 				{
 					newMinWidth = fillMinWidth;
@@ -735,10 +770,17 @@ package feathers.controls
 			var newMinHeight:Number = this._explicitMinHeight;
 			if(needsMinHeight)
 			{
-				var backgroundMinHeight:Number = this._originalBackgroundHeight;
-				if(this.currentBackground is IFeathersControl)
+				if(measureBackground !== null)
 				{
-					backgroundMinHeight = IFeathersControl(this.currentBackground).minHeight;
+					newMinHeight = measureBackground.minHeight;
+				}
+				else if(this.currentBackground !== null)
+				{
+					newMinHeight = this._explicitBackgroundMinHeight;
+				}
+				else
+				{
+					newMinHeight = 0;
 				}
 				var fillMinHeight:Number = this._originalFillHeight;
 				if(this.currentFill is IFeathersControl)
@@ -746,18 +788,24 @@ package feathers.controls
 					fillMinHeight = IFeathersControl(this.currentFill).minHeight;
 				}
 				fillMinHeight += this._paddingTop + this._paddingBottom;
-				newMinHeight = backgroundMinHeight;
 				if(fillMinHeight > newMinHeight)
 				{
 					newMinHeight = fillMinHeight;
 				}
 			}
-
+			
 			//current dimensions
 			var newWidth:Number = this._explicitWidth;
 			if(needsWidth)
 			{
-				newWidth = this._originalBackgroundWidth;
+				if(this.currentBackground !== null)
+				{
+					newWidth = this.currentBackground.width;
+				}
+				else
+				{
+					newWidth = 0;
+				}
 				var fillWidth:Number = this._originalFillWidth + this._paddingLeft + this._paddingRight;
 				if(fillWidth > newWidth)
 				{
@@ -767,7 +815,14 @@ package feathers.controls
 			var newHeight:Number = this._explicitHeight;
 			if(needsHeight)
 			{
-				newHeight = this._originalBackgroundHeight;
+				if(this.currentBackground !== null)
+				{
+					newHeight = this.currentBackground.height;
+				}
+				else
+				{
+					newHeight = 0;
+				}
 				var fillHeight:Number = this._originalFillHeight + this._paddingTop + this._paddingBottom;
 				if(fillHeight > newHeight)
 				{
@@ -777,14 +832,14 @@ package feathers.controls
 			
 			return this.saveMeasurements(newWidth, newHeight, newMinWidth, newMinHeight);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function refreshBackground():void
 		{
 			this.currentBackground = this._backgroundSkin;
-			if(this._backgroundDisabledSkin)
+			if(this._backgroundDisabledSkin !== null)
 			{
 				if(this._isEnabled)
 				{
@@ -793,30 +848,41 @@ package feathers.controls
 				else
 				{
 					this.currentBackground = this._backgroundDisabledSkin;
-					if(this._backgroundSkin)
+					if(this._backgroundSkin !== null)
 					{
 						this._backgroundSkin.visible = false;
 					}
 				}
 			}
-			if(this.currentBackground)
+			if(this.currentBackground !== null)
 			{
-				if(this.currentBackground is IValidating)
-				{
-					IValidating(this.currentBackground).validate();
-				}
-				if(this._originalBackgroundWidth !== this._originalBackgroundWidth) //isNaN
-				{
-					this._originalBackgroundWidth = this.currentBackground.width;
-				}
-				if(this._originalBackgroundHeight !== this._originalBackgroundHeight) //isNaN
-				{
-					this._originalBackgroundHeight = this.currentBackground.height;
-				}
 				this.currentBackground.visible = true;
+				if(this.currentBackground is IFeathersControl)
+				{
+					IFeathersControl(this.currentBackground).initializeNow();
+				}
+				if(this.currentBackground is IMeasureDisplayObject)
+				{
+					var measureSkin:IMeasureDisplayObject = IMeasureDisplayObject(this.currentBackground);
+					this._explicitBackgroundWidth = measureSkin.explicitWidth;
+					this._explicitBackgroundHeight = measureSkin.explicitHeight;
+					this._explicitBackgroundMinWidth = measureSkin.explicitMinWidth;
+					this._explicitBackgroundMinHeight = measureSkin.explicitMinHeight;
+					this._explicitBackgroundMaxWidth = measureSkin.explicitMaxWidth;
+					this._explicitBackgroundMaxHeight = measureSkin.explicitMaxHeight;
+				}
+				else
+				{
+					this._explicitBackgroundWidth = this.currentBackground.width;
+					this._explicitBackgroundHeight = this.currentBackground.height;
+					this._explicitBackgroundMinWidth = this._explicitBackgroundWidth;
+					this._explicitBackgroundMinHeight = this._explicitBackgroundHeight;
+					this._explicitBackgroundMaxWidth = this._explicitBackgroundWidth;
+					this._explicitBackgroundMaxHeight = this._explicitBackgroundHeight;
+				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -855,7 +921,7 @@ package feathers.controls
 				this.currentFill.visible = true;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -866,7 +932,7 @@ package feathers.controls
 				this.currentBackground.width = this.actualWidth;
 				this.currentBackground.height = this.actualHeight;
 			}
-
+			
 			if(this._minimum === this._maximum)
 			{
 				var percentage:Number = 1;

@@ -9,7 +9,7 @@ package uieditor.editor.controller
 	import flash.ui.Keyboard;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
-	
+
 	import feathers.controls.TextArea;
 	import feathers.controls.TextInput;
 	import feathers.core.FeathersControl;
@@ -18,15 +18,13 @@ package uieditor.editor.controller
 	import feathers.core.IValidating;
 	import feathers.data.ListCollection;
 	import feathers.dragDrop.DragData;
-	import feathers.dragDrop.DragDropManager;
-	import feathers.dragDrop.IDropTarget;
-	import feathers.events.DragDropEvent;
-	
+
 	import starling.core.Starling;
 	import starling.display.Canvas;
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.display.Image;
+	import starling.display.Quad;
 	import starling.display.Sprite;
 	import starling.events.KeyboardEvent;
 	import starling.events.Touch;
@@ -35,7 +33,7 @@ package uieditor.editor.controller
 	import starling.text.TextField;
 	import starling.textures.Texture;
 	import starling.utils.AssetManager;
-	
+
 	import uieditor.editor.UIEditorApp;
 	import uieditor.editor.data.TemplateData;
 	import uieditor.editor.events.DocumentEventType;
@@ -58,14 +56,14 @@ package uieditor.editor.controller
 	import uieditor.editor.history.MultiMoveOperation;
 	import uieditor.editor.history.PasteOperation;
 	import uieditor.editor.history.PropertyChangeOperation;
-	import uieditor.editor.ui.DocumentPanel;
-	import uieditor.editor.ui.UIAlignType;
+	import uieditor.editor.ui.tabpanel.DocumentPanel;
 	import uieditor.editor.util.FileLoader;
+	import uieditor.editor.util.UIAlignType;
 	import uieditor.engine.IUIBuilder;
 	import uieditor.engine.UIBuilder;
 	import uieditor.engine.util.ParamUtil;
 
-	public class AbstractDocumentEditor extends Sprite implements IDocumentEditor, IDropTarget
+	public class AbstractDocumentEditor extends Sprite implements IDocumentEditor
 	{
 		protected var _assetManager : AssetManager;
 		protected var _uiBuilder : IUIBuilder;
@@ -105,10 +103,9 @@ package uieditor.editor.controller
 
 		protected var _hoverObject : DisplayObject;
 
-		protected var _selectRect : Canvas;
 		protected var _mutliSelectBox : MultiSelectBoundingBox;
 
-		protected var _snapPixel : Boolean = true;
+		protected var _snapPixel : Boolean = false;
 
 		protected var _canvasSize : Point = new Point();
 
@@ -147,6 +144,11 @@ package uieditor.editor.controller
 		public function get localizationManager() : LocalizationManager
 		{
 			return _localizationManager;
+		}
+
+		public function get bgCanvas() : Canvas
+		{
+			return _bgCanvas;
 		}
 
 		protected function reset() : void
@@ -252,7 +254,7 @@ package uieditor.editor.controller
 		protected function initUI() : void
 		{
 			_bgCanvas = new Canvas();
-			_bgCanvas.touchable = true;
+			_bgCanvas.touchable = false;
 
 			_backgroundContainer = new Sprite();
 			_backgroundContainer.touchable = false;
@@ -265,9 +267,6 @@ package uieditor.editor.controller
 			_selectBoundingBox = new InteractiveBoundingBox( 0x0066cc, this, true );
 			_hoverBoundingBox = new InteractiveBoundingBox( 0xff0000, this, false );
 
-			_selectRect = new Canvas();
-			_selectRect.touchable = false;
-
 			_mutliSelectBox = new MultiSelectBoundingBox( 0x0066cc, 1, 1 );
 
 			this.addChild( _bgCanvas );
@@ -276,7 +275,6 @@ package uieditor.editor.controller
 			this.addChild( _snapContainer );
 			this.addChild( _selectBoundingBox );
 			this.addChild( _hoverBoundingBox );
-			this.addChild( _selectRect );
 			this.addChild( _mutliSelectBox );
 
 			this.enableScaleBox = false;
@@ -422,14 +420,7 @@ package uieditor.editor.controller
 			var str : String = "";
 			for ( var i : int = 0; i < layer; ++i )
 			{
-				if ( i == layer - 1 )
-				{
-					str += "    ";
-				}
-				else
-				{
-					str += "     ";
-				}
+				str += "----";
 			}
 
 			return str;
@@ -509,85 +500,13 @@ package uieditor.editor.controller
 			_active = value;
 			if ( _active )
 			{
-				this.addEventListener( DragDropEvent.DRAG_ENTER, dragEnterHandler );
-				this.addEventListener( DragDropEvent.DRAG_DROP, dragDropHandler );
-
 				Starling.current.stage.addEventListener( KeyboardEvent.KEY_DOWN, onKeyDown );
 				Starling.current.nativeStage.addEventListener( MouseEvent.MOUSE_WHEEL, onMouseWheel );
-
-				this.addEventListener( TouchEvent.TOUCH, onTouchDocument );
 			}
 			else
 			{
-				this.removeEventListener( DragDropEvent.DRAG_ENTER, dragEnterHandler );
-				this.removeEventListener( DragDropEvent.DRAG_DROP, dragDropHandler );
-
 				Starling.current.stage.removeEventListener( KeyboardEvent.KEY_DOWN, onKeyDown );
 				Starling.current.nativeStage.removeEventListener( MouseEvent.MOUSE_WHEEL, onMouseWheel );
-
-				this.removeEventListener( TouchEvent.TOUCH, onTouchDocument );
-			}
-		}
-
-		private var _startPoint : Point;
-		private var _beginMultiSelect : Boolean;
-
-		private function onTouchDocument( event : TouchEvent ) : void
-		{
-			var touch : Touch = event.getTouch( this );
-			if ( touch == null )
-				return;
-
-			if ( touch.phase == TouchPhase.BEGAN )
-			{
-				_startPoint = touch.getLocation( this );
-
-				var clickObj : DisplayObject = this.hitTest( _startPoint );
-				if ( clickObj == null || clickObj == _bgCanvas )
-				{
-					_beginMultiSelect = true;
-				}
-			}
-			else if ( touch.phase == TouchPhase.MOVED )
-			{
-				if ( _beginMultiSelect )
-				{
-					var endPoint : Point = touch.getLocation( this );
-
-					var w : int = Math.abs( endPoint.x - _startPoint.x ) / this.scale;
-					var h : int = Math.abs( endPoint.y - _startPoint.y ) / this.scale;
-					var x : int = Math.min( _startPoint.x, endPoint.x ) / this.scale;
-					var y : int = Math.min( _startPoint.y, endPoint.y ) / this.scale;
-
-					_selectRect.clear();
-					_selectRect.beginFill( 0x0066cc, 1 );
-
-					_selectRect.drawRectangle( x, y, w, 1 );
-					_selectRect.drawRectangle( x, y + h - 1, w, 1 );
-					_selectRect.drawRectangle( x, y, 1, h );
-					_selectRect.drawRectangle( x + w - 1, y, 1, h );
-
-					_selectRect.endFill();
-				}
-			}
-			else if ( touch.phase == TouchPhase.ENDED )
-			{
-				_selectRect.clear();
-				if ( _beginMultiSelect )
-				{
-					endPoint = touch.getLocation( this );
-
-					w = Math.abs( endPoint.x - _startPoint.x ) / this.scale;
-					h = Math.abs( endPoint.y - _startPoint.y ) / this.scale;
-					x = Math.min( _startPoint.x, endPoint.x ) / this.scale;
-					y = Math.min( _startPoint.y, endPoint.y ) / this.scale;
-
-					var rect : Rectangle = new Rectangle( x, y, w, h );
-
-					selectObjectsByRect( rect );
-
-					_beginMultiSelect = false;
-				}
 			}
 		}
 
@@ -607,24 +526,45 @@ package uieditor.editor.controller
 			{
 				if ( _selectedObject )
 				{
+					_selectedObject.removeEventListener( TouchEvent.TOUCH, onTouchSelectObject );
 					_selectBoundingBox.target = null;
 				}
 
 				_selectedObject = obj;
 
-				if ( _selectedObject is FeathersControl )
+				if ( _selectedObject != null )
 				{
-					FeathersControl( _selectedObject ).invalidate();
-				}
+					if ( ParamUtil.isLibraryItem( _selectedObject ))
+						_selectedObject.addEventListener( TouchEvent.TOUCH, onTouchSelectObject );
 
-				if ( _selectedObject && _selectedObject != rootNode )
-				{
-					_selectBoundingBox.target = _selectedObject;
+					if ( _selectedObject is FeathersControl )
+					{
+						FeathersControl( _selectedObject ).invalidate();
+					}
+
+					if ( _selectedObject != rootNode )
+					{
+						_selectBoundingBox.target = _selectedObject;
+					}
 				}
 
 				//TODO 此处应该删除setChanged()
 				setChanged();
 				setSelectChanged();
+			}
+		}
+
+		private function onTouchSelectObject( event : TouchEvent ) : void
+		{
+			var touch : Touch = event.getTouch( _selectedObject, TouchPhase.ENDED );
+			if ( touch == null )
+				return;
+
+			if ( touch.tapCount >= 2 )
+			{
+				var linkage : String = ParamUtil.getLibraryName( _selectedObject );
+				var libraryData : Object = UIEditorApp.instance.documentEditor.getLibrary( linkage );
+				UIEditorApp.instance.notificationDispatcher.dispatchEventWith( DocumentEventType.EDIT_LIBRARY_ITEM, false, { label: linkage, data: libraryData });
 			}
 		}
 
@@ -660,22 +600,44 @@ package uieditor.editor.controller
 		{
 			if ( _root == null )
 				return;
+			
+			if ( rect.width == 0 || rect.height == 0 )
+			{
+				if ( rect.x < 0 || rect.y < 0 || rect.x > this.width || rect.y > this.height )
+				{
+					if ( _root.touchable )
+						selectObject( _root );
+				}
+				_mutliSelectBox.clean();
+				_mutliSelectBox.redraw();
+				return;
+			}
+			
+			var scale : Number = this.canvasScale;
+			
+			rect.x /= scale;
+			rect.y /= scale;
+			rect.width /= scale;
+			rect.height /= scale;
 
 			selectObject( null );
 			hoverObject( null );
 
 			_mutliSelectBox.clean();
 			var targetRect : Rectangle = new Rectangle();
-			var count : int = _root.numChildren;
-			for ( var i : int = 0; i < count; i++ )
+			if ( _root.touchable && _root.visible )
 			{
-				var child : DisplayObject = _root.getChildAt( i );
-				if ( child.touchable )
+				var count : int = _root.numChildren;
+				for ( var i : int = 0; i < count; i++ )
 				{
-					child.getBounds( _root, targetRect );
-					if ( rect.intersects( targetRect ))
+					var child : DisplayObject = _root.getChildAt( i );
+					if ( child.touchable && child.visible )
 					{
-						_mutliSelectBox.addDisplayObject( child );
+						child.getBounds( _root, targetRect );
+						if ( rect.intersects( targetRect ))
+						{
+							_mutliSelectBox.addDisplayObject( child );
+						}
 					}
 				}
 			}
@@ -695,7 +657,7 @@ package uieditor.editor.controller
 			{
 				var delta : Number = event.delta;
 
-				this.scale += delta * 0.03;
+				this.canvasScale += delta * 0.03;
 			}
 		}
 
@@ -773,29 +735,10 @@ package uieditor.editor.controller
 			return !snapPixel || ( dx * dx + dy * dy > 0.5 );
 		}
 
-		protected var _dragFormats : Array = [ DragFormat.FORMAT_ASSET, DragFormat.FORMAT_COMPONENT, DragFormat.FORMAT_LIBRARY ];
-
-		private function dragEnterHandler( event : DragDropEvent, dragData : DragData ) : void
+		public function onDropData( offset : Point, dragData : DragData ) : void
 		{
-			var hasFormat : Boolean = false;
-			for ( var i : int = 0; i < _dragFormats.length; i++ )
-			{
-				if ( dragData.hasDataForFormat( _dragFormats[ i ]))
-				{
-					hasFormat = true;
-					break;
-				}
-			}
-
-			if ( !hasFormat )
-				return;
-
-			DragDropManager.acceptDrag( this );
-		}
-
-		private function dragDropHandler( event : DragDropEvent, dragData : DragData ) : void
-		{
-			var offset : Point = new Point( event.localX / this.scale, event.localY / this.scale );
+			offset.x /= this.canvasScale;
+			offset.y /= this.canvasScale;
 
 			var parent : DisplayObjectContainer = getParent();
 			if ( parent != null )
@@ -903,6 +846,11 @@ package uieditor.editor.controller
 			sortDataProvider();
 		}
 
+		public function setSelect( data : Object ) : void
+		{
+			setLayerChanged();
+		}
+
 		protected function isAncestorOf( child : DisplayObject, parent : DisplayObject ) : Boolean
 		{
 			var p : DisplayObject = child;
@@ -971,15 +919,48 @@ package uieditor.editor.controller
 			dispatchEventWith( DocumentEventType.CANVAS_SIZE_CHANGE );
 		}
 
+		protected function exportSetting() : Object
+		{
+			var setting : Object = {};
+
+			if ( canvasSize )
+			{
+				setting.canvasSize = { x: _canvasSize.x, y: _canvasSize.y };
+			}
+
+			setting.backgroundColor = backgroundColor;
+
+			return setting;
+		}
+
+		protected function importSetting( setting : Object ) : void
+		{
+			if ( setting )
+			{
+				if ( setting.canvasSize )
+				{
+					canvasSize = new Point( setting.canvasSize.x, setting.canvasSize.y );
+				}
+				if ( setting.hasOwnProperty( "backgroundColor" ))
+				{
+					backgroundColor = setting.backgroundColor;
+
+					this.backgroundColor = backgroundColor;
+				}
+			}
+
+			setChanged();
+		}
+
 		public function resize() : void
 		{
-			//this.clipRect = new Rectangle( 0, 0, canvasSize.x * _layoutContainer.scaleX, canvasSize.y * _layoutContainer.scaleY );
+			this.mask = new Quad( canvasSize.x * _layoutContainer.scale, canvasSize.y * _layoutContainer.scale );
 
 			_documentPanel.resizeBg();
 
 			_bgCanvas.clear();
 			_bgCanvas.beginFill( _backgroundColor, 1 );
-			_bgCanvas.drawRectangle( 0, 0, canvasSize.x * _layoutContainer.scaleX, canvasSize.y * _layoutContainer.scaleX );
+			_bgCanvas.drawRectangle( 0, 0, canvasSize.x * _layoutContainer.scale, canvasSize.y * _layoutContainer.scale );
 			_bgCanvas.endFill();
 
 			this.x = int(( _documentPanel.width - _canvasSize.x * _layoutContainer.scaleX ) * 0.5 );
@@ -1034,13 +1015,12 @@ package uieditor.editor.controller
 			if ( value < 0.1 )
 				value = 0.1;
 
-			if ( scale != value )
+			if ( canvasScale != value )
 			{
-				_layoutContainer.scaleX = _layoutContainer.scaleY = value;
-				_backgroundContainer.scaleX = _backgroundContainer.scaleY = value;
+				_layoutContainer.scale = value;
+				_backgroundContainer.scale = value;
 
-				_mutliSelectBox.scaleX = _mutliSelectBox.scaleY = value;
-				_selectRect.scaleX = _selectRect.scaleY = value;
+				_mutliSelectBox.scale = value;
 
 				_documentPanel.invalidate();
 
@@ -1113,8 +1093,10 @@ package uieditor.editor.controller
 
 			_bgCanvas.clear();
 			_bgCanvas.beginFill( _backgroundColor, 1 );
-			_bgCanvas.drawRectangle( 0, 0, canvasSize.x * _layoutContainer.scaleX, canvasSize.y * _layoutContainer.scaleX );
+			_bgCanvas.drawRectangle( 0, 0, canvasSize.x * _layoutContainer.scale, canvasSize.y * _layoutContainer.scale );
 			_bgCanvas.endFill();
+
+			dispatchEventWith( DocumentEventType.BACK_GROUND_COLOR_CHANGE );
 		}
 
 		public function set backgroundX( value : Number ) : void
@@ -1385,17 +1367,17 @@ package uieditor.editor.controller
 					});
 
 				SelectHelper.startSelect( obj,
-					function( object : DisplayObject,ctrlKey:Boolean ) : void
+					function( object : DisplayObject, ctrlKey : Boolean ) : void
 					{
 						if ( selectedObject != _root )
 						{
 							if ( !( selectedObject is DisplayObjectContainer ) ||
 								!DisplayObjectContainer( selectedObject ).contains( object ))
-								selectObject( object,ctrlKey );
+								selectObject( object, ctrlKey );
 						}
 						else
 						{
-							selectObject( object,ctrlKey );
+							selectObject( object, ctrlKey );
 						}
 					},
 					function( object : DisplayObject ) : void

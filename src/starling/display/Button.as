@@ -13,15 +13,16 @@ package starling.display
     import flash.geom.Rectangle;
     import flash.ui.Mouse;
     import flash.ui.MouseCursor;
-
+    
+    import starling.core.Starling;
     import starling.events.Event;
     import starling.events.Touch;
     import starling.events.TouchEvent;
     import starling.events.TouchPhase;
+    import starling.styles.MeshStyle;
     import starling.text.TextField;
     import starling.text.TextFormat;
     import starling.textures.Texture;
-    import starling.utils.RectangleUtil;
 
     /** Dispatched when the user triggers the button. Bubbles. */
     [Event(name="triggered", type="starling.events.Event")]
@@ -78,7 +79,9 @@ package starling.display
 
             _state = ButtonState.UP;
             _body = new Image(upState);
-            _scaleWhenDown = downState ? 1.0 : 0.9;
+            _body.pixelSnapping = false;
+			_body.batchable = _batchable;
+            _scaleWhenDown = downState ? 1.0 : 1.0;//0.9;
             _scaleWhenOver = _alphaWhenDown = 1.0;
             _alphaWhenDisabled = disabledState ? 1.0: 0.5;
             _enabled = true;
@@ -94,13 +97,38 @@ package starling.display
             this.touchGroup = true;
             this.text = text;
         }
+		
+		private var _batchable : Boolean = false;
+		
+		public function get batchable() : Boolean
+		{
+			return _batchable;
+		}
+		
+		public function set batchable( value : Boolean ) : void
+		{
+			if ( _batchable == value )
+				return;
+			
+			_batchable = value;
+			_body.batchable = value;
+			if(_textField != null)
+			{
+				_textField.batchable = value;
+			}
+		}
         
         /** @inheritDoc */
         public override function dispose():void
         {
+			removeEventListener(TouchEvent.TOUCH, onTouch);
+			
             // text field might be disconnected from parent, so we have to dispose it manually
             if (_textField)
-                _textField.dispose();
+			{
+				_textField.dispose();
+				_textField = null;
+			}
             
             super.dispose();
         }
@@ -131,9 +159,10 @@ package starling.display
             if (_textField == null)
             {
                 _textField = new TextField(_textBounds.width, _textBounds.height);
+                _textField.pixelSnapping = _body.pixelSnapping;
                 _textField.touchable = false;
                 _textField.autoScale = true;
-                _textField.batchable = true;
+                _textField.batchable = _batchable;
             }
             
             _textField.width  = _textBounds.width;
@@ -144,8 +173,9 @@ package starling.display
         
         private function onTouch(event:TouchEvent):void
         {
-            Mouse.cursor = (_useHandCursor && _enabled && event.interactsWith(this)) ?
-                MouseCursor.BUTTON : MouseCursor.AUTO;
+			if(Starling.supportEditCursor)
+	            Mouse.cursor = (_useHandCursor && _enabled && event.interactsWith(this)) ?
+	                MouseCursor.BUTTON : MouseCursor.AUTO;
             
             var touch:Touch = event.getTouch(this);
             var isWithinBounds:Boolean;
@@ -296,6 +326,24 @@ package starling.display
             _textField.format = value;
         }
 
+        /** The style that is used to render the button's TextField. */
+        public function get textStyle():MeshStyle
+        {
+            if (_textField == null) createTextField();
+            return _textField.style;
+        }
+
+        public function set textStyle(value:MeshStyle):void
+        {
+            if (_textField == null) createTextField();
+            _textField.style = value;
+        }
+
+		/** The style that is used to render the button.
+		 *  Note that a style instance may only be used on one mesh at a time. */
+        public function get style():MeshStyle { return _body.style; }
+        public function set style(value:MeshStyle):void { _body.style = value; }
+
         /** The texture that is displayed when the button is not being touched. */
         public function get upState():Texture { return _upState; }
         public function set upState(value:Texture):void
@@ -384,27 +432,42 @@ package starling.display
         public override function get useHandCursor():Boolean { return _useHandCursor; }
         public override function set useHandCursor(value:Boolean):void { _useHandCursor = value; }
 
+        /** Controls whether or not the instance snaps to the nearest pixel. This can prevent the
+         *  object from looking blurry when it's not exactly aligned with the pixels of the screen.
+         *  @default true */
+        public function get pixelSnapping():Boolean { return _body.pixelSnapping; }
+        public function set pixelSnapping(value:Boolean):void
+        {
+            _body.pixelSnapping = value;
+            if (_textField) _textField.pixelSnapping = value;
+        }
+
         /** @private */
         override public function set width(value:Number):void
         {
-            var scaleX:Number = value / _body.width;
-
-            _body.width = value;
-            _textBounds.x *= scaleX;
-            _textBounds.width *= scaleX;
-
-            if (_textField) _textField.width = value;
+			// The Button might use a Scale9Grid ->
+			// we must update the body width/height manually for the grid to scale properly.
+			
+			var newWidth:Number = value / (this.scaleX || 1.0);
+			var scale:Number = newWidth / (_body.width || 1.0);
+			
+			_body.width = newWidth;
+			_textBounds.x *= scale;
+			_textBounds.width *= scale;
+			
+			if (_textField) _textField.width = newWidth;
         }
 
         override public function set height(value:Number):void
         {
-            var scaleY:Number = value / _body.height;
-
-            _body.height = value;
-            _textBounds.y *= scaleY;
-            _textBounds.height *= scaleY;
-
-            if (_textField) _textField.height = value;
+			var newHeight:Number = value /  (this.scaleY || 1.0);
+			var scale:Number = newHeight / (_body.height || 1.0);
+			
+			_body.height = newHeight;
+			_textBounds.y *= scale;
+			_textBounds.height *= scale;
+			
+			if (_textField) _textField.height = newHeight;
         }
 
         /** The current scaling grid used for the button's state image. Use this property to create
@@ -416,5 +479,10 @@ package starling.display
          */
         public function get scale9Grid():Rectangle { return _body.scale9Grid; }
         public function set scale9Grid(value:Rectangle):void { _body.scale9Grid = value; }
+
+		override public function get touchable() : Boolean
+		{
+			return _enabled && super.touchable;
+		}
     }
 }

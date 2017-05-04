@@ -1,45 +1,11 @@
 package uieditor.editor
 {
-	import feathers.controls.Alert;
-	import feathers.controls.AutoComplete;
-	import feathers.controls.Button;
-	import feathers.controls.ButtonGroup;
-	import feathers.controls.Callout;
-	import feathers.controls.Check;
-	import feathers.controls.DateTimeSpinner;
-	import feathers.controls.Drawers;
-	import feathers.controls.GroupedList;
-	import feathers.controls.Header;
 	import feathers.controls.ImageLoader;
-	import feathers.controls.Label;
 	import feathers.controls.LayoutGroup;
-	import feathers.controls.List;
-	import feathers.controls.NumericStepper;
-	import feathers.controls.PageIndicator;
-	import feathers.controls.Panel;
-	import feathers.controls.PanelScreen;
-	import feathers.controls.PickerList;
-	import feathers.controls.ProgressBar;
-	import feathers.controls.Radio;
-	import feathers.controls.Screen;
-	import feathers.controls.ScreenNavigator;
-	import feathers.controls.ScreenNavigatorItem;
-	import feathers.controls.ScrollBar;
 	import feathers.controls.ScrollContainer;
-	import feathers.controls.Scroller;
-	import feathers.controls.ScrollScreen;
 	import feathers.controls.ScrollText;
-	import feathers.controls.SimpleScrollBar;
-	import feathers.controls.Slider;
-	import feathers.controls.SpinnerList;
-	import feathers.controls.StackScreenNavigator;
-	import feathers.controls.StackScreenNavigatorItem;
-	import feathers.controls.TabBar;
 	import feathers.controls.TextArea;
 	import feathers.controls.TextInput;
-	import feathers.controls.ToggleButton;
-	import feathers.controls.ToggleSwitch;
-	import feathers.controls.WebView;
 	import feathers.layout.FlowLayout;
 	import feathers.layout.HorizontalLayout;
 	import feathers.layout.TiledColumnsLayout;
@@ -47,11 +13,15 @@ package uieditor.editor
 	import feathers.layout.VerticalLayout;
 	import feathers.layout.VerticalSpinnerLayout;
 	import feathers.layout.WaterfallLayout;
+	
 	import starling.display.Button;
 	import starling.display.Image;
 	import starling.display.Quad;
 	import starling.display.Sprite;
-	import starling.display.Sprite3D;
+	import starling.filters.BlurFilter;
+	import starling.filters.DropShadowFilter;
+	import starling.filters.GlowFilter;
+	import starling.text.SimpleBitmapText;
 	import starling.text.TextField;
 	
 
@@ -68,52 +38,17 @@ package uieditor.editor
 		public static const LINKERS : Array = [
 			Image,
 			TextField,
+			SimpleBitmapText,
 			starling.display.Button,
 			Quad,
-			List,
 			Sprite,
-			Sprite3D,
 			
-			Alert,
-			AutoComplete,
-			feathers.controls.Button,
-			ButtonGroup,
-			Callout,
-			Check,
-			DateTimeSpinner,
-			Drawers,
-			GroupedList,
-			Header,
 			ImageLoader,
-			Label,
 			LayoutGroup,
-			List,
-			NumericStepper,
-			PageIndicator,
-			Panel,
-			PanelScreen,
-			PickerList,
-			ProgressBar,
-			Radio,
-			Screen,
-			ScreenNavigator,
-			ScreenNavigatorItem,
-			ScrollBar,
 			ScrollContainer,
-			Scroller,
-			ScrollScreen,
 			ScrollText,
-			SimpleScrollBar,
-			Slider,
-			SpinnerList,
-			StackScreenNavigator,
-			StackScreenNavigatorItem,
-			TabBar,
 			TextArea,
 			TextInput,
-			ToggleButton,
-			ToggleSwitch,
-			WebView,
 
 			HorizontalLayout,
 			VerticalLayout,
@@ -121,15 +56,11 @@ package uieditor.editor
 			TiledRowsLayout,
 			TiledColumnsLayout,
 			VerticalSpinnerLayout,
-			WaterfallLayout
-			]
-
-		public static const DEFAULT_SCALE3_RATIO : Array = [ 0.20, 0.60, "horizontal" ];
-		public static const DEFAULT_SCALE9_RATIO : Array = [ 0.3, 0.3, 0.4, 0.4 ];
-
-		public function SupportedWidget()
-		{
-
-		}
+			WaterfallLayout,
+			
+			BlurFilter,
+			GlowFilter,
+			DropShadowFilter
+			];
 	}
 }

@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -9,13 +9,16 @@ package feathers.controls
 {
 	import feathers.core.IFeathersControl;
 	import feathers.core.IFocusExtras;
+	import feathers.core.IMeasureDisplayObject;
+	import feathers.core.IValidating;
 	import feathers.core.PropertyProxy;
 	import feathers.events.FeathersEventType;
 	import feathers.skins.IStyleProvider;
-
+	import feathers.utils.skins.resetFluidChildDimensionsForMeasurement;
+	
 	import starling.display.DisplayObject;
 	import starling.events.Event;
-
+	
 	/**
 	 * A container with layout, optional scrolling, a header, and an optional
 	 * footer.
@@ -52,14 +55,14 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_HEADER:String = "feathers-panel-header";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the footer.
 		 *
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_FOOTER:String = "feathers-panel-footer";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.AUTO</code>.
@@ -70,7 +73,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_POLICY_AUTO:String = "auto";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.ON</code>.
@@ -81,7 +84,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_POLICY_ON:String = "on";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.OFF</code>.
@@ -92,7 +95,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_POLICY_OFF:String = "off";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FLOAT</code>.
@@ -103,7 +106,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_BAR_DISPLAY_MODE_FLOAT:String = "float";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FIXED</code>.
@@ -114,7 +117,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_BAR_DISPLAY_MODE_FIXED:String = "fixed";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.NONE</code>.
@@ -125,7 +128,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const SCROLL_BAR_DISPLAY_MODE_NONE:String = "none";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT</code>.
@@ -136,7 +139,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_SCROLL_BAR_POSITION_RIGHT:String = "right";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT</code>.
@@ -147,7 +150,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_SCROLL_BAR_POSITION_LEFT:String = "left";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.TOUCH</code>.
@@ -158,7 +161,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const INTERACTION_MODE_TOUCH:String = "touch";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.MOUSE</code>.
@@ -169,7 +172,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const INTERACTION_MODE_MOUSE:String = "mouse";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.TOUCH_AND_SCROLL_BARS</code>.
@@ -180,7 +183,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const INTERACTION_MODE_TOUCH_AND_SCROLL_BARS:String = "touchAndScrollBars";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.VERTICAL</code>.
@@ -191,7 +194,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const MOUSE_WHEEL_SCROLL_DIRECTION_VERTICAL:String = "vertical";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.HORIZONTAL</code>.
@@ -202,7 +205,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const MOUSE_WHEEL_SCROLL_DIRECTION_HORIZONTAL:String = "horizontal";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.DecelerationRate.NORMAL</code>.
@@ -213,7 +216,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DECELERATION_RATE_NORMAL:Number = 0.998;
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.controls.DecelerationRate.FAST</code>.
@@ -224,21 +227,29 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DECELERATION_RATE_FAST:Number = 0.99;
-
+		
 		/**
-		 * @copy feathers.controls.ScrollContainer#AUTO_SIZE_MODE_STAGE
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.AutoSizeMode.STAGE</code>.
 		 *
-		 * @see feathers.controls.ScrollContainer#autoSizeMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const AUTO_SIZE_MODE_STAGE:String = "stage";
-
+		
 		/**
-		 * @copy feathers.controls.ScrollContainer#AUTO_SIZE_MODE_CONTENT
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.AutoSizeMode.CONTENT</code>.
 		 *
-		 * @see feathers.controls.ScrollContainer#autoSizeMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const AUTO_SIZE_MODE_CONTENT:String = "content";
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>Panel</code>
 		 * components.
@@ -247,17 +258,17 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_HEADER_FACTORY:String = "headerFactory";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_FOOTER_FACTORY:String = "footerFactory";
-
+		
 		/**
 		 * @private
 		 */
@@ -265,7 +276,7 @@ package feathers.controls
 		{
 			return new Header();
 		}
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -273,7 +284,7 @@ package feathers.controls
 		{
 			super();
 		}
-
+		
 		/**
 		 * The header sub-component.
 		 *
@@ -283,7 +294,7 @@ package feathers.controls
 		 * @see #createHeader()
 		 */
 		protected var header:IFeathersControl;
-
+		
 		/**
 		 * The footer sub-component.
 		 *
@@ -293,7 +304,7 @@ package feathers.controls
 		 * @see #createFooter()
 		 */
 		protected var footer:IFeathersControl;
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the
 		 * header. This variable is <code>protected</code> so that sub-classes
@@ -308,7 +319,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var headerStyleName:String = DEFAULT_CHILD_STYLE_NAME_HEADER;
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the
 		 * footer. This variable is <code>protected</code> so that sub-classes
@@ -323,7 +334,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var footerStyleName:String = DEFAULT_CHILD_STYLE_NAME_FOOTER;
-
+		
 		/**
 		 * @private
 		 */
@@ -331,12 +342,52 @@ package feathers.controls
 		{
 			return Panel.globalStyleProvider;
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitHeaderWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitHeaderHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitHeaderMinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitHeaderMinHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitFooterWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitFooterHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitFooterMinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitFooterMinHeight:Number;
+		
 		/**
 		 * @private
 		 */
 		protected var _title:String = null;
-
+		
 		/**
 		 * The panel's title to display in the header.
 		 *
@@ -361,7 +412,7 @@ package feathers.controls
 		{
 			return this._title;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -374,13 +425,13 @@ package feathers.controls
 			this._title = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
-
+		
+		
 		/**
 		 * @private
 		 */
 		protected var _headerTitleField:String = "title";
-
+		
 		/**
 		 * A property of the header that should be used to display the panel's
 		 * title.
@@ -411,7 +462,7 @@ package feathers.controls
 		{
 			return this._headerTitleField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -424,12 +475,12 @@ package feathers.controls
 			this._headerTitleField = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _headerFactory:Function;
-
+		
 		/**
 		 * A function used to generate the panel's header sub-component.
 		 * The header must be an instance of <code>IFeathersControl</code>, but
@@ -465,7 +516,7 @@ package feathers.controls
 		{
 			return this._headerFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -481,12 +532,12 @@ package feathers.controls
 			//header factory
 			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customHeaderStyleName:String;
-
+		
 		/**
 		 * A style name to add to the panel's header sub-component. Typically
 		 * used by a theme to provide different styles to different panels.
@@ -516,7 +567,7 @@ package feathers.controls
 		{
 			return this._customHeaderStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -532,12 +583,12 @@ package feathers.controls
 			//header factory
 			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _headerProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the container's header
 		 * sub-component, and the properties will be passed down to the header
@@ -584,7 +635,7 @@ package feathers.controls
 			}
 			return this._headerProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -618,12 +669,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _footerFactory:Function;
-
+		
 		/**
 		 * A function used to generate the panel's footer sub-component.
 		 * The footer must be an instance of <code>IFeathersControl</code>, and
@@ -653,7 +704,7 @@ package feathers.controls
 		{
 			return this._footerFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -669,12 +720,12 @@ package feathers.controls
 			//header factory
 			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customFooterStyleName:String;
-
+		
 		/**
 		 * A style name to add to the panel's footer sub-component. Typically
 		 * used by a theme to provide different styles to different panels.
@@ -704,7 +755,7 @@ package feathers.controls
 		{
 			return this._customFooterStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -720,12 +771,12 @@ package feathers.controls
 			//header factory
 			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _footerProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the container's footer
 		 * sub-component, and the properties will be passed down to the footer
@@ -762,7 +813,7 @@ package feathers.controls
 			}
 			return this._footerProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -796,12 +847,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		private var _focusExtrasBefore:Vector.<DisplayObject> = new <DisplayObject>[];
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -809,12 +860,12 @@ package feathers.controls
 		{
 			return this._focusExtrasBefore;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		private var _focusExtrasAfter:Vector.<DisplayObject> = new <DisplayObject>[];
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -822,7 +873,7 @@ package feathers.controls
 		{
 			return this._focusExtrasAfter;
 		}
-
+		
 		/**
 		 * Quickly sets all outer padding properties to the same value. The
 		 * <code>outerPadding</code> getter always returns the value of
@@ -846,7 +897,7 @@ package feathers.controls
 		{
 			return this._outerPaddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -857,12 +908,12 @@ package feathers.controls
 			this.outerPaddingBottom = value;
 			this.outerPaddingLeft = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _outerPaddingTop:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the panel's top edge and the
 		 * panel's header.
@@ -887,7 +938,7 @@ package feathers.controls
 		{
 			return this._outerPaddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -900,12 +951,12 @@ package feathers.controls
 			this._outerPaddingTop = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _outerPaddingRight:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the panel's right edge and the
 		 * panel's header, middle content, and footer.
@@ -931,7 +982,7 @@ package feathers.controls
 		{
 			return this._outerPaddingRight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -944,12 +995,12 @@ package feathers.controls
 			this._outerPaddingRight = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _outerPaddingBottom:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the panel's bottom edge and the
 		 * panel's footer.
@@ -974,7 +1025,7 @@ package feathers.controls
 		{
 			return this._outerPaddingBottom;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -987,12 +1038,12 @@ package feathers.controls
 			this._outerPaddingBottom = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _outerPaddingLeft:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the panel's left edge and the
 		 * panel's header, middle content, and footer.
@@ -1018,7 +1069,7 @@ package feathers.controls
 		{
 			return this._outerPaddingLeft;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1031,17 +1082,17 @@ package feathers.controls
 			this._outerPaddingLeft = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _ignoreHeaderResizing:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _ignoreFooterResizing:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
@@ -1050,104 +1101,195 @@ package feathers.controls
 			var headerFactoryInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_HEADER_FACTORY);
 			var footerFactoryInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_FOOTER_FACTORY);
 			var stylesInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STYLES);
-
+			
 			if(headerFactoryInvalid)
 			{
 				this.createHeader();
 			}
-
+			
 			if(footerFactoryInvalid)
 			{
 				this.createFooter();
 			}
-
+			
 			if(headerFactoryInvalid || stylesInvalid)
 			{
 				this.refreshHeaderStyles();
 			}
-
+			
 			if(footerFactoryInvalid || stylesInvalid)
 			{
 				this.refreshFooterStyles();
 			}
-
+			
 			super.draw();
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
 		override protected function autoSizeIfNeeded():Boolean
 		{
+			if(this._autoSizeMode === AutoSizeMode.STAGE)
+			{
+				//the implementation in ScrollContainer can handle this
+				return super.autoSizeIfNeeded();
+			}
+			
 			var needsWidth:Boolean = this._explicitWidth !== this._explicitWidth; //isNaN
 			var needsHeight:Boolean = this._explicitHeight !== this._explicitHeight; //isNaN
-			if(!needsWidth && !needsHeight)
+			var needsMinWidth:Boolean = this._explicitMinWidth !== this._explicitMinWidth; //isNaN
+			var needsMinHeight:Boolean = this._explicitMinHeight !== this._explicitMinHeight; //isNaN
+			if(!needsWidth && !needsHeight && !needsMinWidth && !needsMinHeight)
 			{
 				return false;
 			}
-			if(this._autoSizeMode == AUTO_SIZE_MODE_STAGE)
+			
+			resetFluidChildDimensionsForMeasurement(this.currentBackgroundSkin,
+				this._explicitWidth, this._explicitHeight,
+				this._explicitMinWidth, this._explicitMinHeight,
+				this._explicitMaxWidth, this._explicitMaxHeight,
+				this._explicitBackgroundWidth, this._explicitBackgroundHeight,
+				this._explicitBackgroundMinWidth, this._explicitBackgroundMinHeight,
+				this._explicitBackgroundMaxWidth, this._explicitBackgroundMaxHeight);
+			var measureBackground:IMeasureDisplayObject = this.currentBackgroundSkin as IMeasureDisplayObject;
+			if(this.currentBackgroundSkin is IValidating)
 			{
-				return this.setSizeInternal(this.stage.stageWidth, this.stage.stageHeight, false);
+				IValidating(this.currentBackgroundSkin).validate();
 			}
-
-			var oldIgnoreHeaderResizing:Boolean = this._ignoreHeaderResizing;
-			this._ignoreHeaderResizing = true;
-			var oldIgnoreFooterResizing:Boolean = this._ignoreFooterResizing;
-			this._ignoreFooterResizing = true;
-
-			var oldHeaderWidth:Number = this.header.width;
-			var oldHeaderHeight:Number = this.header.height;
-			this.header.width = this._explicitWidth;
-			this.header.maxWidth = this._maxWidth;
-			this.header.height = NaN;
-			this.header.validate();
-
-			if(this.footer)
-			{
-				var oldFooterWidth:Number = this.footer.width;
-				var oldFooterHeight:Number = this.footer.height;
-				this.footer.width = this._explicitWidth;
-				this.footer.maxWidth = this._maxWidth;
-				this.footer.height = NaN;
-				this.footer.validate();
-			}
-
+			
+			//we don't measure the header and footer here because they are
+			//handled in calculateViewPortOffsets(), which is automatically
+			//called by Scroller before autoSizeIfNeeded().
+			
 			var newWidth:Number = this._explicitWidth;
 			var newHeight:Number = this._explicitHeight;
+			var newMinWidth:Number = this._explicitMinWidth;
+			var newMinHeight:Number = this._explicitMinHeight;
 			if(needsWidth)
 			{
-				newWidth = Math.max(this.header.width, this._viewPort.width + this._rightViewPortOffset + this._leftViewPortOffset);
-				if(this.footer)
+				if(this._measureViewPort)
 				{
-					newWidth = Math.max(newWidth, this.footer.width);
+					newWidth = this._viewPort.visibleWidth;
 				}
-				if(this.originalBackgroundWidth === this.originalBackgroundWidth) //!isNaN
+				else
 				{
-					newWidth = Math.max(newWidth, this.originalBackgroundWidth);
+					newWidth = 0;
+				}
+				//we don't need to account for the icon and gap because it is
+				//already included in the left offset
+				newWidth += this._rightViewPortOffset + this._leftViewPortOffset;
+				var headerWidth:Number = this.header.width + this._outerPaddingLeft + this._outerPaddingRight;
+				if(headerWidth > newWidth)
+				{
+					newWidth = headerWidth;
+				}
+				if(this.footer !== null)
+				{
+					var footerWidth:Number = this.footer.width + this._outerPaddingLeft + this._outerPaddingRight;
+					if(footerWidth > newWidth)
+					{
+						newWidth = footerWidth;
+					}
+				}
+				if(this.currentBackgroundSkin !== null &&
+					this.currentBackgroundSkin.width > newWidth)
+				{
+					newWidth = this.currentBackgroundSkin.width;
 				}
 			}
 			if(needsHeight)
 			{
-				newHeight = this._viewPort.height + this._bottomViewPortOffset + this._topViewPortOffset;
-				if(this.originalBackgroundHeight === this.originalBackgroundHeight) //!isNaN
+				if(this._measureViewPort)
 				{
-					newHeight = Math.max(newHeight, this.originalBackgroundHeight);
+					newHeight = this._viewPort.visibleHeight;
+				}
+				else
+				{
+					newHeight = 0;
+				}
+				newHeight += this._bottomViewPortOffset + this._topViewPortOffset;
+				//we don't need to account for the header and footer because
+				//they're already included in the top and bottom offsets
+				if(this.currentBackgroundSkin !== null &&
+					this.currentBackgroundSkin.height > newHeight)
+				{
+					newHeight = this.currentBackgroundSkin.height;
 				}
 			}
-
-			this.header.width = oldHeaderWidth;
-			this.header.height = oldHeaderHeight;
-			if(this.footer)
+			if(needsMinWidth)
 			{
-				this.footer.width = oldFooterWidth;
-				this.footer.height = oldFooterHeight;
+				if(this._measureViewPort)
+				{
+					newMinWidth = this._viewPort.minVisibleWidth;
+				}
+				else
+				{
+					newMinWidth = 0;
+				}
+				//we don't need to account for the icon and gap because it is
+				//already included in the left offset
+				newMinWidth += this._rightViewPortOffset + this._leftViewPortOffset;
+				var headerMinWidth:Number = this.header.minWidth + this._outerPaddingLeft + this._outerPaddingRight;
+				if(headerMinWidth > newMinWidth)
+				{
+					newMinWidth = headerMinWidth;
+				}
+				if(this.footer !== null)
+				{
+					var footerMinWidth:Number = this.footer.minWidth + this._outerPaddingLeft + this._outerPaddingRight;
+					if(footerMinWidth > newMinWidth)
+					{
+						newMinWidth = footerMinWidth;
+					}
+				}
+				if(this.currentBackgroundSkin !== null)
+				{
+					if(measureBackground !== null)
+					{
+						if(measureBackground.minWidth > newMinWidth)
+						{
+							newMinWidth = measureBackground.minWidth;
+						}
+					}
+					else if(this._explicitBackgroundMinWidth > newMinWidth)
+					{
+						newMinWidth = this._explicitBackgroundMinWidth;
+					}
+				}
 			}
-			this._ignoreHeaderResizing = oldIgnoreHeaderResizing;
-			this._ignoreFooterResizing = oldIgnoreFooterResizing;
-
-			return this.setSizeInternal(newWidth, newHeight, false);
+			if(needsMinHeight)
+			{
+				if(this._measureViewPort)
+				{
+					newMinHeight = this._viewPort.minVisibleHeight;
+				}
+				else
+				{
+					newMinHeight = 0;
+				}
+				newMinHeight += this._bottomViewPortOffset + this._topViewPortOffset;
+				//we don't need to account for the header and footer because
+				//they're already included in the top and bottom offsets
+				if(this.currentBackgroundSkin !== null)
+				{
+					if(measureBackground !== null)
+					{
+						if(measureBackground.minHeight > newMinHeight)
+						{
+							newMinHeight = measureBackground.minHeight;
+						}
+					}
+					else if(this._explicitBackgroundMinHeight > newMinHeight)
+					{
+						newMinHeight = this._explicitBackgroundMinHeight;
+					}
+				}
+			}
+			
+			return this.saveMeasurements(newWidth, newHeight, newMinWidth, newMinHeight);
 		}
-
+		
 		/**
 		 * Creates and adds the <code>header</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -1161,7 +1303,7 @@ package feathers.controls
 		 */
 		protected function createHeader():void
 		{
-			if(this.header)
+			if(this.header !== null)
 			{
 				this.header.removeEventListener(FeathersEventType.RESIZE, header_resizeHandler);
 				var displayHeader:DisplayObject = DisplayObject(this.header);
@@ -1169,7 +1311,7 @@ package feathers.controls
 				this.removeRawChild(displayHeader, true);
 				this.header = null;
 			}
-
+			
 			var factory:Function = this._headerFactory != null ? this._headerFactory : defaultHeaderFactory;
 			var headerStyleName:String = this._customHeaderStyleName != null ? this._customHeaderStyleName : this.headerStyleName;
 			this.header = IFeathersControl(factory());
@@ -1178,8 +1320,14 @@ package feathers.controls
 			displayHeader = DisplayObject(this.header);
 			this.addRawChild(displayHeader);
 			this._focusExtrasBefore.push(displayHeader);
+			
+			this.header.initializeNow();
+			this._explicitHeaderWidth = this.header.explicitWidth;
+			this._explicitHeaderHeight = this.header.explicitHeight;
+			this._explicitHeaderMinWidth = this.header.explicitMinWidth;
+			this._explicitHeaderMinHeight = this.header.explicitMinHeight;
 		}
-
+		
 		/**
 		 * Creates and adds the <code>footer</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -1193,7 +1341,7 @@ package feathers.controls
 		 */
 		protected function createFooter():void
 		{
-			if(this.footer)
+			if(this.footer !== null)
 			{
 				this.footer.removeEventListener(FeathersEventType.RESIZE, footer_resizeHandler);
 				var displayFooter:DisplayObject = DisplayObject(this.footer);
@@ -1201,8 +1349,8 @@ package feathers.controls
 				this.removeRawChild(displayFooter, true);
 				this.footer = null;
 			}
-
-			if(this._footerFactory == null)
+			
+			if(this._footerFactory === null)
 			{
 				return;
 			}
@@ -1213,8 +1361,14 @@ package feathers.controls
 			displayFooter = DisplayObject(this.footer);
 			this.addRawChild(displayFooter);
 			this._focusExtrasAfter.push(displayFooter);
+			
+			this.footer.initializeNow();
+			this._explicitFooterWidth = this.footer.explicitWidth;
+			this._explicitFooterHeight = this.footer.explicitHeight;
+			this._explicitFooterMinWidth = this.footer.explicitMinWidth;
+			this._explicitFooterMinHeight = this.footer.explicitMinHeight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1230,7 +1384,7 @@ package feathers.controls
 				this.header[propertyName] = propertyValue;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1242,57 +1396,55 @@ package feathers.controls
 				this.footer[propertyName] = propertyValue;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override protected function calculateViewPortOffsets(forceScrollBars:Boolean = false, useActualBounds:Boolean = false):void
 		{
 			super.calculateViewPortOffsets(forceScrollBars);
-
+			
 			this._leftViewPortOffset += this._outerPaddingLeft;
 			this._rightViewPortOffset += this._outerPaddingRight;
-
+			
 			var oldIgnoreHeaderResizing:Boolean = this._ignoreHeaderResizing;
 			this._ignoreHeaderResizing = true;
-			var oldHeaderWidth:Number = this.header.width;
-			var oldHeaderHeight:Number = this.header.height;
 			if(useActualBounds)
 			{
 				this.header.width = this.actualWidth - this._outerPaddingLeft - this._outerPaddingRight;
+				this.header.minWidth = this.actualMinWidth - this._outerPaddingLeft - this._outerPaddingRight;
 			}
 			else
 			{
 				this.header.width = this._explicitWidth - this._outerPaddingLeft - this._outerPaddingRight;
+				this.header.minWidth = this._explicitMinWidth - this._outerPaddingLeft - this._outerPaddingRight;
 			}
-			this.header.maxWidth = this._maxWidth - this._outerPaddingLeft - this._outerPaddingRight;
-			this.header.height = NaN;
+			this.header.maxWidth = this._explicitMaxWidth - this._outerPaddingLeft - this._outerPaddingRight;
+			this.header.height = this._explicitHeaderHeight;
+			this.header.minHeight = this._explicitHeaderMinHeight;
 			this.header.validate();
 			this._topViewPortOffset += this.header.height + this._outerPaddingTop;
-			this.header.width = oldHeaderWidth;
-			this.header.height = oldHeaderHeight;
 			this._ignoreHeaderResizing = oldIgnoreHeaderResizing;
-
-			if(this.footer)
+			
+			if(this.footer !== null)
 			{
 				var oldIgnoreFooterResizing:Boolean = this._ignoreFooterResizing;
 				this._ignoreFooterResizing = true;
-				var oldFooterWidth:Number = this.footer.width;
-				var oldFooterHeight:Number = this.footer.height;
 				if(useActualBounds)
 				{
 					this.footer.width = this.actualWidth - this._outerPaddingLeft - this._outerPaddingRight;
+					this.footer.minWidth = this.actualMinWidth - this._outerPaddingLeft - this._outerPaddingRight;
 				}
 				else
 				{
-					this.header.width = this._explicitWidth - this._outerPaddingLeft - this._outerPaddingRight;
+					this.footer.width = this._explicitWidth - this._outerPaddingLeft - this._outerPaddingRight;
+					this.footer.minWidth = this._explicitMinWidth - this._outerPaddingLeft - this._outerPaddingRight;
 				}
-				this.footer.maxWidth = this._maxWidth - this._outerPaddingLeft - this._outerPaddingRight;
-				this.footer.height = NaN;
+				this.footer.maxWidth = this._explicitMaxWidth - this._outerPaddingLeft - this._outerPaddingRight;
+				this.footer.height = this._explicitFooterHeight;
+				this.footer.minHeight = this._explicitFooterMinHeight;
 				this.footer.validate();
 				this._bottomViewPortOffset += this.footer.height + this._outerPaddingBottom;
-				this.footer.width = oldFooterWidth;
-				this.footer.height = oldFooterHeight;
 				this._ignoreFooterResizing = oldIgnoreFooterResizing;
 			}
 			else
@@ -1300,36 +1452,36 @@ package feathers.controls
 				this._bottomViewPortOffset += this._outerPaddingBottom;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override protected function layoutChildren():void
 		{
 			super.layoutChildren();
-
+			
 			var oldIgnoreHeaderResizing:Boolean = this._ignoreHeaderResizing;
 			this._ignoreHeaderResizing = true;
 			this.header.x = this._outerPaddingLeft;
 			this.header.y = this._outerPaddingTop;
 			this.header.width = this.actualWidth - this._outerPaddingLeft - this._outerPaddingRight;
-			this.header.height = NaN;
+			this.header.height = this._explicitHeaderHeight;
 			this.header.validate();
 			this._ignoreHeaderResizing = oldIgnoreHeaderResizing;
-
-			if(this.footer)
+			
+			if(this.footer !== null)
 			{
 				var oldIgnoreFooterResizing:Boolean = this._ignoreFooterResizing;
 				this._ignoreFooterResizing = true;
 				this.footer.x = this._outerPaddingLeft;
 				this.footer.width = this.actualWidth - this._outerPaddingLeft - this._outerPaddingRight;
-				this.footer.height = NaN;
+				this.footer.height = this._explicitFooterHeight;
 				this.footer.validate();
 				this.footer.y = this.actualHeight - this.footer.height - this._outerPaddingBottom;
 				this._ignoreFooterResizing = oldIgnoreFooterResizing;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1341,7 +1493,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
-
+		
 		/**
 		 * @private
 		 */

@@ -40,10 +40,6 @@ package uieditor.editor.feathers
 			}
 
 			this.dispatchEventWith( Event.COMPLETE, false, result );
-			return;
 		}
-
-
-
 	}
 }

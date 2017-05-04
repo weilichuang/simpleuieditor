@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -9,11 +9,13 @@ package feathers.controls.renderers
 {
 	import feathers.controls.ButtonState;
 	import feathers.controls.ImageLoader;
+	import feathers.controls.ItemRendererLayoutOrder;
 	import feathers.controls.Scroller;
 	import feathers.controls.ToggleButton;
 	import feathers.core.FeathersControl;
 	import feathers.core.IFeathersControl;
 	import feathers.core.IFocusContainer;
+	import feathers.core.IMeasureDisplayObject;
 	import feathers.core.IStateObserver;
 	import feathers.core.ITextRenderer;
 	import feathers.core.IValidating;
@@ -21,19 +23,19 @@ package feathers.controls.renderers
 	import feathers.events.FeathersEventType;
 	import feathers.layout.HorizontalAlign;
 	import feathers.layout.RelativePosition;
-	import feathers.layout.RelativePosition;
 	import feathers.layout.VerticalAlign;
-
+	import feathers.utils.skins.resetFluidChildDimensionsForMeasurement;
+	
 	import flash.events.TimerEvent;
 	import flash.geom.Point;
 	import flash.utils.Timer;
-
+	
 	import starling.display.DisplayObject;
 	import starling.events.Event;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
-
+	
 	/**
 	 * An abstract class for item renderer implementations.
 	 */
@@ -105,7 +107,7 @@ package feathers.controls.renderers
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_ICON_LABEL:String = "feathers-item-renderer-icon-label";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the
 		 * accessory label, if it exists.
@@ -113,321 +115,17 @@ package feathers.controls.renderers
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_ACCESSORY_LABEL:String = "feathers-item-renderer-accessory-label";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.UP</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const STATE_UP:String = "up";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.DOWN</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const STATE_DOWN:String = "down";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.HOVER</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const STATE_HOVER:String = "hover";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.DISABLED</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const STATE_DISABLED:String = "disabled";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.UP_AND_SELECTED</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const STATE_UP_AND_SELECTED:String = "upAndSelected";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.DOWN_AND_SELECTED</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const STATE_DOWN_AND_SELECTED:String = "downAndSelected";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.HOVER_AND_SELECTED</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const STATE_HOVER_AND_SELECTED:String = "hoverAndSelected";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ButtonState.DISABLED_AND_SELECTED</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const STATE_DISABLED_AND_SELECTED:String = "disabledAndSelected";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.TOP</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ICON_POSITION_TOP:String = "top";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ICON_POSITION_RIGHT:String = "right";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.BOTTOM</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ICON_POSITION_BOTTOM:String = "bottom";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ICON_POSITION_LEFT:String = "left";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.MANUAL</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ICON_POSITION_MANUAL:String = "manual";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT_BASELINE</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ICON_POSITION_LEFT_BASELINE:String = "leftBaseline";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT_BASELINE</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ICON_POSITION_RIGHT_BASELINE:String = "rightBaseline";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.LEFT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const HORIZONTAL_ALIGN_LEFT:String = "left";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.CENTER</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const HORIZONTAL_ALIGN_CENTER:String = "center";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.RIGHT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const HORIZONTAL_ALIGN_RIGHT:String = "right";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.TOP</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const VERTICAL_ALIGN_TOP:String = "top";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.MIDDLE</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const VERTICAL_ALIGN_MIDDLE:String = "middle";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.BOTTOM</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const VERTICAL_ALIGN_BOTTOM:String = "bottom";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.TOP</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ACCESSORY_POSITION_TOP:String = "top";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ACCESSORY_POSITION_RIGHT:String = "right";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.BOTTOM</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ACCESSORY_POSITION_BOTTOM:String = "bottom";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ACCESSORY_POSITION_LEFT:String = "left";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.MANUAL</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const ACCESSORY_POSITION_MANUAL:String = "manual";
-
-		/**
-		 * The layout order will be the label first, then the accessory relative
-		 * to the label, then the icon relative to both. Best used when the
-		 * accessory should be between the label and the icon or when the icon
-		 * position shouldn't be affected by the accessory.
-		 *
-		 * @see #layoutOrder
-		 */
-		public static const LAYOUT_ORDER_LABEL_ACCESSORY_ICON:String = "labelAccessoryIcon";
-
-		/**
-		 * The layout order will be the label first, then the icon relative to
-		 * label, then the accessory relative to both.
-		 *
-		 * @see #layoutOrder
-		 */
-		public static const LAYOUT_ORDER_LABEL_ICON_ACCESSORY:String = "labelIconAccessory";
-
+		
 		/**
 		 * @private
 		 */
 		private static const HELPER_POINT:Point = new Point();
-
+		
 		/**
 		 * @private
 		 */
 		protected static var DOWN_STATE_DELAY_MS:int = 250;
-
+		
 		/**
 		 * @private
 		 */
@@ -435,7 +133,7 @@ package feathers.controls.renderers
 		{
 			return new ImageLoader();
 		}
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -447,9 +145,8 @@ package feathers.controls.renderers
 			this.isFocusEnabled = false;
 			this.isQuickHitAreaEnabled = false;
 			this.addEventListener(Event.REMOVED_FROM_STAGE, itemRenderer_removedFromStageHandler);
-			this.addEventListener(Event.TRIGGERED, itemRenderer_triggeredHandler);
 		}
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the icon label
 		 * text renderer, if it exists.
@@ -457,7 +154,7 @@ package feathers.controls.renderers
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var iconLabelStyleName:String = DEFAULT_CHILD_STYLE_NAME_ICON_LABEL;
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the accessory
 		 * label text renderer, if it exists.
@@ -465,12 +162,12 @@ package feathers.controls.renderers
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var accessoryLabelStyleName:String = DEFAULT_CHILD_STYLE_NAME_ACCESSORY_LABEL;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isChildFocusEnabled:Boolean = true;
-
+		
 		/**
 		 * @copy feathers.core.IFocusContainer#isChildFocusEnabled
 		 *
@@ -482,7 +179,7 @@ package feathers.controls.renderers
 		{
 			return this._isEnabled && this._isChildFocusEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -490,52 +187,52 @@ package feathers.controls.renderers
 		{
 			this._isChildFocusEnabled = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var skinLoader:ImageLoader;
-
+		
 		/**
 		 * @private
 		 */
 		protected var iconLoader:ImageLoader;
-
+		
 		/**
 		 * @private
 		 */
 		protected var iconLabel:ITextRenderer;
-
+		
 		/**
 		 * @private
 		 */
 		protected var accessoryLoader:ImageLoader;
-
+		
 		/**
 		 * @private
 		 */
 		protected var accessoryLabel:ITextRenderer;
-
+		
 		/**
 		 * @private
 		 */
 		protected var currentAccessory:DisplayObject;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _skinIsFromItem:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _iconIsFromItem:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryIsFromItem:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
@@ -549,7 +246,7 @@ package feathers.controls.renderers
 			this._iconIsFromItem = false;
 			super.defaultIcon = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -563,12 +260,12 @@ package feathers.controls.renderers
 			this._skinIsFromItem = false;
 			super.defaultSkin = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _data:Object;
-
+		
 		/**
 		 * The item displayed by this renderer. This property is set by the
 		 * list, and should not be set manually.
@@ -577,7 +274,7 @@ package feathers.controls.renderers
 		{
 			return this._data;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -592,17 +289,17 @@ package feathers.controls.renderers
 			this._data = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _owner:Scroller;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _factoryID:String;
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -610,7 +307,7 @@ package feathers.controls.renderers
 		{
 			return this._factoryID;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -618,22 +315,22 @@ package feathers.controls.renderers
 		{
 			this._factoryID = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _delayedCurrentState:String;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _stateDelayTimer:Timer;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _useStateDelayTimer:Boolean = true;
-
+		
 		/**
 		 * If true, the down state (and subsequent state changes) will be
 		 * delayed to make scrolling look nicer.
@@ -649,7 +346,7 @@ package feathers.controls.renderers
 		{
 			return this._useStateDelayTimer;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -657,19 +354,19 @@ package feathers.controls.renderers
 		{
 			this._useStateDelayTimer = value;
 		}
-
+		
 		/**
 		 * Determines if the item renderer can be selected even if
 		 * <code>isToggle</code> is set to <code>false</code>. Subclasses are
 		 * expected to change this value, if required.
 		 */
 		protected var isSelectableWithoutToggle:Boolean = true;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _itemHasLabel:Boolean = true;
-
+		
 		/**
 		 * If true, the label will come from the renderer's item using the
 		 * appropriate field or function for the label. If false, the label may
@@ -686,7 +383,7 @@ package feathers.controls.renderers
 		{
 			return this._itemHasLabel;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -699,12 +396,12 @@ package feathers.controls.renderers
 			this._itemHasLabel = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _itemHasIcon:Boolean = true;
-
+		
 		/**
 		 * If true, the icon will come from the renderer's item using the
 		 * appropriate field or function for the icon. If false, the icon may
@@ -721,7 +418,7 @@ package feathers.controls.renderers
 		{
 			return this._itemHasIcon;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -734,12 +431,12 @@ package feathers.controls.renderers
 			this._itemHasIcon = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _itemHasAccessory:Boolean = true;
-
+		
 		/**
 		 * If true, the accessory will come from the renderer's item using the
 		 * appropriate field or function for the accessory. If false, the
@@ -756,7 +453,7 @@ package feathers.controls.renderers
 		{
 			return this._itemHasAccessory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -769,12 +466,12 @@ package feathers.controls.renderers
 			this._itemHasAccessory = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _itemHasSkin:Boolean = false;
-
+		
 		/**
 		 * If true, the skin will come from the renderer's item using the
 		 * appropriate field or function for the skin. If false, the skin may
@@ -792,7 +489,7 @@ package feathers.controls.renderers
 		{
 			return this._itemHasSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -805,12 +502,12 @@ package feathers.controls.renderers
 			this._itemHasSkin = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _itemHasSelectable:Boolean = false;
-
+		
 		/**
 		 * If true, the ability to select the renderer will come from the
 		 * renderer's item using the appropriate field or function for
@@ -828,7 +525,7 @@ package feathers.controls.renderers
 		{
 			return this._itemHasSelectable;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -841,12 +538,12 @@ package feathers.controls.renderers
 			this._itemHasSelectable = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _itemHasEnabled:Boolean = false;
-
+		
 		/**
 		 * If true, the renderer's enabled state will come from the renderer's
 		 * item using the appropriate field or function for enabled. If false,
@@ -863,7 +560,7 @@ package feathers.controls.renderers
 		{
 			return this._itemHasEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -876,12 +573,12 @@ package feathers.controls.renderers
 			this._itemHasEnabled = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryPosition:String = RelativePosition.RIGHT;
-
+		
 		[Inspectable(type="String",enumeration="top,right,bottom,left,manual")]
 		/**
 		 * The location of the accessory, relative to one of the other children.
@@ -906,7 +603,7 @@ package feathers.controls.renderers
 		{
 			return this._accessoryPosition;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -919,12 +616,12 @@ package feathers.controls.renderers
 			this._accessoryPosition = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected var _layoutOrder:String = LAYOUT_ORDER_LABEL_ICON_ACCESSORY;
-
+		protected var _layoutOrder:String = ItemRendererLayoutOrder.LABEL_ICON_ACCESSORY;
+		
 		[Inspectable(type="String",enumeration="labelIconAccessory,labelAccessoryIcon")]
 		/**
 		 * The accessory's position will be based on which other child (the
@@ -936,12 +633,12 @@ package feathers.controls.renderers
 		 * <p>In the following example, the layout order is changed:</p>
 		 *
 		 * <listing version="3.0">
-		 * renderer.layoutOrder = BaseDefaultItemRenderer.LAYOUT_ORDER_LABEL_ACCESSORY_ICON;</listing>
+		 * renderer.layoutOrder = ItemRendererLayoutOrder.LABEL_ACCESSORY_ICON;</listing>
 		 *
-		 * @default BaseDefaultItemRenderer.LAYOUT_ORDER_LABEL_ICON_ACCESSORY
+		 * @default feathers.controls.ItemRendererLayoutOrder.LABEL_ICON_ACCESSORY
 		 *
-		 * @see #LAYOUT_ORDER_LABEL_ICON_ACCESSORY
-		 * @see #LAYOUT_ORDER_LABEL_ACCESSORY_ICON
+		 * @see feathers.controls.ItemRendererLayoutOrder#LABEL_ICON_ACCESSORY
+		 * @see feathers.controls.ItemRendererLayoutOrder#LABEL_ACCESSORY_ICON
 		 * @see #accessoryPosition
 		 * @see #iconPosition
 		 */
@@ -949,7 +646,7 @@ package feathers.controls.renderers
 		{
 			return this._layoutOrder;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -962,12 +659,12 @@ package feathers.controls.renderers
 			this._layoutOrder = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryOffsetX:Number = 0;
-
+		
 		/**
 		 * Offsets the x position of the accessory by a certain number of pixels.
 		 *
@@ -984,7 +681,7 @@ package feathers.controls.renderers
 		{
 			return this._accessoryOffsetX;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -997,12 +694,12 @@ package feathers.controls.renderers
 			this._accessoryOffsetX = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryOffsetY:Number = 0;
-
+		
 		/**
 		 * Offsets the y position of the accessory by a certain number of pixels.
 		 *
@@ -1019,7 +716,7 @@ package feathers.controls.renderers
 		{
 			return this._accessoryOffsetY;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1032,12 +729,12 @@ package feathers.controls.renderers
 			this._accessoryOffsetY = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryGap:Number = NaN;
-
+		
 		/**
 		 * The space, in pixels, between the accessory and the other child it is
 		 * positioned relative to. Applies to either horizontal or vertical
@@ -1063,7 +760,7 @@ package feathers.controls.renderers
 		{
 			return this._accessoryGap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1076,12 +773,12 @@ package feathers.controls.renderers
 			this._accessoryGap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minAccessoryGap:Number = NaN;
-
+		
 		/**
 		 * If the value of the <code>accessoryGap</code> property is
 		 * <code>Number.POSITIVE_INFINITY</code>, meaning that the gap will
@@ -1108,7 +805,7 @@ package feathers.controls.renderers
 		{
 			return this._minAccessoryGap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1121,12 +818,12 @@ package feathers.controls.renderers
 			this._minAccessoryGap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _defaultAccessory:DisplayObject;
-
+		
 		/**
 		 * The accessory used when no other accessory is defined for the current
 		 * state. Intended to be used when multiple states should share the same
@@ -1152,7 +849,7 @@ package feathers.controls.renderers
 		{
 			return this._defaultAccessory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1167,17 +864,17 @@ package feathers.controls.renderers
 			this._defaultAccessory = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _stateToAccessory:Object = {};
-
+		
 		/**
 		 * @private
 		 */
 		protected var _stateToAccessoryFunction:Function;
-
+		
 		/**
 		 * DEPRECATED: Create a <code>feathers.skins.ImageSkin</code> instead,
 		 * and pass to the <code>defaultAccessory</code> property.
@@ -1191,7 +888,7 @@ package feathers.controls.renderers
 		{
 			return this._stateToAccessoryFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1204,17 +901,17 @@ package feathers.controls.renderers
 			this._stateToAccessoryFunction = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var accessoryTouchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _stopScrollingOnAccessoryTouch:Boolean = true;
-
+		
 		/**
 		 * If enabled, calls owner.stopScrolling() when TouchEvents are
 		 * dispatched by the accessory.
@@ -1231,7 +928,7 @@ package feathers.controls.renderers
 		{
 			return this._stopScrollingOnAccessoryTouch;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1239,16 +936,18 @@ package feathers.controls.renderers
 		{
 			this._stopScrollingOnAccessoryTouch = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isSelectableOnAccessoryTouch:Boolean = false;
-
+		
 		/**
 		 * If enabled, the item renderer may be selected by touching the
 		 * accessory. By default, the accessory will not trigger selection when
-		 * using <code>accessoryField</code> or <code>accessoryFunction</code>.
+		 * using <code>defaultAccessory</code>, <code>accessoryField</code>, or
+		 * <code>accessoryFunction</code> and the accessory is a Feathers
+		 * component.
 		 *
 		 * <p>In the following example, the item renderer can be selected when
 		 * the accessory is touched:</p>
@@ -1262,7 +961,7 @@ package feathers.controls.renderers
 		{
 			return this._isSelectableOnAccessoryTouch;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1270,12 +969,12 @@ package feathers.controls.renderers
 		{
 			this._isSelectableOnAccessoryTouch = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _delayTextureCreationOnScroll:Boolean = false;
-
+		
 		/**
 		 * If enabled, automatically manages the <code>delayTextureCreation</code>
 		 * property on accessory and icon <code>ImageLoader</code> instances
@@ -1296,7 +995,7 @@ package feathers.controls.renderers
 		{
 			return this._delayTextureCreationOnScroll;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1304,12 +1003,12 @@ package feathers.controls.renderers
 		{
 			this._delayTextureCreationOnScroll = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _labelField:String = "label";
-
+		
 		/**
 		 * The field in the item that contains the label text to be displayed by
 		 * the renderer. If the item does not have this field, and a
@@ -1338,7 +1037,7 @@ package feathers.controls.renderers
 		{
 			return this._labelField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1351,12 +1050,12 @@ package feathers.controls.renderers
 			this._labelField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _labelFunction:Function;
-
+		
 		/**
 		 * A function used to generate label text for a specific item. If this
 		 * function is not null, then the <code>labelField</code> will be
@@ -1387,7 +1086,7 @@ package feathers.controls.renderers
 		{
 			return this._labelFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1400,12 +1099,12 @@ package feathers.controls.renderers
 			this._labelFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _iconField:String = "icon";
-
+		
 		/**
 		 * The field in the item that contains a display object to be displayed
 		 * as an icon or other graphic next to the label in the renderer.
@@ -1442,7 +1141,7 @@ package feathers.controls.renderers
 		{
 			return this._iconField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1455,12 +1154,12 @@ package feathers.controls.renderers
 			this._iconField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _iconFunction:Function;
-
+		
 		/**
 		 * A function used to generate an icon for a specific item.
 		 *
@@ -1517,7 +1216,7 @@ package feathers.controls.renderers
 		{
 			return this._iconFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1530,12 +1229,12 @@ package feathers.controls.renderers
 			this._iconFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _iconSourceField:String = "iconSource";
-
+		
 		/**
 		 * The field in the item that contains a <code>starling.textures.Texture</code>
 		 * or a URL that points to a bitmap to be used as the item renderer's
@@ -1577,7 +1276,7 @@ package feathers.controls.renderers
 		{
 			return this._iconSourceField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1590,12 +1289,12 @@ package feathers.controls.renderers
 			this._iconSourceField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _iconSourceFunction:Function;
-
+		
 		/**
 		 * A function used to generate a <code>starling.textures.Texture</code>
 		 * or a URL that points to a bitmap to be used as the item renderer's
@@ -1659,7 +1358,7 @@ package feathers.controls.renderers
 		{
 			return this._iconSourceFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1672,12 +1371,12 @@ package feathers.controls.renderers
 			this._iconSourceFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _iconLabelField:String = "iconLabel";
-
+		
 		/**
 		 * The field in the item that contains a string to be displayed in a
 		 * renderer-managed <code>ITextRenderer</code> in the icon position of
@@ -1720,7 +1419,7 @@ package feathers.controls.renderers
 		{
 			return this._iconLabelField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1733,12 +1432,12 @@ package feathers.controls.renderers
 			this._iconLabelField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _iconLabelFunction:Function;
-
+		
 		/**
 		 * A function that returns a string to be displayed in a
 		 * renderer-managed <code>ITextRenderer</code> in the icon position of
@@ -1787,7 +1486,7 @@ package feathers.controls.renderers
 		{
 			return this._iconLabelFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1800,12 +1499,12 @@ package feathers.controls.renderers
 			this._iconLabelFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customIconLabelStyleName:String;
-
+		
 		/**
 		 * A style name to add to the item renderer's icon label text renderer
 		 * sub-component. Typically used by a theme to provide  different styles
@@ -1833,7 +1532,7 @@ package feathers.controls.renderers
 		{
 			return this._customIconLabelStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1846,12 +1545,12 @@ package feathers.controls.renderers
 			this._customIconLabelStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_TEXT_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryField:String = "accessory";
-
+		
 		/**
 		 * The field in the item that contains a display object to be positioned
 		 * in the accessory position of the renderer. If you wish to display an
@@ -1892,7 +1591,7 @@ package feathers.controls.renderers
 		{
 			return this._accessoryField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1905,12 +1604,12 @@ package feathers.controls.renderers
 			this._accessoryField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryFunction:Function;
-
+		
 		/**
 		 * A function that returns a display object to be positioned in the
 		 * accessory position of the renderer. If you wish to display an
@@ -1972,7 +1671,7 @@ package feathers.controls.renderers
 		{
 			return this._accessoryFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1985,12 +1684,12 @@ package feathers.controls.renderers
 			this._accessoryFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessorySourceField:String = "accessorySource";
-
+		
 		/**
 		 * A field in the item that contains a <code>starling.textures.Texture</code>
 		 * or a URL that points to a bitmap to be used as the item renderer's
@@ -2034,7 +1733,7 @@ package feathers.controls.renderers
 		{
 			return this._accessorySourceField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2047,12 +1746,12 @@ package feathers.controls.renderers
 			this._accessorySourceField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessorySourceFunction:Function;
-
+		
 		/**
 		 * A function that generates a <code>starling.textures.Texture</code>
 		 * or a URL that points to a bitmap to be used as the item renderer's
@@ -2118,7 +1817,7 @@ package feathers.controls.renderers
 		{
 			return this._accessorySourceFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2131,12 +1830,12 @@ package feathers.controls.renderers
 			this._accessorySourceFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryLabelField:String = "accessoryLabel";
-
+		
 		/**
 		 * The field in the item that contains a string to be displayed in a
 		 * renderer-managed <code>ITextRenderer</code> in the accessory position
@@ -2179,7 +1878,7 @@ package feathers.controls.renderers
 		{
 			return this._accessoryLabelField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2192,12 +1891,12 @@ package feathers.controls.renderers
 			this._accessoryLabelField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryLabelFunction:Function;
-
+		
 		/**
 		 * A function that returns a string to be displayed in a
 		 * renderer-managed <code>ITextRenderer</code> in the accessory position
@@ -2246,7 +1945,7 @@ package feathers.controls.renderers
 		{
 			return this._accessoryLabelFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2259,12 +1958,12 @@ package feathers.controls.renderers
 			this._accessoryLabelFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customAccessoryLabelStyleName:String;
-
+		
 		/**
 		 * A style name to add to the item renderer's accessory label text
 		 * renderer sub-component. Typically used by a theme to provide
@@ -2292,7 +1991,7 @@ package feathers.controls.renderers
 		{
 			return this._customAccessoryLabelStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2305,12 +2004,12 @@ package feathers.controls.renderers
 			this._customAccessoryLabelStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_TEXT_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _skinField:String = "skin";
-
+		
 		/**
 		 * The field in the item that contains a display object to be displayed
 		 * as a background skin.
@@ -2340,7 +2039,7 @@ package feathers.controls.renderers
 		{
 			return this._skinField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2353,12 +2052,12 @@ package feathers.controls.renderers
 			this._skinField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _skinFunction:Function;
-
+		
 		/**
 		 * A function used to generate a background skin for a specific item.
 		 *
@@ -2408,7 +2107,7 @@ package feathers.controls.renderers
 		{
 			return this._skinFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2421,12 +2120,12 @@ package feathers.controls.renderers
 			this._skinFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _skinSourceField:String = "skinSource";
-
+		
 		/**
 		 * The field in the item that contains a <code>starling.textures.Texture</code>
 		 * or a URL that points to a bitmap to be used as the item renderer's
@@ -2467,7 +2166,7 @@ package feathers.controls.renderers
 		{
 			return this._skinSourceField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2480,12 +2179,12 @@ package feathers.controls.renderers
 			this._skinSourceField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _skinSourceFunction:Function;
-
+		
 		/**
 		 * A function used to generate a <code>starling.textures.Texture</code>
 		 * or a URL that points to a bitmap to be used as the item renderer's
@@ -2548,7 +2247,7 @@ package feathers.controls.renderers
 		{
 			return this._skinSourceFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2561,12 +2260,12 @@ package feathers.controls.renderers
 			this._skinSourceFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectableField:String = "selectable";
-
+		
 		/**
 		 * The field in the item that determines if the item renderer can be
 		 * selected, if the list allows selection. If the item does not have
@@ -2593,7 +2292,7 @@ package feathers.controls.renderers
 		{
 			return this._selectableField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2606,12 +2305,12 @@ package feathers.controls.renderers
 			this._selectableField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectableFunction:Function;
-
+		
 		/**
 		 * A function used to determine if a specific item is selectable. If this
 		 * function is not null, then the <code>selectableField</code> will be
@@ -2643,7 +2342,7 @@ package feathers.controls.renderers
 		{
 			return this._selectableFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2656,12 +2355,12 @@ package feathers.controls.renderers
 			this._selectableFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _enabledField:String = "enabled";
-
+		
 		/**
 		 * The field in the item that determines if the item renderer is
 		 * enabled, if the list is enabled. If the item does not have
@@ -2688,7 +2387,7 @@ package feathers.controls.renderers
 		{
 			return this._enabledField;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2701,12 +2400,12 @@ package feathers.controls.renderers
 			this._enabledField = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _enabledFunction:Function;
-
+		
 		/**
 		 * A function used to determine if a specific item is enabled. If this
 		 * function is not null, then the <code>enabledField</code> will be
@@ -2738,7 +2437,7 @@ package feathers.controls.renderers
 		{
 			return this._enabledFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2751,12 +2450,12 @@ package feathers.controls.renderers
 			this._enabledFunction = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _explicitIsToggle:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
@@ -2770,12 +2469,12 @@ package feathers.controls.renderers
 			this._explicitIsToggle = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _explicitIsEnabled:Boolean;
-
+		
 		/**
 		 * @private
 		 */
@@ -2789,12 +2488,12 @@ package feathers.controls.renderers
 			super.isEnabled = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _iconLoaderFactory:Function = defaultLoaderFactory;
-
+		
 		/**
 		 * A function that generates an <code>ImageLoader</code> that uses the result
 		 * of <code>iconSourceField</code> or <code>iconSourceFunction</code>.
@@ -2825,7 +2524,7 @@ package feathers.controls.renderers
 		{
 			return this._iconLoaderFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2840,12 +2539,12 @@ package feathers.controls.renderers
 			this.replaceIcon(null);
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _iconLabelFactory:Function;
-
+		
 		/**
 		 * A function that generates <code>ITextRenderer</code> that uses the result
 		 * of <code>iconLabelField</code> or <code>iconLabelFunction</code>.
@@ -2876,7 +2575,7 @@ package feathers.controls.renderers
 		{
 			return this._iconLabelFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2891,12 +2590,12 @@ package feathers.controls.renderers
 			this.replaceIcon(null);
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _iconLabelProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the icon label text renderer
 		 * sub-component (if using <code>iconLabelField</code> or
@@ -2938,7 +2637,7 @@ package feathers.controls.renderers
 			}
 			return this._iconLabelProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2972,12 +2671,12 @@ package feathers.controls.renderers
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryLoaderFactory:Function = defaultLoaderFactory;
-
+		
 		/**
 		 * A function that generates an <code>ImageLoader</code> that uses the result
 		 * of <code>accessorySourceField</code> or <code>accessorySourceFunction</code>.
@@ -3008,7 +2707,7 @@ package feathers.controls.renderers
 		{
 			return this._accessoryLoaderFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3023,12 +2722,12 @@ package feathers.controls.renderers
 			this.replaceAccessory(null);
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryLabelFactory:Function;
-
+		
 		/**
 		 * A function that generates <code>ITextRenderer</code> that uses the result
 		 * of <code>accessoryLabelField</code> or <code>accessoryLabelFunction</code>.
@@ -3059,7 +2758,7 @@ package feathers.controls.renderers
 		{
 			return this._accessoryLabelFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3074,12 +2773,12 @@ package feathers.controls.renderers
 			this.replaceAccessory(null);
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _accessoryLabelProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the accessory label text
 		 * renderer sub-component (if using <code>accessoryLabelField</code> or
@@ -3121,7 +2820,7 @@ package feathers.controls.renderers
 			}
 			return this._accessoryLabelProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3155,12 +2854,12 @@ package feathers.controls.renderers
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _skinLoaderFactory:Function = defaultLoaderFactory;
-
+		
 		/**
 		 * A function that generates an <code>ImageLoader</code> that uses the result
 		 * of <code>skinSourceField</code> or <code>skinSourceFunction</code>.
@@ -3191,7 +2890,7 @@ package feathers.controls.renderers
 		{
 			return this._skinLoaderFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3206,12 +2905,12 @@ package feathers.controls.renderers
 			this.replaceSkin(null);
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _ignoreAccessoryResizes:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
@@ -3240,7 +2939,7 @@ package feathers.controls.renderers
 			}
 			super.dispose();
 		}
-
+		
 		/**
 		 * Using <code>labelField</code> and <code>labelFunction</code>,
 		 * generates a label from the item.
@@ -3253,26 +2952,26 @@ package feathers.controls.renderers
 		 */
 		public function itemToLabel(item:Object):String
 		{
-			if(this._labelFunction != null)
+			if(this._labelFunction !== null)
 			{
 				var labelResult:Object = this._labelFunction(item);
 				if(labelResult is String)
 				{
 					return labelResult as String;
 				}
-				else if(labelResult)
+				else if(labelResult !== null)
 				{
 					return labelResult.toString();
 				}
 			}
-			else if(this._labelField != null && item && item.hasOwnProperty(this._labelField))
+			else if(this._labelField !== null && item !== null && item.hasOwnProperty(this._labelField))
 			{
 				labelResult = item[this._labelField];
 				if(labelResult is String)
 				{
 					return labelResult as String;
 				}
-				else if(labelResult)
+				else if(labelResult !== null)
 				{
 					return labelResult.toString();
 				}
@@ -3289,7 +2988,7 @@ package feathers.controls.renderers
 			}
 			return null;
 		}
-
+		
 		/**
 		 * Uses the icon fields and functions to generate an icon for a specific
 		 * item.
@@ -3352,10 +3051,10 @@ package feathers.controls.renderers
 			{
 				return item[this._iconField] as DisplayObject;
 			}
-
+			
 			return null;
 		}
-
+		
 		/**
 		 * Uses the accessory fields and functions to generate an accessory for
 		 * a specific item.
@@ -3418,10 +3117,10 @@ package feathers.controls.renderers
 			{
 				return item[this._accessoryField] as DisplayObject;
 			}
-
+			
 			return null;
 		}
-
+		
 		/**
 		 * Uses the skin fields and functions to generate a skin for a specific
 		 * item.
@@ -3456,10 +3155,10 @@ package feathers.controls.renderers
 			{
 				return item[this._skinField] as DisplayObject;
 			}
-
+			
 			return null;
 		}
-
+		
 		/**
 		 * Uses the selectable fields and functions to generate a selectable
 		 * value for a specific item.
@@ -3480,10 +3179,10 @@ package feathers.controls.renderers
 			{
 				return item[this._selectableField] as Boolean;
 			}
-
+			
 			return true;
 		}
-
+		
 		/**
 		 * Uses the enabled fields and functions to generate a enabled value for
 		 * a specific item.
@@ -3504,10 +3203,10 @@ package feathers.controls.renderers
 			{
 				return item[this._enabledField] as Boolean;
 			}
-
+			
 			return true;
 		}
-
+		
 		/**
 		 * Gets the accessory to be used by the button when its
 		 * <code>currentState</code> property matches the specified state value.
@@ -3521,7 +3220,7 @@ package feathers.controls.renderers
 		{
 			return this._stateToAccessory[state] as DisplayObject;
 		}
-
+		
 		/**
 		 * Sets the accessory to be used by the item renderer when its
 		 * <code>currentState</code> property matches the specified state value.
@@ -3543,7 +3242,7 @@ package feathers.controls.renderers
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3562,7 +3261,7 @@ package feathers.controls.renderers
 			}
 			super.draw();
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -3570,29 +3269,44 @@ package feathers.controls.renderers
 		{
 			var needsWidth:Boolean = this._explicitWidth !== this._explicitWidth; //isNaN
 			var needsHeight:Boolean = this._explicitHeight !== this._explicitHeight; //isNaN
-			if(!needsWidth && !needsHeight)
+			var needsMinWidth:Boolean = this._explicitMinWidth !== this._explicitMinWidth; //isNaN
+			var needsMinHeight:Boolean = this._explicitMinHeight !== this._explicitMinHeight; //isNaN
+			if(!needsWidth && !needsHeight && !needsMinWidth && !needsMinHeight)
 			{
 				return false;
 			}
+			
 			var oldIgnoreAccessoryResizes:Boolean = this._ignoreAccessoryResizes;
 			this._ignoreAccessoryResizes = true;
-			this.refreshMaxLabelSize(true);
-			if(this.labelTextRenderer)
+			var labelRenderer:ITextRenderer = null;
+			if(this._label !== null && this.labelTextRenderer)
 			{
+				labelRenderer = this.labelTextRenderer;
+				this.refreshMaxLabelSize(true);
 				this.labelTextRenderer.measureText(HELPER_POINT);
 			}
-			else
-			{
-				HELPER_POINT.setTo(0, 0);
-			}
+			
+			resetFluidChildDimensionsForMeasurement(this.currentSkin,
+				this._explicitWidth, this._explicitHeight,
+				this._explicitMinWidth, this._explicitMinHeight,
+				this._explicitMaxWidth, this._explicitMaxHeight,
+				this._explicitSkinWidth, this._explicitSkinHeight,
+				this._explicitSkinMinWidth, this._explicitSkinMinHeight,
+				this._explicitSkinMaxWidth, this._explicitSkinMaxHeight);
+			var measureSkin:IMeasureDisplayObject = this.currentSkin as IMeasureDisplayObject;
+			
 			var newWidth:Number = this._explicitWidth;
 			if(needsWidth)
 			{
-				if(this._label)
+				if(labelRenderer !== null)
 				{
 					newWidth = HELPER_POINT.x;
 				}
-				if(this._layoutOrder == LAYOUT_ORDER_LABEL_ACCESSORY_ICON)
+				else
+				{
+					newWidth = 0;
+				}
+				if(this._layoutOrder === ItemRendererLayoutOrder.LABEL_ACCESSORY_ICON)
 				{
 					newWidth = this.addAccessoryWidth(newWidth);
 					newWidth = this.addIconWidth(newWidth);
@@ -3603,31 +3317,25 @@ package feathers.controls.renderers
 					newWidth = this.addAccessoryWidth(newWidth);
 				}
 				newWidth += this._paddingLeft + this._paddingRight;
-				if(newWidth !== newWidth) //isNaN
+				if(this.currentSkin !== null &&
+					this.currentSkin.width > newWidth)
 				{
-					newWidth = this._originalSkinWidth;
-					if(newWidth !== newWidth) //isNaN
-					{
-						newWidth = 0;
-					}
-				}
-				else if(this._originalSkinWidth === this._originalSkinWidth) //!isNaN
-				{
-					if(this._originalSkinWidth > newWidth)
-					{
-						newWidth = this._originalSkinWidth;
-					}
+					newWidth = this.currentSkin.width;
 				}
 			}
-
+			
 			var newHeight:Number = this._explicitHeight;
 			if(needsHeight)
 			{
-				if(this._label)
+				if(labelRenderer !== null)
 				{
 					newHeight = HELPER_POINT.y;
 				}
-				if(this._layoutOrder == LAYOUT_ORDER_LABEL_ACCESSORY_ICON)
+				else
+				{
+					newHeight = 0;
+				}
+				if(this._layoutOrder === ItemRendererLayoutOrder.LABEL_ACCESSORY_ICON)
 				{
 					newHeight = this.addAccessoryHeight(newHeight);
 					newHeight = this.addIconHeight(newHeight);
@@ -3638,27 +3346,93 @@ package feathers.controls.renderers
 					newHeight = this.addAccessoryHeight(newHeight);
 				}
 				newHeight += this._paddingTop + this._paddingBottom;
-				if(newHeight !== newHeight) //isNaN
+				if(this.currentSkin !== null &&
+					this.currentSkin.height > newHeight)
 				{
-					newHeight = this._originalSkinHeight;
-					if(newHeight !== newHeight) //isNaN
+					newHeight = this.currentSkin.height;
+				}
+			}
+			
+			var newMinWidth:Number = this._explicitMinWidth;
+			if(needsMinWidth)
+			{
+				if(labelRenderer !== null)
+				{
+					newMinWidth = HELPER_POINT.x;
+				}
+				else
+				{
+					newMinWidth = 0;
+				}
+				if(this._layoutOrder === ItemRendererLayoutOrder.LABEL_ACCESSORY_ICON)
+				{
+					newMinWidth = this.addAccessoryWidth(newMinWidth);
+					newMinWidth = this.addIconWidth(newMinWidth);
+				}
+				else
+				{
+					newMinWidth = this.addIconWidth(newMinWidth);
+					newMinWidth = this.addAccessoryWidth(newMinWidth);
+				}
+				newMinWidth += this._paddingLeft + this._paddingRight;
+				if(this.currentSkin !== null)
+				{
+					if(measureSkin !== null)
 					{
-						newHeight = 0;
+						if(measureSkin.minWidth > newMinWidth)
+						{
+							newMinWidth = measureSkin.minWidth;
+						}
+					}
+					else if(this._explicitSkinMinWidth > newMinWidth)
+					{
+						newMinWidth = this._explicitSkinMinWidth;
 					}
 				}
-				else if(this._originalSkinHeight === this._originalSkinHeight) //!isNaN
+			}
+			
+			var newMinHeight:Number = this._explicitMinHeight;
+			if(needsMinHeight)
+			{
+				if(labelRenderer !== null)
 				{
-					if(this._originalSkinHeight > newHeight)
+					newMinHeight = HELPER_POINT.y;
+				}
+				else
+				{
+					newMinHeight = 0;
+				}
+				if(this._layoutOrder === ItemRendererLayoutOrder.LABEL_ACCESSORY_ICON)
+				{
+					newMinHeight = this.addAccessoryHeight(newMinHeight);
+					newMinHeight = this.addIconHeight(newMinHeight);
+				}
+				else
+				{
+					newMinHeight = this.addIconHeight(newMinHeight);
+					newMinHeight = this.addAccessoryHeight(newMinHeight);
+				}
+				newMinHeight += this._paddingTop + this._paddingBottom;
+				if(this.currentSkin !== null)
+				{
+					if(measureSkin !== null)
 					{
-						newHeight = this._originalSkinHeight;
+						if(measureSkin.minHeight > newMinHeight)
+						{
+							newMinHeight = measureSkin.minHeight;
+						}
+					}
+					else if(this._explicitSkinMinHeight > newMinHeight)
+					{
+						newMinHeight = this._explicitSkinMinHeight;
 					}
 				}
 			}
 			this._ignoreAccessoryResizes = oldIgnoreAccessoryResizes;
-
-			return this.setSizeInternal(newWidth, newHeight, false);
+			
+			return this.saveMeasurements(newWidth, newHeight, newMinWidth, newMinHeight);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3675,7 +3449,7 @@ package feathers.controls.renderers
 					this._delayedCurrentState = value;
 					return;
 				}
-
+				
 				if(value == ButtonState.DOWN)
 				{
 					if(this._currentState === value)
@@ -3698,7 +3472,7 @@ package feathers.controls.renderers
 			}
 			super.changeState(value);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3713,13 +3487,13 @@ package feathers.controls.renderers
 			{
 				return width;
 			}
-
+			
 			var hasPreviousItem:Boolean = width === width; //!isNaN
 			if(!hasPreviousItem)
 			{
 				width = 0;
 			}
-
+			
 			if(this._iconPosition == RelativePosition.LEFT || this._iconPosition == RelativePosition.LEFT_BASELINE || this._iconPosition == RelativePosition.RIGHT || this._iconPosition == RelativePosition.RIGHT_BASELINE)
 			{
 				if(hasPreviousItem)
@@ -3739,7 +3513,7 @@ package feathers.controls.renderers
 			}
 			return width;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3754,26 +3528,24 @@ package feathers.controls.renderers
 			{
 				return width;
 			}
-
+			
 			var hasPreviousItem:Boolean = width === width; //!isNaN;
 			if(!hasPreviousItem)
 			{
 				width = 0;
 			}
-
+			
 			if(this._accessoryPosition == RelativePosition.LEFT || this._accessoryPosition == RelativePosition.RIGHT)
 			{
 				if(hasPreviousItem)
 				{
 					var adjustedAccessoryGap:Number = this._accessoryGap;
-					//for some reason, if we don't call a function right here,
-					//compiling with the flex 4.6 SDK will throw a VerifyError
+					//for some reason, if we do the !== check on a local variable right
+					//here, compiling with the flex 4.6 SDK will throw a VerifyError
 					//for a stack overflow.
 					//we could change the !== check back to isNaN() instead, but
-					//isNaN() can allocate an object, so we should call a different
-					//function without allocation.
-					this.doNothing();
-					if(adjustedAccessoryGap !== adjustedAccessoryGap) //isNaN
+					//isNaN() can allocate an object that needs garbage collection.
+					if(this._accessoryGap !== this._accessoryGap) //isNaN
 					{
 						adjustedAccessoryGap = this._gap;
 					}
@@ -3798,14 +3570,14 @@ package feathers.controls.renderers
 			}
 			return width;
 		}
-
-
+		
+		
 		/**
 		 * @private
 		 */
 		protected function addIconHeight(height:Number):Number
 		{
-			if(!this.currentIcon)
+			if(this.currentIcon === null)
 			{
 				return height;
 			}
@@ -3814,19 +3586,19 @@ package feathers.controls.renderers
 			{
 				return height;
 			}
-
+			
 			var hasPreviousItem:Boolean = height === height; //!isNaN
 			if(!hasPreviousItem)
 			{
 				height = 0;
 			}
-
-			if(this._iconPosition == RelativePosition.TOP || this._iconPosition == RelativePosition.BOTTOM)
+			
+			if(this._iconPosition === RelativePosition.TOP || this._iconPosition === RelativePosition.BOTTOM)
 			{
 				if(hasPreviousItem)
 				{
 					var adjustedGap:Number = this._gap;
-					if(this._gap == Number.POSITIVE_INFINITY)
+					if(this._gap === Number.POSITIVE_INFINITY)
 					{
 						adjustedGap = this._minGap;
 					}
@@ -3840,13 +3612,13 @@ package feathers.controls.renderers
 			}
 			return height;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function addAccessoryHeight(height:Number):Number
 		{
-			if(!this.currentAccessory)
+			if(this.currentAccessory === null)
 			{
 				return height;
 			}
@@ -3855,32 +3627,30 @@ package feathers.controls.renderers
 			{
 				return height;
 			}
-
+			
 			var hasPreviousItem:Boolean = height === height; //!isNaN
 			if(!hasPreviousItem)
 			{
 				height = 0;
 			}
-
-			if(this._accessoryPosition == RelativePosition.TOP || this._accessoryPosition == RelativePosition.BOTTOM)
+			
+			if(this._accessoryPosition === RelativePosition.TOP || this._accessoryPosition === RelativePosition.BOTTOM)
 			{
 				if(hasPreviousItem)
 				{
 					var adjustedAccessoryGap:Number = this._accessoryGap;
-					//for some reason, if we don't call a function right here,
-					//compiling with the flex 4.6 SDK will throw a VerifyError
+					//for some reason, if we do the !== check on a local variable right
+					//here, compiling with the flex 4.6 SDK will throw a VerifyError
 					//for a stack overflow.
 					//we could change the !== check back to isNaN() instead, but
-					//isNaN() can allocate an object, so we should call a different
-					//function without allocation.
-					this.doNothing();
-					if(adjustedAccessoryGap !== adjustedAccessoryGap) //isNaN
+					//isNaN() can allocate an object that needs garbage collection.
+					if(this._accessoryGap !== this._accessoryGap) //isNaN
 					{
 						adjustedAccessoryGap =  this._gap;
 					}
-					if(adjustedAccessoryGap == Number.POSITIVE_INFINITY)
+					if(adjustedAccessoryGap === Number.POSITIVE_INFINITY)
 					{
-						if(this._minAccessoryGap != this._minAccessoryGap) //isNaN
+						if(this._minAccessoryGap !== this._minAccessoryGap) //isNaN
 						{
 							adjustedAccessoryGap = this._minGap;
 						}
@@ -3899,14 +3669,7 @@ package feathers.controls.renderers
 			}
 			return height;
 		}
-
-		/**
-		 * @private
-		 * This function is here to work around a bug in the Flex 4.6 SDK
-		 * compiler. For explanation, see the places where it gets called.
-		 */
-		protected function doNothing():void {}
-
+		
 		/**
 		 * Updates the renderer to display the item's data. Override this
 		 * function to pass data to sub-components and react to data changes.
@@ -4007,7 +3770,7 @@ package feathers.controls.renderers
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4037,7 +3800,7 @@ package feathers.controls.renderers
 			this.setInvalidationFlag(INVALIDATION_FLAG_STATE);
 			this.dispatchEventWith(FeathersEventType.STATE_CHANGE);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4050,14 +3813,14 @@ package feathers.controls.renderers
 				this.iconLoader.dispose();
 				this.iconLoader = null;
 			}
-
+			
 			if(this.iconLabel && this.iconLabel != newIcon)
 			{
 				//we can dispose this one, though, since we created it
 				this.iconLabel.dispose();
 				this.iconLabel = null;
 			}
-
+			
 			if(this._itemHasIcon && this.currentIcon && this.currentIcon != newIcon && this.currentIcon.parent == this)
 			{
 				//the icon is created using the data provider, and it is not
@@ -4069,7 +3832,7 @@ package feathers.controls.renderers
 			//we're using currentIcon above, but we're emulating calling the
 			//defaultIcon setter here. the Button class sets the currentIcon
 			//elsewhere, so we want to take advantage of that exisiting code.
-
+			
 			//we're not calling the defaultIcon setter directly because we're in
 			//the middle of validating, and it will just invalidate, which will
 			//require another validation later. we want the Button class to
@@ -4084,13 +3847,13 @@ package feathers.controls.renderers
 				//correctly see this flag when we call super.draw().
 				this.setInvalidationFlag(INVALIDATION_FLAG_STYLES);
 			}
-
+			
 			if(this.iconLoader)
 			{
 				this.iconLoader.delayTextureCreation = this._delayTextureCreationOnScroll && this._owner.isScrolling;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4103,14 +3866,14 @@ package feathers.controls.renderers
 				this.accessoryLoader.dispose();
 				this.accessoryLoader = null;
 			}
-
+			
 			if(this.accessoryLabel && this.accessoryLabel != newAccessory)
 			{
 				//we can dispose this one, though, since we created it
 				this.accessoryLabel.dispose();
 				this.accessoryLabel = null;
 			}
-
+			
 			if(this._itemHasAccessory && this.currentAccessory && this.currentAccessory != newAccessory && this.currentAccessory.parent == this)
 			{
 				//the icon is created using the data provider, and it is not
@@ -4122,7 +3885,7 @@ package feathers.controls.renderers
 			//we're using currentIcon above, but we're emulating calling the
 			//defaultIcon setter here. the Button class sets the currentIcon
 			//elsewhere, so we want to take advantage of that exisiting code.
-
+			
 			//we're not calling the defaultIcon setter directly because we're in
 			//the middle of validating, and it will just invalidate, which will
 			//require another validation later. we want the Button class to
@@ -4137,13 +3900,13 @@ package feathers.controls.renderers
 				//correctly see this flag when we call super.draw().
 				this.setInvalidationFlag(INVALIDATION_FLAG_STYLES);
 			}
-
+			
 			if(this.accessoryLoader)
 			{
 				this.accessoryLoader.delayTextureCreation = this._delayTextureCreationOnScroll && this._owner.isScrolling;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4156,7 +3919,7 @@ package feathers.controls.renderers
 				this.skinLoader.dispose();
 				this.skinLoader = null;
 			}
-
+			
 			if(this._itemHasSkin && this.currentSkin && this.currentSkin != newSkin && this.currentSkin.parent == this)
 			{
 				//the icon is created using the data provider, and it is not
@@ -4168,7 +3931,7 @@ package feathers.controls.renderers
 			//we're using currentIcon above, but we're emulating calling the
 			//defaultIcon setter here. the Button class sets the currentIcon
 			//elsewhere, so we want to take advantage of that exisiting code.
-
+			
 			//we're not calling the defaultSkin setter directly because we're in
 			//the middle of validating, and it will just invalidate, which will
 			//require another validation later. we want the Button class to
@@ -4183,13 +3946,13 @@ package feathers.controls.renderers
 				//correctly see this flag when we call super.draw().
 				this.setInvalidationFlag(INVALIDATION_FLAG_STYLES);
 			}
-
+			
 			if(this.skinLoader)
 			{
 				this.skinLoader.delayTextureCreation = this._delayTextureCreationOnScroll && this._owner.isScrolling;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4206,7 +3969,7 @@ package feathers.controls.renderers
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4257,7 +4020,7 @@ package feathers.controls.renderers
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4267,14 +4030,16 @@ package feathers.controls.renderers
 			{
 				return DisplayObject(this._stateToAccessoryFunction(this, this._currentState, this.currentAccessory));
 			}
-			var result:DisplayObject = this._stateToAccessory[this._currentState] as DisplayObject;
+			//we use the currentState getter here instead of the variable
+			//because the variable does not keep track of the selection
+			var result:DisplayObject = this._stateToAccessory[this.currentState] as DisplayObject;
 			if(result !== null)
 			{
 				return result;
 			}
 			return this._defaultAccessory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4288,7 +4053,7 @@ package feathers.controls.renderers
 			}
 			this.iconLoader.source = source;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4307,7 +4072,7 @@ package feathers.controls.renderers
 			}
 			this.iconLabel.text = label;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4321,7 +4086,7 @@ package feathers.controls.renderers
 			}
 			this.accessoryLoader.source = source;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4340,7 +4105,7 @@ package feathers.controls.renderers
 			}
 			this.accessoryLabel.text = label;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4354,7 +4119,7 @@ package feathers.controls.renderers
 			}
 			this.skinLoader.source = source;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4381,7 +4146,7 @@ package feathers.controls.renderers
 			if(labelRenderer && iconIsInLayout && accessoryIsInLayout)
 			{
 				this.positionSingleChild(labelRenderer);
-				if(this._layoutOrder == LAYOUT_ORDER_LABEL_ACCESSORY_ICON)
+				if(this._layoutOrder == ItemRendererLayoutOrder.LABEL_ACCESSORY_ICON)
 				{
 					this.positionRelativeToOthers(this.currentAccessory, labelRenderer, null, this._accessoryPosition, accessoryGap, null, 0);
 					var iconPosition:String = this._iconPosition;
@@ -4427,7 +4192,7 @@ package feathers.controls.renderers
 			{
 				this.positionSingleChild(this.currentAccessory);
 			}
-
+			
 			if(this.currentAccessory)
 			{
 				if(!accessoryIsInLayout)
@@ -4456,7 +4221,7 @@ package feathers.controls.renderers
 			this._ignoreIconResizes = oldIgnoreIconResizes;
 			this._ignoreAccessoryResizes = oldIgnoreAccessoryResizes;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4468,7 +4233,7 @@ package feathers.controls.renderers
 				calculatedWidth = this._explicitWidth;
 				if(calculatedWidth !== calculatedWidth) //isNaN
 				{
-					calculatedWidth = this._maxWidth;
+					calculatedWidth = this._explicitMaxWidth;
 				}
 			}
 			calculatedWidth -= (this._paddingLeft + this._paddingRight);
@@ -4478,11 +4243,11 @@ package feathers.controls.renderers
 				calculatedHeight = this._explicitHeight;
 				if(calculatedHeight !== calculatedHeight) //isNaN
 				{
-					calculatedHeight = this._maxHeight;
+					calculatedHeight = this._explicitMaxHeight;
 				}
 			}
 			calculatedHeight -= (this._paddingTop + this._paddingBottom);
-
+			
 			var adjustedGap:Number = this._gap;
 			if(adjustedGap == Number.POSITIVE_INFINITY)
 			{
@@ -4501,16 +4266,17 @@ package feathers.controls.renderers
 					adjustedAccessoryGap = this._minGap;
 				}
 			}
-
+			
 			var hasIconToLeftOrRight:Boolean = this.currentIcon && (this._iconPosition == RelativePosition.LEFT || this._iconPosition == RelativePosition.LEFT_BASELINE ||
 				this._iconPosition == RelativePosition.RIGHT || this._iconPosition == RelativePosition.RIGHT_BASELINE);
 			var hasIconToTopOrBottom:Boolean = this.currentIcon && (this._iconPosition == RelativePosition.TOP || this._iconPosition == RelativePosition.BOTTOM);
 			var hasAccessoryToLeftOrRight:Boolean = this.currentAccessory && (this._accessoryPosition == RelativePosition.LEFT || this._accessoryPosition == RelativePosition.RIGHT);
 			var hasAccessoryToTopOrBottom:Boolean = this.currentAccessory && (this._accessoryPosition == RelativePosition.TOP || this._accessoryPosition == RelativePosition.BOTTOM);
-
+			
 			if(this.accessoryLabel)
 			{
-				var iconAffectsAccessoryLabelMaxWidth:Boolean = hasIconToLeftOrRight && (hasAccessoryToLeftOrRight || this._layoutOrder == LAYOUT_ORDER_LABEL_ACCESSORY_ICON);
+				var iconAffectsAccessoryLabelMaxWidth:Boolean = hasIconToLeftOrRight &&
+					(hasAccessoryToLeftOrRight || this._layoutOrder === ItemRendererLayoutOrder.LABEL_ACCESSORY_ICON);
 				if(this.iconLabel)
 				{
 					this.iconLabel.maxWidth = calculatedWidth - adjustedGap;
@@ -4552,7 +4318,8 @@ package feathers.controls.renderers
 			}
 			else if(this.iconLabel)
 			{
-				var accessoryAffectsIconLabelMaxWidth:Boolean = hasAccessoryToLeftOrRight && (hasIconToLeftOrRight || this._layoutOrder == LAYOUT_ORDER_LABEL_ICON_ACCESSORY);
+				var accessoryAffectsIconLabelMaxWidth:Boolean = hasAccessoryToLeftOrRight &&
+					(hasIconToLeftOrRight || this._layoutOrder === ItemRendererLayoutOrder.LABEL_ICON_ACCESSORY);
 				if(this.currentAccessory is IValidating)
 				{
 					IValidating(this.currentAccessory).validate();
@@ -4625,7 +4392,7 @@ package feathers.controls.renderers
 				this.labelTextRenderer.maxHeight = calculatedHeight;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4733,7 +4500,7 @@ package feathers.controls.renderers
 					object.x = newRelativeToX - gap - object.width;
 				}
 			}
-
+			
 			var offsetX:Number = newRelativeToX - relativeToX;
 			var offsetY:Number = newRelativeToY - relativeToY;
 			if(!relativeTo2 || otherGap != Number.POSITIVE_INFINITY || !(
@@ -4794,7 +4561,7 @@ package feathers.controls.renderers
 					}
 				}
 			}
-
+			
 			if(position == RelativePosition.LEFT || position == RelativePosition.RIGHT)
 			{
 				if(this._verticalAlign == VerticalAlign.TOP)
@@ -4826,7 +4593,27 @@ package feathers.controls.renderers
 				}
 			}
 		}
-
+		
+		/**
+		 * @private
+		 */
+		override protected function refreshSelectionEvents():void
+		{
+			var selectionEnabled:Boolean = this._isEnabled &&
+				(this._isToggle || this.isSelectableWithoutToggle);
+			if(this._itemHasSelectable)
+			{
+				selectionEnabled &&= this.itemToSelectable(this._data);
+			}
+			if(this.accessoryTouchPointID >= 0)
+			{
+				selectionEnabled &&= this._isSelectableOnAccessoryTouch;
+			}
+			this.tapToSelect.isEnabled = selectionEnabled;
+			this.tapToSelect.tapToDeselect = this._isToggle;
+			this.keyToSelect.isEnabled = false;
+		}
+		
 		/**
 		 * @private
 		 */
@@ -4843,7 +4630,7 @@ package feathers.controls.renderers
 					this.iconLoader.delayTextureCreation = true;
 				}
 			}
-
+			
 			if(this.touchPointID < 0 && this.accessoryTouchPointID < 0)
 			{
 				return;
@@ -4854,13 +4641,13 @@ package feathers.controls.renderers
 				this._stateDelayTimer.stop();
 			}
 			this._delayedCurrentState = null;
-
+			
 			if(this.accessoryTouchPointID >= 0)
 			{
 				this._owner.stopScrolling();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4878,7 +4665,7 @@ package feathers.controls.renderers
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4886,19 +4673,7 @@ package feathers.controls.renderers
 		{
 			this.accessoryTouchPointID = -1;
 		}
-
-		/**
-		 * @private
-		 */
-		protected function itemRenderer_triggeredHandler(event:Event):void
-		{
-			if(this._isToggle || !this.isSelectableWithoutToggle || (this._itemHasSelectable && !this.itemToSelectable(this._data)))
-			{
-				return;
-			}
-			this.isSelected = true;
-		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4907,7 +4682,7 @@ package feathers.controls.renderers
 			super.changeState(this._delayedCurrentState);
 			this._delayedCurrentState = null;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4926,7 +4701,7 @@ package feathers.controls.renderers
 			}
 			super.basicButton_touchHandler(event);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4944,7 +4719,7 @@ package feathers.controls.renderers
 				//do nothing
 				return;
 			}
-
+			
 			if(this.accessoryTouchPointID >= 0)
 			{
 				var touch:Touch = event.getTouch(this.currentAccessory, TouchPhase.ENDED, this.accessoryTouchPointID);
@@ -4953,6 +4728,7 @@ package feathers.controls.renderers
 					return;
 				}
 				this.accessoryTouchPointID = -1;
+				this.refreshSelectionEvents();
 			}
 			else //if we get here, we don't have a saved touch ID yet
 			{
@@ -4962,9 +4738,10 @@ package feathers.controls.renderers
 					return;
 				}
 				this.accessoryTouchPointID = touch.id;
+				this.refreshSelectionEvents();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4976,7 +4753,7 @@ package feathers.controls.renderers
 			}
 			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
-
+		
 		/**
 		 * @private
 		 */

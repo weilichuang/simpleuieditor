@@ -44,6 +44,13 @@ package feathers.core
 		 * @private
 		 */
 		function set wordWrap(value:Boolean):void;
+		
+		/**
+		 * The number of text lines in the text renderer. The text renderer may
+		 * contain multiple text lines if the text contains line breaks or if
+		 * the <code>wordWrap</code> property is enabled.
+		 */
+		function get numLines():int;
 
 		/**
 		 * Measures the text's bounds (without a full validation, if

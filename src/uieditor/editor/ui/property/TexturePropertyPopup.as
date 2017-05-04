@@ -10,7 +10,7 @@ package uieditor.editor.ui.property
 	import starling.events.Event;
 
 	import uieditor.editor.UIEditorApp;
-	import uieditor.editor.ui.AssetTab;
+	import uieditor.editor.ui.tabpanel.AssetTab;
 	import uieditor.editor.ui.itemrenderer.IconItemRenderer;
 
 	public class TexturePropertyPopup extends AbstractPropertyPopup

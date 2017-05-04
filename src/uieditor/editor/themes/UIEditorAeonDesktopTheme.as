@@ -24,6 +24,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 package uieditor.editor.themes
 {
+	import flash.geom.Rectangle;
+	import flash.text.TextFormat;
+	import flash.text.TextFormatAlign;
+	
+	import feathers.Feather;
 	import feathers.controls.Alert;
 	import feathers.controls.AutoComplete;
 	import feathers.controls.Button;
@@ -50,11 +55,11 @@ package uieditor.editor.themes
 	import feathers.controls.ScrollBar;
 	import feathers.controls.ScrollBarDisplayMode;
 	import feathers.controls.ScrollContainer;
+	import feathers.controls.ScrollInteractionMode;
 	import feathers.controls.ScrollPolicy;
 	import feathers.controls.ScrollScreen;
 	import feathers.controls.ScrollText;
 	import feathers.controls.Scroller;
-	import feathers.controls.ScrollInteractionMode;
 	import feathers.controls.SimpleScrollBar;
 	import feathers.controls.Slider;
 	import feathers.controls.SpinnerList;
@@ -85,18 +90,13 @@ package uieditor.editor.themes
 	import feathers.layout.RelativePosition;
 	import feathers.layout.VerticalAlign;
 	import feathers.layout.VerticalLayout;
-	import feathers.media.FullScreenToggleButton;
 	import feathers.media.MuteToggleButton;
 	import feathers.media.PlayPauseToggleButton;
 	import feathers.media.SeekSlider;
 	import feathers.media.VolumeSlider;
 	import feathers.skins.ImageSkin;
 	import feathers.themes.StyleNameFunctionTheme;
-
-	import flash.geom.Rectangle;
-	import flash.text.TextFormat;
-	import flash.text.TextFormatAlign;
-
+	
 	import starling.core.Starling;
 	import starling.display.DisplayObject;
 	import starling.display.Image;
@@ -272,11 +272,12 @@ package uieditor.editor.themes
 
 		protected static const BACKGROUND_COLOR:uint = 0xFFFFFF;
 		protected static const MODAL_OVERLAY_COLOR:uint = 0xDDDDDD;
-		protected static const MODAL_OVERLAY_ALPHA:Number = 0.7;
+		protected static const MODAL_OVERLAY_ALPHA:Number = 0.0;
 		protected static const PRIMARY_TEXT_COLOR:uint = 0x0B333C;
 		protected static const DISABLED_TEXT_COLOR:uint = 0x5B6770;
 		protected static const VIDEO_OVERLAY_COLOR:uint = 0xc9e0eE;
 		protected static const VIDEO_OVERLAY_ALPHA:Number = 0.25;
+		protected static const TOOLTIP_TEXT_COLOR:uint = 0x0B333C;
 
 		/**
 		 * The default global text renderer factory for this theme creates a
@@ -401,11 +402,15 @@ package uieditor.editor.themes
 		 * A TextFormat for most UI controls and text.
 		 */
 		protected var defaultTextFormat:TextFormat;
-
+		protected var defaultToolTipTextFormat:TextFormat;
+		protected var defaultScrollTextFormat:TextFormat;
+		
 		/**
 		 * A TextFormat for most disabled UI controls and text.
 		 */
 		protected var disabledTextFormat:TextFormat;
+		
+		
 
 		/**
 		 * A TextFormat for larger text.
@@ -629,6 +634,7 @@ package uieditor.editor.themes
 		{
 			Starling.current.stage.color = BACKGROUND_COLOR;
 			Starling.current.nativeStage.color = BACKGROUND_COLOR;
+			Feather.scrollTextOverlay = Starling.current.nativeStage;
 		}
 
 		/**
@@ -657,6 +663,10 @@ package uieditor.editor.themes
 			this.largeFontSize = 13;
 
 			this.defaultTextFormat = new TextFormat(FONT_NAME, this.regularFontSize, PRIMARY_TEXT_COLOR, false, false, false, null, null, TextFormatAlign.LEFT, 0, 0, 0, 0);
+			
+			this.defaultScrollTextFormat = new flash.text.TextFormat( "SimHei", 16, 0x9797DD )
+			this.defaultToolTipTextFormat = new TextFormat(FONT_NAME, this.regularFontSize, TOOLTIP_TEXT_COLOR, false, false, false, null, null, TextFormatAlign.LEFT, 0, 0, 0, 0);
+			
 			this.disabledTextFormat = new TextFormat(FONT_NAME, this.regularFontSize, DISABLED_TEXT_COLOR, false, false, false, null, null, TextFormatAlign.LEFT, 0, 0, 0, 0);
 			this.headingTextFormat = new TextFormat(FONT_NAME, this.largeFontSize, PRIMARY_TEXT_COLOR, false, false, false, null, null, TextFormatAlign.LEFT, 0, 0, 0, 0);
 			this.headingDisabledTextFormat = new TextFormat(FONT_NAME, this.largeFontSize, DISABLED_TEXT_COLOR, false, false, false, null, null, TextFormatAlign.LEFT, 0, 0, 0, 0);
@@ -991,9 +1001,6 @@ package uieditor.editor.themes
 			//play/pause toggle button
 			this.getStyleProviderForClass(PlayPauseToggleButton).defaultStyleFunction = this.setPlayPauseToggleButtonStyles;
 			this.getStyleProviderForClass(PlayPauseToggleButton).setFunctionForStyleName(PlayPauseToggleButton.ALTERNATE_STYLE_NAME_OVERLAY_PLAY_PAUSE_TOGGLE_BUTTON, this.setOverlayPlayPauseToggleButtonStyles);
-
-			//full screen toggle button
-			this.getStyleProviderForClass(FullScreenToggleButton).defaultStyleFunction = this.setFullScreenToggleButtonStyles;
 
 			//mute toggle button
 			this.getStyleProviderForClass(MuteToggleButton).defaultStyleFunction = this.setMuteToggleButtonStyles;
@@ -2403,50 +2410,6 @@ package uieditor.editor.themes
 			overlaySkin.alpha = VIDEO_OVERLAY_ALPHA;
 			button.upSkin = overlaySkin;
 			button.hoverSkin = overlaySkin;
-		}
-
-	//-------------------------
-	// FullScreenToggleButton
-	//-------------------------
-
-		protected function setFullScreenToggleButtonStyles(button:FullScreenToggleButton):void
-		{
-			var defaultSkin:Quad = new Quad(this.controlSize, this.controlSize, 0xff00ff);
-			defaultSkin.alpha = 0;
-			button.defaultSkin = defaultSkin;
-
-			var otherSkin:ImageSkin = new ImageSkin();
-			otherSkin.setTextureForState(ButtonState.HOVER, this.quietButtonHoverSkinTexture);
-			otherSkin.setTextureForState(ButtonState.DOWN, this.buttonDownSkinTexture);
-			otherSkin.setTextureForState(ButtonState.HOVER_AND_SELECTED, this.toggleButtonSelectedHoverSkinTexture);
-			otherSkin.setTextureForState(ButtonState.DOWN_AND_SELECTED, this.toggleButtonSelectedDownSkinTexture);
-			otherSkin.setTextureForState(ButtonState.DISABLED_AND_SELECTED, this.toggleButtonSelectedDisabledSkinTexture);
-			otherSkin.width = this.controlSize;
-			otherSkin.height = this.controlSize;
-			button.setSkinForState(ButtonState.HOVER, otherSkin);
-			button.setSkinForState(ButtonState.DOWN, otherSkin);
-			button.setSkinForState(ButtonState.HOVER_AND_SELECTED, otherSkin);
-			button.setSkinForState(ButtonState.DOWN_AND_SELECTED, otherSkin);
-			button.setSkinForState(ButtonState.DISABLED_AND_SELECTED, otherSkin);
-
-			var focusIndicatorSkin:Image = new Image(this.focusIndicatorSkinTexture);
-			focusIndicatorSkin.scale9Grid = FOCUS_INDICATOR_SCALE_9_GRID;
-			button.focusIndicatorSkin = focusIndicatorSkin;
-			button.focusPadding = -1;
-			
-			var icon:ImageSkin = new ImageSkin(this.fullScreenToggleButtonEnterUpIconTexture);
-			icon.selectedTexture = this.fullScreenToggleButtonExitUpIconTexture;
-			button.defaultIcon = icon;
-
-			button.hasLabelTextRenderer = false;
-
-			button.paddingTop = this.extraSmallGutterSize;
-			button.paddingRight = this.smallGutterSize;
-			button.paddingBottom = this.extraSmallGutterSize;
-			button.paddingLeft = this.smallGutterSize;
-			button.gap = this.smallGutterSize;
-			button.minWidth = this.controlSize;
-			button.minHeight = this.controlSize;
 		}
 
 	//-------------------------

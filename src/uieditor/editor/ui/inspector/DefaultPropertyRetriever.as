@@ -12,6 +12,12 @@ package uieditor.editor.ui.inspector
 			_target = target;
 			_param = param;
 		}
+		
+		public function dispose():void
+		{
+			_target = null;
+			_param = null;
+		}
 
 		public function set( name : String, value : Object ) : void
 		{

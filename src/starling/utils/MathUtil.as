@@ -103,6 +103,7 @@ package starling.utils
 
         /** Returns the larger of the two values. Different to the native <code>Math.max</code>,
          *  this doesn't create any temporary objects when using the AOT compiler. */
+		[Inline]
         public static function max(a:Number, b:Number):Number
         {
             return a > b ? a : b;
@@ -110,12 +111,14 @@ package starling.utils
 
         /** Returns the smaller of the two values. Different to the native <code>Math.min</code>,
          *  this doesn't create any temporary objects when using the AOT compiler. */
+		[Inline]
         public static function min(a:Number, b:Number):Number
         {
             return a < b ? a : b;
         }
 
         /** Moves <code>value</code> into the range between <code>min</code> and <code>max</code>. */
+		[Inline]
         public static function clamp(value:Number, min:Number, max:Number):Number
         {
             return value < min ? min : (value > max ? max : value);

@@ -1,14 +1,18 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
 */
 package feathers.controls
 {
+	import flash.events.TimerEvent;
+	import flash.ui.Keyboard;
+	import flash.utils.Timer;
+	
 	import feathers.core.FeathersControl;
-	import feathers.core.INativeFocusOwner;
+	import feathers.core.IAdvancedNativeFocusOwner;
 	import feathers.core.ITextBaselineControl;
 	import feathers.core.PropertyProxy;
 	import feathers.events.ExclusiveTouch;
@@ -17,19 +21,14 @@ package feathers.controls
 	import feathers.utils.math.clamp;
 	import feathers.utils.math.roundToNearest;
 	import feathers.utils.math.roundToPrecision;
-
-	import flash.display.InteractiveObject;
-	import flash.events.TimerEvent;
-	import flash.ui.Keyboard;
-	import flash.utils.Timer;
-
+	
 	import starling.display.DisplayObject;
 	import starling.events.Event;
 	import starling.events.KeyboardEvent;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
-
+	
 	/**
 	 * Dispatched when the stepper's value changes.
 	 *
@@ -51,7 +50,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.CHANGE
 	 */
 	[Event(name="change",type="starling.events.Event")]
-
+	
 	/**
 	 * Select a value between a minimum and a maximum by using increment and
 	 * decrement buttons or typing in a value in a text input.
@@ -70,23 +69,23 @@ package feathers.controls
 	 *
 	 * @see ../../../help/numeric-stepper.html How to use the Feathers NumericStepper component
 	 */
-	public class NumericStepper extends FeathersControl implements IRange, INativeFocusOwner, ITextBaselineControl
+	public class NumericStepper extends FeathersControl implements IRange, IAdvancedNativeFocusOwner, ITextBaselineControl
 	{
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_DECREMENT_BUTTON_FACTORY:String = "decrementButtonFactory";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_INCREMENT_BUTTON_FACTORY:String = "incrementButtonFactory";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_TEXT_INPUT_FACTORY:String = "textInputFactory";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the decrement
 		 * button.
@@ -94,7 +93,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_DECREMENT_BUTTON:String = "feathers-numeric-stepper-decrement-button";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the increment
 		 * button.
@@ -102,7 +101,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_INCREMENT_BUTTON:String = "feathers-numeric-stepper-increment-button";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the text
 		 * input.
@@ -110,33 +109,40 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_TEXT_INPUT:String = "feathers-numeric-stepper-text-input";
-
+		
 		/**
-		 * The decrement button will be placed on the left side of the text
-		 * input and the increment button will be placed on the right side of
-		 * the text input.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.StepperButtonLayoutMode.SPLIT_HORIZONTAL</code>.
 		 *
-		 * @see #buttonLayoutMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const BUTTON_LAYOUT_MODE_SPLIT_HORIZONTAL:String = "splitHorizontal";
-
+		
 		/**
-		 * The decrement button will be placed below the text input and the
-		 * increment button will be placed above the text input.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.StepperButtonLayoutMode.SPLIT_VERTICAL</code>.
 		 *
-		 * @see #buttonLayoutMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const BUTTON_LAYOUT_MODE_SPLIT_VERTICAL:String = "splitVertical";
-
+		
 		/**
-		 * Both the decrement and increment button will be placed on the right
-		 * side of the text input. The increment button will be above the
-		 * decrement button.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.StepperButtonLayoutMode.RIGHT_SIDE_VERTICAL</code>.
 		 *
-		 * @see #buttonLayoutMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const BUTTON_LAYOUT_MODE_RIGHT_SIDE_VERTICAL:String = "rightSideVertical";
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>NumericStepper</code>
 		 * components.
@@ -145,7 +151,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * @private
 		 */
@@ -153,7 +159,7 @@ package feathers.controls
 		{
 			return new Button();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -161,7 +167,7 @@ package feathers.controls
 		{
 			return new Button();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -169,7 +175,7 @@ package feathers.controls
 		{
 			return new TextInput();
 		}
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -178,7 +184,7 @@ package feathers.controls
 			super();
 			this.addEventListener(Event.REMOVED_FROM_STAGE, numericStepper_removedFromStageHandler);
 		}
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the decrement
 		 * button. This variable is <code>protected</code> so that sub-classes
@@ -193,7 +199,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var decrementButtonStyleName:String = DEFAULT_CHILD_STYLE_NAME_DECREMENT_BUTTON;
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the increment
 		 * button. This variable is <code>protected</code> so that sub-classes
@@ -208,7 +214,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var incrementButtonStyleName:String = DEFAULT_CHILD_STYLE_NAME_INCREMENT_BUTTON;
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the text input.
 		 * This variable is <code>protected</code> so that sub-classes can
@@ -223,7 +229,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var textInputStyleName:String = DEFAULT_CHILD_STYLE_NAME_TEXT_INPUT;
-
+		
 		/**
 		 * The decrement button sub-component.
 		 *
@@ -232,7 +238,7 @@ package feathers.controls
 		 * @see #createDecrementButton()
 		 */
 		protected var decrementButton:Button;
-
+		
 		/**
 		 * The increment button sub-component.
 		 *
@@ -241,7 +247,7 @@ package feathers.controls
 		 * @see #createIncrementButton()
 		 */
 		protected var incrementButton:Button;
-
+		
 		/**
 		 * The text input sub-component.
 		 *
@@ -250,12 +256,37 @@ package feathers.controls
 		 * @see #createTextInput()
 		 */
 		protected var textInput:TextInput;
-
+		
+		/**
+		 * @private
+		 */
+		protected var textInputExplicitWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var textInputExplicitHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var textInputExplicitMinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var textInputExplicitMinHeight:Number;
+		
 		/**
 		 * @private
 		 */
 		protected var touchPointID:int = -1;
-
+		
+		/**
+		 * @private
+		 */
+		protected var _textInputHasFocus:Boolean = false;
+		
 		/**
 		 * @private
 		 */
@@ -263,7 +294,7 @@ package feathers.controls
 		{
 			return NumericStepper.globalStyleProvider;
 		}
-
+		
 		/**
 		 * A text input's text editor may be an <code>INativeFocusOwner</code>,
 		 * so we need to return the value of its <code>nativeFocus</code>
@@ -271,20 +302,20 @@ package feathers.controls
 		 *
 		 * @see feathers.core.INativeFocusOwner
 		 */
-		public function get nativeFocus():InteractiveObject
+		public function get nativeFocus():Object
 		{
-			if(this.textInput)
+			if(this.textInput !== null)
 			{
 				return this.textInput.nativeFocus;
 			}
 			return null;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _value:Number = 0;
-
+		
 		/**
 		 * The value of the numeric stepper, between the minimum and maximum.
 		 *
@@ -307,7 +338,7 @@ package feathers.controls
 		{
 			return this._value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -328,12 +359,12 @@ package feathers.controls
 			this.invalidate(INVALIDATION_FLAG_DATA);
 			this.dispatchEventWith(Event.CHANGE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minimum:Number = 0;
-
+		
 		/**
 		 * The numeric stepper's value will not go lower than the minimum.
 		 *
@@ -355,7 +386,7 @@ package feathers.controls
 		{
 			return this._minimum;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -368,12 +399,12 @@ package feathers.controls
 			this._minimum = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _maximum:Number = 0;
-
+		
 		/**
 		 * The numeric stepper's value will not go higher than the maximum.
 		 *
@@ -395,7 +426,7 @@ package feathers.controls
 		{
 			return this._maximum;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -408,12 +439,12 @@ package feathers.controls
 			this._maximum = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _step:Number = 0;
-
+		
 		/**
 		 * As the numeric stepper's buttons are pressed, the value is snapped to
 		 * a multiple of the step.
@@ -436,7 +467,7 @@ package feathers.controls
 		{
 			return this._step;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -448,12 +479,12 @@ package feathers.controls
 			}
 			this._step = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _valueFormatFunction:Function;
-
+		
 		/**
 		 * A callback that formats the numeric stepper's value as a string to
 		 * display to the user.
@@ -478,7 +509,7 @@ package feathers.controls
 		{
 			return this._valueFormatFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -491,12 +522,12 @@ package feathers.controls
 			this._valueFormatFunction = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _valueParseFunction:Function;
-
+		
 		/**
 		 * A callback that accepts the displayed text of the numeric stepper and
 		 * converts it to a simple numeric value.
@@ -521,7 +552,7 @@ package feathers.controls
 		{
 			return this._valueParseFunction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -529,22 +560,22 @@ package feathers.controls
 		{
 			this._valueParseFunction = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var currentRepeatAction:Function;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _repeatTimer:Timer;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _repeatDelay:Number = 0.05;
-
+		
 		/**
 		 * The time, in seconds, before actions are repeated. The first repeat
 		 * happens after a delay that is five times longer than the following
@@ -562,7 +593,7 @@ package feathers.controls
 		{
 			return this._repeatDelay;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -575,12 +606,12 @@ package feathers.controls
 			this._repeatDelay = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected var _buttonLayoutMode:String = BUTTON_LAYOUT_MODE_SPLIT_HORIZONTAL;
-
+		protected var _buttonLayoutMode:String = StepperButtonLayoutMode.SPLIT_HORIZONTAL;
+		
 		[Inspectable(type="String",enumeration="splitHorizontal,splitVertical,rightSideVertical")]
 		/**
 		 * How the buttons are positioned relative to the text input.
@@ -590,19 +621,19 @@ package feathers.controls
 		 * appearance:</p>
 		 *
 		 * <listing version="3.0">
-		 * stepper.buttonLayoutMode = NumericStepper.BUTTON_LAYOUT_MODE_RIGHT_SIDE_VERTICAL;</listing>
+		 * stepper.buttonLayoutMode = NumericStepper.StepperButtonLayoutMode.RIGHT_SIDE_VERTICAL;</listing>
 		 *
-		 * @default NumericStepper.BUTTON_LAYOUT_MODE_SPLIT_HORIZONTAL
+		 * @default feathers.controls.StepperButtonLayoutMode.SPLIT_HORIZONTAL
 		 *
-		 * @see #BUTTON_LAYOUT_MODE_SPLIT_HORIZONTAL
-		 * @see #BUTTON_LAYOUT_MODE_SPLIT_VERTICAL
-		 * @see #BUTTON_LAYOUT_MODE_RIGHT_SIDE_VERTICAL
+		 * @see feathers.controls.StepperButtonLayoutMode#SPLIT_HORIZONTAL
+		 * @see feathers.controls.StepperButtonLayoutMode#SPLIT_VERTICAL
+		 * @see feathers.controls.StepperButtonLayoutMode#RIGHT_SIDE_VERTICAL
 		 */
 		public function get buttonLayoutMode():String
 		{
 			return this._buttonLayoutMode;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -615,12 +646,12 @@ package feathers.controls
 			this._buttonLayoutMode = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _buttonGap:Number = 0;
-
+		
 		/**
 		 * The gap, in pixels, between the numeric stepper's increment and
 		 * decrement buttons when they are both positioned on the same side. If
@@ -629,7 +660,7 @@ package feathers.controls
 		 * <p>In the following example, the gap between buttons is set to 20 pixels:</p>
 		 *
 		 * <listing version="3.0">
-		 * stepper.buttonLayoutMode = NumericStepper.BUTTON_LAYOUT_MODE_RIGHT_SIDE_VERTICAL;
+		 * stepper.buttonLayoutMode = StepperButtonLayoutMode.RIGHT_SIDE_VERTICAL;
 		 * stepper.buttonGap = 20;</listing>
 		 *
 		 * @default 0
@@ -641,7 +672,7 @@ package feathers.controls
 		{
 			return this._buttonGap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -654,12 +685,12 @@ package feathers.controls
 			this._buttonGap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _textInputGap:Number = 0;
-
+		
 		/**
 		 * The gap, in pixels, between the numeric stepper's text input and its
 		 * buttons. If the buttons are split, this gap is used on both sides. If
@@ -680,7 +711,7 @@ package feathers.controls
 		{
 			return this._textInputGap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -693,12 +724,12 @@ package feathers.controls
 			this._textInputGap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _decrementButtonFactory:Function;
-
+		
 		/**
 		 * A function used to generate the numeric stepper's decrement button
 		 * sub-component. The decrement button must be an instance of
@@ -731,7 +762,7 @@ package feathers.controls
 		{
 			return this._decrementButtonFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -744,12 +775,12 @@ package feathers.controls
 			this._decrementButtonFactory = value;
 			this.invalidate(INVALIDATION_FLAG_DECREMENT_BUTTON_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customDecrementButtonStyleName:String;
-
+		
 		/**
 		 * A style name to add to the numeric stepper's decrement button
 		 * sub-component. Typically used by a theme to provide different styles
@@ -778,7 +809,7 @@ package feathers.controls
 		{
 			return this._customDecrementButtonStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -791,12 +822,12 @@ package feathers.controls
 			this._customDecrementButtonStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_DECREMENT_BUTTON_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _decrementButtonProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the numeric stepper's decrement
 		 * button sub-component, and the properties will be passed down to the
@@ -833,7 +864,7 @@ package feathers.controls
 			}
 			return this._decrementButtonProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -867,12 +898,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _decrementButtonLabel:String = null;
-
+		
 		/**
 		 * The text displayed by the decrement button. Often, there is no text
 		 * displayed on this button and an icon is used instead.
@@ -888,7 +919,7 @@ package feathers.controls
 		{
 			return this._decrementButtonLabel;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -901,12 +932,12 @@ package feathers.controls
 			this._decrementButtonLabel = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _incrementButtonFactory:Function;
-
+		
 		/**
 		 * A function used to generate the numeric stepper's increment button
 		 * sub-component. The increment button must be an instance of
@@ -939,7 +970,7 @@ package feathers.controls
 		{
 			return this._incrementButtonFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -952,12 +983,12 @@ package feathers.controls
 			this._incrementButtonFactory = value;
 			this.invalidate(INVALIDATION_FLAG_INCREMENT_BUTTON_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customIncrementButtonStyleName:String;
-
+		
 		/**
 		 * A style name to add to the numeric stepper's increment button
 		 * sub-component. Typically used by a theme to provide different styles
@@ -986,7 +1017,7 @@ package feathers.controls
 		{
 			return this._customIncrementButtonStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -999,12 +1030,12 @@ package feathers.controls
 			this._customIncrementButtonStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_INCREMENT_BUTTON_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _incrementButtonProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the numeric stepper's increment
 		 * button sub-component, and the properties will be passed down to the
@@ -1041,7 +1072,7 @@ package feathers.controls
 			}
 			return this._incrementButtonProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1075,12 +1106,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _incrementButtonLabel:String = null;
-
+		
 		/**
 		 * The text displayed by the increment button. Often, there is no text
 		 * displayed on this button and an icon is used instead.
@@ -1096,7 +1127,7 @@ package feathers.controls
 		{
 			return this._incrementButtonLabel;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1109,12 +1140,12 @@ package feathers.controls
 			this._incrementButtonLabel = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _textInputFactory:Function;
-
+		
 		/**
 		 * A function used to generate the numeric stepper's text input
 		 * sub-component. The text input must be an instance of <code>TextInput</code>.
@@ -1146,7 +1177,7 @@ package feathers.controls
 		{
 			return this._textInputFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1159,12 +1190,12 @@ package feathers.controls
 			this._textInputFactory = value;
 			this.invalidate(INVALIDATION_FLAG_TEXT_INPUT_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customTextInputStyleName:String;
-
+		
 		/**
 		 * A style name to add to the numeric stepper's text input sub-component.
 		 * Typically used by a theme to provide different styles to different
@@ -1193,7 +1224,7 @@ package feathers.controls
 		{
 			return this._customTextInputStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1206,12 +1237,12 @@ package feathers.controls
 			this._customTextInputStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_TEXT_INPUT_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _textInputProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the numeric stepper's text
 		 * input sub-component, and the properties will be passed down to the
@@ -1247,7 +1278,7 @@ package feathers.controls
 			}
 			return this._textInputProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1281,7 +1312,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -1293,7 +1324,27 @@ package feathers.controls
 			}
 			return this.scaleY * (this.textInput.y + this.textInput.baseline);
 		}
-
+		
+		/**
+		 * @private
+		 */
+		public function get hasFocus():Boolean
+		{
+			return this._hasFocus;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function setFocus():void
+		{
+			if(this.textInput === null)
+			{
+				return;
+			}
+			this.textInput.setFocus();
+		}
+		
 		/**
 		 * @private
 		 */
@@ -1307,72 +1358,68 @@ package feathers.controls
 			var incrementButtonFactoryInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_INCREMENT_BUTTON_FACTORY);
 			var textInputFactoryInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_TEXT_INPUT_FACTORY);
 			var focusInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_FOCUS);
-
+			
 			if(decrementButtonFactoryInvalid)
 			{
 				this.createDecrementButton();
 			}
-
+			
 			if(incrementButtonFactoryInvalid)
 			{
 				this.createIncrementButton();
 			}
-
+			
 			if(textInputFactoryInvalid)
 			{
 				this.createTextInput();
 			}
-
+			
 			if(decrementButtonFactoryInvalid || stylesInvalid)
 			{
 				this.refreshDecrementButtonStyles();
 			}
-
+			
 			if(incrementButtonFactoryInvalid || stylesInvalid)
 			{
 				this.refreshIncrementButtonStyles();
 			}
-
+			
 			if(textInputFactoryInvalid || stylesInvalid)
 			{
 				this.refreshTextInputStyles();
 			}
-
+			
 			if(textInputFactoryInvalid || dataInvalid)
 			{
 				this.refreshTypicalText();
 				this.refreshDisplayedText();
 			}
-
+			
 			if(decrementButtonFactoryInvalid || stateInvalid)
 			{
 				this.decrementButton.isEnabled = this._isEnabled;
 			}
-
+			
 			if(incrementButtonFactoryInvalid || stateInvalid)
 			{
 				this.incrementButton.isEnabled = this._isEnabled;
 			}
-
+			
 			if(textInputFactoryInvalid || stateInvalid)
 			{
 				this.textInput.isEnabled = this._isEnabled;
 			}
-
+			
 			sizeInvalid = this.autoSizeIfNeeded() || sizeInvalid;
-
-			if(decrementButtonFactoryInvalid || incrementButtonFactoryInvalid || textInputFactoryInvalid ||
-				dataInvalid || stylesInvalid || sizeInvalid)
-			{
-				this.layoutChildren();
-			}
-
+			
+			this.layoutChildren();
+			
 			if(sizeInvalid || focusInvalid)
 			{
 				this.refreshFocusIndicator();
 			}
 		}
-
+		
 		/**
 		 * If the component's dimensions have not been set explicitly, it will
 		 * measure its content and determine an ideal size for itself. If the
@@ -1382,7 +1429,7 @@ package feathers.controls
 		 * explicit value will not be measured, but the other non-explicit
 		 * dimension will still need measurement.
 		 *
-		 * <p>Calls <code>setSizeInternal()</code> to set up the
+		 * <p>Calls <code>saveMeasurements()</code> to set up the
 		 * <code>actualWidth</code> and <code>actualHeight</code> member
 		 * variables used for layout.</p>
 		 *
@@ -1393,128 +1440,298 @@ package feathers.controls
 		{
 			var needsWidth:Boolean = this._explicitWidth !== this._explicitWidth; //isNaN
 			var needsHeight:Boolean = this._explicitHeight !== this._explicitHeight; //isNaN
-			if(!needsWidth && !needsHeight)
+			var needsMinWidth:Boolean = this._explicitMinWidth !== this._explicitMinWidth; //isNaN
+			var needsMinHeight:Boolean = this._explicitMinHeight !== this._explicitMinHeight; //isNaN
+			if(!needsWidth && !needsHeight && !needsMinWidth && !needsMinHeight)
 			{
 				return false;
 			}
-
+			
 			var newWidth:Number = this._explicitWidth;
 			var newHeight:Number = this._explicitHeight;
-
+			var newMinWidth:Number = this._explicitMinWidth;
+			var newMinHeight:Number = this._explicitMinHeight;
+			
 			this.decrementButton.validate();
 			this.incrementButton.validate();
-			var oldTextInputWidth:Number = this.textInput.width;
-			var oldTextInputHeight:Number = this.textInput.height;
-			if(this._buttonLayoutMode == BUTTON_LAYOUT_MODE_RIGHT_SIDE_VERTICAL)
+			var decrementButtonWidth:Number = this.decrementButton.width;
+			var decrementButtonHeight:Number = this.decrementButton.height;
+			var decrementButtonMinWidth:Number = this.decrementButton.minWidth;
+			var decrementButtonMinHeight:Number = this.decrementButton.minHeight;
+			var incrementButtonWidth:Number = this.incrementButton.width;
+			var incrementButtonHeight:Number = this.incrementButton.height;
+			var incrementButtonMinWidth:Number = this.incrementButton.minWidth;
+			var incrementButtonMinHeight:Number = this.incrementButton.minHeight;
+			
+			//we'll default to the values set in the textInputFactory
+			var textInputWidth:Number = this.textInputExplicitWidth;
+			var textInputHeight:Number = this.textInputExplicitHeight;
+			var textInputMinWidth:Number = this.textInputExplicitMinWidth;
+			var textInputMinHeight:Number = this.textInputExplicitMinHeight;
+			var textInputMaxWidth:Number = Number.POSITIVE_INFINITY;
+			var textInputMaxHeight:Number = Number.POSITIVE_INFINITY;
+			
+			if(this._buttonLayoutMode === StepperButtonLayoutMode.RIGHT_SIDE_VERTICAL)
 			{
-				var maxButtonWidth:Number = Math.max(this.decrementButton.width, this.incrementButton.width);
-				this.textInput.minWidth = Math.max(0, this._explicitMinWidth - maxButtonWidth);
-				this.textInput.maxWidth = Math.max(0, this._maxWidth - maxButtonWidth);
-				this.textInput.width = Math.max(0, this._explicitWidth - maxButtonWidth)
-				this.textInput.height = this._explicitHeight;
-				this.textInput.validate();
-
+				var maxButtonWidth:Number = decrementButtonWidth;
+				if(incrementButtonWidth > maxButtonWidth)
+				{
+					maxButtonWidth = incrementButtonWidth;
+				}
+				var maxButtonMinWidth:Number = decrementButtonMinWidth;
+				if(incrementButtonMinWidth > maxButtonMinWidth)
+				{
+					maxButtonMinWidth = incrementButtonMinWidth;
+				}
+				
+				if(!needsWidth)
+				{
+					textInputWidth = this._explicitWidth - maxButtonWidth - this._textInputGap;
+				}
+				if(!needsHeight)
+				{
+					textInputHeight = this._explicitHeight;
+				}
+				if(!needsMinWidth)
+				{
+					textInputMinWidth = this._explicitMinWidth - maxButtonMinWidth - this._textInputGap;
+					if(this.textInputExplicitMinWidth > textInputMinWidth)
+					{
+						textInputMinWidth = this.textInputExplicitMinWidth;
+					}
+				}
+				if(!needsMinHeight)
+				{
+					textInputMinHeight = this._explicitMinHeight;
+					if(this.textInputExplicitMinHeight > textInputMinHeight)
+					{
+						textInputMinHeight = this.textInputExplicitMinHeight;
+					}
+				}
+				textInputMaxWidth = this._explicitMaxWidth - maxButtonWidth - this._textInputGap;
+			}
+			else if(this._buttonLayoutMode === StepperButtonLayoutMode.SPLIT_VERTICAL)
+			{
+				if(!needsWidth)
+				{
+					textInputWidth = this._explicitWidth;
+				}
+				if(!needsHeight)
+				{
+					textInputHeight = this._explicitHeight - decrementButtonHeight - incrementButtonHeight;
+				}
+				if(!needsMinWidth)
+				{
+					textInputMinWidth = this._explicitMinWidth;
+					if(this.textInputExplicitMinWidth > textInputMinWidth)
+					{
+						textInputMinWidth = this.textInputExplicitMinWidth;
+					}
+				}
+				if(!needsMinHeight)
+				{
+					textInputMinHeight = this._explicitMinHeight - decrementButtonMinHeight - incrementButtonMinHeight;
+					if(this.textInputExplicitMinHeight > textInputMinHeight)
+					{
+						textInputMinHeight = this.textInputExplicitMinHeight;
+					}
+				}
+				textInputMaxHeight = this._explicitMaxHeight - decrementButtonHeight - incrementButtonHeight;
+			}
+			else //split horizontal
+			{
+				if(!needsWidth)
+				{
+					textInputWidth = this._explicitWidth - decrementButtonWidth - incrementButtonWidth;
+				}
+				if(!needsHeight)
+				{
+					textInputHeight = this._explicitHeight;
+				}
+				if(!needsMinWidth)
+				{
+					textInputMinWidth = this._explicitMinWidth - decrementButtonMinWidth - incrementButtonMinWidth;
+					if(textInputMinWidth < this.textInputExplicitMinWidth)
+					{
+						textInputMinWidth = this.textInputExplicitMinWidth;
+					}
+				}
+				if(!needsMinHeight)
+				{
+					textInputMinHeight = this._explicitMinHeight;
+					if(this.textInputExplicitMinHeight > textInputMinHeight)
+					{
+						textInputMinHeight = this.textInputExplicitMinHeight;
+					}
+				}
+				textInputMaxWidth = this._explicitMaxWidth - decrementButtonWidth - incrementButtonWidth;
+			}
+			
+			if(textInputWidth < 0)
+			{
+				textInputWidth = 0;
+			}
+			if(textInputHeight < 0)
+			{
+				textInputHeight = 0;
+			}
+			if(textInputMinWidth < 0)
+			{
+				textInputMinWidth = 0;
+			}
+			if(textInputMinHeight < 0)
+			{
+				textInputMinHeight = 0;
+			}
+			this.textInput.width = textInputWidth;
+			this.textInput.height = textInputHeight;
+			this.textInput.minWidth = textInputMinWidth;
+			this.textInput.minHeight = textInputMinHeight;
+			this.textInput.maxWidth = textInputMaxWidth;
+			this.textInput.maxHeight = textInputMaxHeight;
+			this.textInput.validate();
+			
+			if(this._buttonLayoutMode === StepperButtonLayoutMode.RIGHT_SIDE_VERTICAL)
+			{
 				if(needsWidth)
 				{
 					newWidth = this.textInput.width + maxButtonWidth + this._textInputGap;
 				}
 				if(needsHeight)
 				{
-					newHeight = Math.max(this.textInput.height, this.decrementButton.height + this._buttonGap + this.incrementButton.height);
+					newHeight = decrementButtonHeight + this._buttonGap + incrementButtonHeight;
+					if(this.textInput.height > newHeight)
+					{
+						newHeight = this.textInput.height;
+					}
+				}
+				if(needsMinWidth)
+				{
+					newMinWidth = this.textInput.minWidth + maxButtonMinWidth + this._textInputGap;
+				}
+				if(needsMinHeight)
+				{
+					newMinHeight = decrementButtonMinHeight + this._buttonGap + incrementButtonMinHeight;
+					if(this.textInput.minHeight > newMinHeight)
+					{
+						newMinHeight = this.textInput.minHeight;
+					}
 				}
 			}
-			else if(this._buttonLayoutMode == BUTTON_LAYOUT_MODE_SPLIT_VERTICAL)
+			else if(this._buttonLayoutMode === StepperButtonLayoutMode.SPLIT_VERTICAL)
 			{
-				this.textInput.minHeight = Math.max(0, this._explicitMinHeight - this.decrementButton.height - this.incrementButton.height);
-				this.textInput.maxHeight = Math.max(0, this._maxHeight - this.decrementButton.height - this.incrementButton.height);
-				this.textInput.height = Math.max(0, this._explicitHeight - this.decrementButton.height - this.incrementButton.height);
-				this.textInput.width = this._explicitWidth;
-				this.textInput.validate();
-
 				if(needsWidth)
 				{
-					newWidth = Math.max(this.decrementButton.width, this.incrementButton.width, this.textInput.width);
+					newWidth = this.textInput.width;
+					if(decrementButtonWidth > newWidth)
+					{
+						newWidth = decrementButtonWidth;
+					}
+					if(incrementButtonWidth > newWidth)
+					{
+						newWidth = incrementButtonWidth;
+					}
 				}
 				if(needsHeight)
 				{
-					newHeight = this.decrementButton.height + this.textInput.height + this.incrementButton.height + 2 * this._textInputGap;
+					newHeight = decrementButtonHeight + this.textInput.height + incrementButtonHeight + 2 * this._textInputGap;
+				}
+				if(needsMinWidth)
+				{
+					newMinWidth = this.textInput.minWidth;
+					if(decrementButtonMinWidth > newMinWidth)
+					{
+						newMinWidth = decrementButtonMinWidth;
+					}
+					if(incrementButtonMinWidth > newMinWidth)
+					{
+						newMinWidth = incrementButtonMinWidth;
+					}
+				}
+				if(needsMinHeight)
+				{
+					newMinHeight = decrementButtonMinHeight + this.textInput.minHeight + incrementButtonMinHeight + 2 * this._textInputGap;
 				}
 			}
 			else //split horizontal
 			{
-				this.textInput.minWidth = Math.max(0, this._explicitMinWidth - this.decrementButton.width - this.incrementButton.width);
-				this.textInput.maxWidth = Math.max(0, this._maxWidth - this.decrementButton.width - this.incrementButton.width);
-				this.textInput.width = Math.max(0, this._explicitWidth - this.decrementButton.width - this.incrementButton.width);
-				this.textInput.height = this._explicitHeight;
-				this.textInput.validate();
-
 				if(needsWidth)
 				{
-					newWidth = this.decrementButton.width + this.textInput.width + this.incrementButton.width + 2 * this._textInputGap;
+					newWidth = decrementButtonWidth + this.textInput.width + incrementButtonWidth + 2 * this._textInputGap;
 				}
 				if(needsHeight)
 				{
-					newHeight = Math.max(this.decrementButton.height, this.incrementButton.height, this.textInput.height);
+					newHeight = this.textInput.height;
+					if(decrementButtonHeight > newHeight)
+					{
+						newHeight = decrementButtonHeight;
+					}
+					if(incrementButtonHeight > newHeight)
+					{
+						newHeight = incrementButtonHeight;
+					}
+				}
+				if(needsMinWidth)
+				{
+					newMinWidth = decrementButtonMinWidth + this.textInput.minWidth + incrementButtonMinWidth + 2 * this._textInputGap;
+				}
+				if(needsMinHeight)
+				{
+					newMinHeight = this.textInput.minHeight;
+					if(decrementButtonMinHeight > newMinHeight)
+					{
+						newMinHeight = decrementButtonMinHeight;
+					}
+					if(incrementButtonMinHeight > newMinHeight)
+					{
+						newMinHeight = incrementButtonMinHeight;
+					}
 				}
 			}
-
-			this.textInput.width = oldTextInputWidth;
-			this.textInput.height = oldTextInputHeight;
-			return this.setSizeInternal(newWidth, newHeight, false);
+			
+			return this.saveMeasurements(newWidth, newHeight, newMinWidth, newMinHeight);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function decrement():void
 		{
 			this.value = this._value - this._step;
-			if(this.textInput.isEditable)
-			{
-				this.validate();
-				this.textInput.selectRange(0, this.textInput.text.length);
-			}
+			this.validate();
+			this.textInput.selectRange(0, this.textInput.text.length);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function increment():void
 		{
 			this.value = this._value + this._step;
-			if(this.textInput.isEditable)
-			{
-				this.validate();
-				this.textInput.selectRange(0, this.textInput.text.length);
-			}
+			this.validate();
+			this.textInput.selectRange(0, this.textInput.text.length);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function toMinimum():void
 		{
 			this.value = this._minimum;
-			if(this.textInput.isEditable)
-			{
-				this.validate();
-				this.textInput.selectRange(0, this.textInput.text.length);
-			}
+			this.validate();
+			this.textInput.selectRange(0, this.textInput.text.length);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function toMaximum():void
 		{
 			this.value = this._maximum;
-			if(this.textInput.isEditable)
-			{
-				this.validate();
-				this.textInput.selectRange(0, this.textInput.text.length);
-			}
+			this.validate();
+			this.textInput.selectRange(0, this.textInput.text.length);
 		}
-
+		
 		/**
 		 * Creates and adds the <code>decrementButton</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -1533,7 +1750,7 @@ package feathers.controls
 				this.decrementButton.removeFromParent(true);
 				this.decrementButton = null;
 			}
-
+			
 			var factory:Function = this._decrementButtonFactory != null ? this._decrementButtonFactory : defaultDecrementButtonFactory;
 			var decrementButtonStyleName:String = this._customDecrementButtonStyleName != null ? this._customDecrementButtonStyleName : this.decrementButtonStyleName;
 			this.decrementButton = Button(factory());
@@ -1541,7 +1758,7 @@ package feathers.controls
 			this.decrementButton.addEventListener(TouchEvent.TOUCH, decrementButton_touchHandler);
 			this.addChild(this.decrementButton);
 		}
-
+		
 		/**
 		 * Creates and adds the <code>incrementButton</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -1560,7 +1777,7 @@ package feathers.controls
 				this.incrementButton.removeFromParent(true);
 				this.incrementButton = null;
 			}
-
+			
 			var factory:Function = this._incrementButtonFactory != null ? this._incrementButtonFactory : defaultIncrementButtonFactory;
 			var incrementButtonStyleName:String = this._customIncrementButtonStyleName != null ? this._customIncrementButtonStyleName : this.incrementButtonStyleName;
 			this.incrementButton = Button(factory());
@@ -1568,7 +1785,7 @@ package feathers.controls
 			this.incrementButton.addEventListener(TouchEvent.TOUCH, incrementButton_touchHandler);
 			this.addChild(this.incrementButton);
 		}
-
+		
 		/**
 		 * Creates and adds the <code>textInput</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -1587,20 +1804,29 @@ package feathers.controls
 				this.textInput.removeFromParent(true);
 				this.textInput = null;
 			}
-
+			
 			var factory:Function = this._textInputFactory != null ? this._textInputFactory : defaultTextInputFactory;
 			var textInputStyleName:String = this._customTextInputStyleName != null ? this._customTextInputStyleName : this.textInputStyleName;
 			this.textInput = TextInput(factory());
+			this.textInput.restrict = "0123456789.";
 			this.textInput.styleNameList.add(textInputStyleName);
 			this.textInput.addEventListener(FeathersEventType.ENTER, textInput_enterHandler);
+			this.textInput.addEventListener(FeathersEventType.FOCUS_IN, textInput_focusInHandler);
 			this.textInput.addEventListener(FeathersEventType.FOCUS_OUT, textInput_focusOutHandler);
 			//while we're setting isFocusEnabled to false on the text input when
 			//we have a focus manager, we'll still be able to call setFocus() on
 			//the text input manually.
 			this.textInput.isFocusEnabled = !this._focusManager;
 			this.addChild(this.textInput);
+			
+			//we will use these values for measurement, if possible
+			this.textInput.initializeNow();
+			this.textInputExplicitWidth = this.textInput.explicitWidth;
+			this.textInputExplicitHeight = this.textInput.explicitHeight;
+			this.textInputExplicitMinWidth = this.textInput.explicitMinWidth;
+			this.textInputExplicitMinHeight = this.textInput.explicitMinHeight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1613,7 +1839,7 @@ package feathers.controls
 			}
 			this.decrementButton.label = this._decrementButtonLabel;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1626,7 +1852,7 @@ package feathers.controls
 			}
 			this.incrementButton.label = this._incrementButtonLabel;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1638,7 +1864,7 @@ package feathers.controls
 				this.textInput[propertyName] = propertyValue;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1653,7 +1879,7 @@ package feathers.controls
 				this.textInput.text = this._value.toString();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1661,7 +1887,7 @@ package feathers.controls
 		{
 			var typicalText:String = "";
 			var maxCharactersBeforeDecimal:Number = Math.max(int(this._minimum).toString().length, int(this._maximum).toString().length, int(this._step).toString().length);
-
+			
 			//roundToPrecision() helps us to avoid numbers like 1.00000000000000001
 			//caused by the inaccuracies of floating point math.
 			var maxCharactersAfterDecimal:Number = Math.max(roundToPrecision(this._minimum - int(this._minimum), 10).toString().length,
@@ -1682,45 +1908,45 @@ package feathers.controls
 			}
 			this.textInput.typicalText = typicalText;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function layoutChildren():void
 		{
-			if(this._buttonLayoutMode == BUTTON_LAYOUT_MODE_RIGHT_SIDE_VERTICAL)
+			if(this._buttonLayoutMode === StepperButtonLayoutMode.RIGHT_SIDE_VERTICAL)
 			{
 				var buttonHeight:Number = (this.actualHeight - this._buttonGap) / 2;
 				this.incrementButton.y = 0;
 				this.incrementButton.height = buttonHeight;
 				this.incrementButton.validate();
-
+				
 				this.decrementButton.y = buttonHeight + this._buttonGap;
 				this.decrementButton.height = buttonHeight;
 				this.decrementButton.validate();
-
+				
 				var buttonWidth:Number = Math.max(this.decrementButton.width, this.incrementButton.width);
 				var buttonX:Number = this.actualWidth - buttonWidth;
 				this.decrementButton.x = buttonX;
 				this.incrementButton.x = buttonX;
-
+				
 				this.textInput.x = 0;
 				this.textInput.y = 0;
 				this.textInput.width = buttonX - this._textInputGap;
 				this.textInput.height = this.actualHeight;
 			}
-			else if(this._buttonLayoutMode == BUTTON_LAYOUT_MODE_SPLIT_VERTICAL)
+			else if(this._buttonLayoutMode === StepperButtonLayoutMode.SPLIT_VERTICAL)
 			{
 				this.incrementButton.x = 0;
 				this.incrementButton.y = 0;
 				this.incrementButton.width = this.actualWidth;
 				this.incrementButton.validate();
-
+				
 				this.decrementButton.x = 0;
 				this.decrementButton.width = this.actualWidth;
 				this.decrementButton.validate();
 				this.decrementButton.y = this.actualHeight - this.decrementButton.height;
-
+				
 				this.textInput.x = 0;
 				this.textInput.y = this.incrementButton.height + this._textInputGap;
 				this.textInput.width = this.actualWidth;
@@ -1732,21 +1958,21 @@ package feathers.controls
 				this.decrementButton.y = 0;
 				this.decrementButton.height = this.actualHeight;
 				this.decrementButton.validate();
-
+				
 				this.incrementButton.y = 0;
 				this.incrementButton.height = this.actualHeight;
 				this.incrementButton.validate();
 				this.incrementButton.x = this.actualWidth - this.incrementButton.width;
-
+				
 				this.textInput.x = this.decrementButton.width + this._textInputGap;
 				this.textInput.width = this.actualWidth - this.decrementButton.width - this.incrementButton.width - 2 * this._textInputGap;
 				this.textInput.height = this.actualHeight;
 			}
-
+			
 			//final validation to avoid juggler next frame issues
 			this.textInput.validate();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1785,7 +2011,7 @@ package feathers.controls
 				this._repeatTimer.start();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1807,7 +2033,7 @@ package feathers.controls
 			//is displaying the correct value.
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1815,7 +2041,7 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1823,21 +2049,18 @@ package feathers.controls
 		{
 			this.touchPointID = -1;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override protected function focusInHandler(event:Event):void
 		{
 			super.focusInHandler(event);
-			if(this.textInput.isEditable)
-			{
-				this.textInput.setFocus();
-				this.textInput.selectRange(0, this.textInput.text.length);
-			}
+			this.textInput.setFocus();
+			this.textInput.selectRange(0, this.textInput.text.length);
 			this.stage.addEventListener(KeyboardEvent.KEY_DOWN, stage_keyDownHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1847,7 +2070,7 @@ package feathers.controls
 			this.textInput.clearFocus();
 			this.stage.removeEventListener(KeyboardEvent.KEY_DOWN, stage_keyDownHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1855,15 +2078,24 @@ package feathers.controls
 		{
 			this.parseTextInputValue();
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected function textInput_focusInHandler(event:Event):void
+		{
+			this._textInputHasFocus = true;
+		}
+		
 		/**
 		 * @private
 		 */
 		protected function textInput_focusOutHandler(event:Event):void
 		{
+			this._textInputHasFocus = false;
 			this.parseTextInputValue();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1874,7 +2106,7 @@ package feathers.controls
 				this.touchPointID = -1;
 				return;
 			}
-
+			
 			if(this.touchPointID >= 0)
 			{
 				var touch:Touch = event.getTouch(this.decrementButton, TouchPhase.ENDED, this.touchPointID);
@@ -1893,13 +2125,17 @@ package feathers.controls
 				{
 					return;
 				}
+				if(this._textInputHasFocus)
+				{
+					this.parseTextInputValue();
+				}
 				this.touchPointID = touch.id;
 				this.dispatchEventWith(FeathersEventType.BEGIN_INTERACTION);
 				this.decrement();
 				this.startRepeatTimer(this.decrement);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1910,7 +2146,7 @@ package feathers.controls
 				this.touchPointID = -1;
 				return;
 			}
-
+			
 			if(this.touchPointID >= 0)
 			{
 				var touch:Touch = event.getTouch(this.incrementButton, TouchPhase.ENDED, this.touchPointID);
@@ -1929,13 +2165,17 @@ package feathers.controls
 				{
 					return;
 				}
+				if(this._textInputHasFocus)
+				{
+					this.parseTextInputValue();
+				}
 				this.touchPointID = touch.id;
 				this.dispatchEventWith(FeathersEventType.BEGIN_INTERACTION);
 				this.increment();
 				this.startRepeatTimer(this.increment);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1966,7 +2206,7 @@ package feathers.controls
 				this.decrement();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */

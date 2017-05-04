@@ -16,15 +16,21 @@ package uieditor.editor.ui.inspector
 
 			_colorPicker.value = uint( _propertyRetriever.get( name ));
 			_colorPicker.addEventListener( Event.CHANGE, onColorPick );
-
-			function onColorPick( event : Event ) : void
-			{
-				_oldValue = _propertyRetriever.get( name );
-				_propertyRetriever.set( name, _colorPicker.value );
-				setChanged();
-			}
-
 			addChild( _colorPicker );
+		}
+
+		override public function dispose() : void
+		{
+			_colorPicker.removeEventListener( Event.CHANGE, onColorPick );
+			_colorPicker = null;
+			super.dispose();
+		}
+
+		private function onColorPick( event : Event ) : void
+		{
+			_oldValue = _propertyRetriever.get( _param.name );
+			_propertyRetriever.set( _param.name, _colorPicker.value );
+			setChanged();
 		}
 
 		override public function update() : void

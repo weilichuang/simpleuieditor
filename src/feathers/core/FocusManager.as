@@ -237,7 +237,9 @@ package feathers.core
 				return;
 			}
 			manager.isEnabled = false;
-			stack.removeAt(index);
+			
+			stack.splice(index, 1);
+			
 			//if this is the top-level focus manager, enable the previous one
 			if(index > 0 && index == stack.length)
 			{

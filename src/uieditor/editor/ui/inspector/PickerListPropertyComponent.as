@@ -27,21 +27,29 @@ package uieditor.editor.ui.inspector
 //                    _propertyRetriever.set(name, default_value);
 //                }
 
-			_pickerList.addEventListener( Event.CHANGE, function( event : Event ) : void {
-
-				if ( _pickerList.selectedItem )
-				{
-					_oldValue = _propertyRetriever.get( name );
-					_propertyRetriever.set( name, _pickerList.selectedItem );
-
-					setChanged();
-				}
-
-			});
+			_pickerList.addEventListener( Event.CHANGE, onPickerChange );
 
 			_pickerList.selectedItem = getValue();
 
 			addChild( _pickerList );
+		}
+
+		override public function dispose() : void
+		{
+			_pickerList.removeEventListener( Event.CHANGE, onPickerChange );
+			_pickerList = null;
+			super.dispose();
+		}
+
+		private function onPickerChange( event : Event ) : void
+		{
+			if ( _pickerList.selectedItem )
+			{
+				_oldValue = _propertyRetriever.get( _param.name );
+				_propertyRetriever.set( _param.name, _pickerList.selectedItem );
+
+				setChanged();
+			}
 		}
 
 		override public function update() : void

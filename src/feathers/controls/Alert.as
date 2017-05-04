@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -9,6 +9,7 @@ package feathers.controls
 {
 	import feathers.core.FeathersControl;
 	import feathers.core.IFeathersControl;
+	import feathers.core.IMeasureDisplayObject;
 	import feathers.core.ITextRenderer;
 	import feathers.core.IValidating;
 	import feathers.core.PopUpManager;
@@ -18,10 +19,11 @@ package feathers.controls
 	import feathers.layout.HorizontalAlign;
 	import feathers.layout.VerticalLayout;
 	import feathers.skins.IStyleProvider;
-
+	import feathers.utils.skins.resetFluidChildDimensionsForMeasurement;
+	
 	import starling.display.DisplayObject;
 	import starling.events.Event;
-
+	
 	[Exclude(name="layout",kind="property")]
 	[Exclude(name="footer",kind="property")]
 	[Exclude(name="footerFactory",kind="property")]
@@ -29,7 +31,7 @@ package feathers.controls
 	[Exclude(name="customFooterName",kind="property")]
 	[Exclude(name="customFooterStyleName",kind="property")]
 	[Exclude(name="createFooter",kind="method")]
-
+	
 	/**
 	 * Dispatched when the alert is closed. The <code>data</code> property of
 	 * the event object will contain the item from the <code>ButtonGroup</code>
@@ -54,7 +56,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.CLOSE
 	 */
 	[Event(name="close",type="starling.events.Event")]
-
+	
 	/**
 	 * Displays a message in a modal pop-up with a title and a set of buttons.
 	 *
@@ -87,21 +89,21 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_HEADER:String = "feathers-alert-header";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the button group.
 		 *
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_BUTTON_GROUP:String = "feathers-alert-button-group";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the message.
 		 *
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_MESSAGE:String = "feathers-alert-message";
-
+		
 		/**
 		 * Returns a new <code>Alert</code> instance when <code>Alert.show()</code>
 		 * is called. If one wishes to skin the alert manually, a custom factory
@@ -124,7 +126,7 @@ package feathers.controls
 		 * @see #show()
 		 */
 		public static var alertFactory:Function = defaultAlertFactory;
-
+		
 		/**
 		 * Returns an overlay to display with a alert that is modal. Uses the
 		 * standard <code>overlayFactory</code> of the <code>PopUpManager</code>
@@ -150,7 +152,7 @@ package feathers.controls
 		 * @see #show()
 		 */
 		public static var overlayFactory:Function;
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>Alert</code>
 		 * components.
@@ -159,7 +161,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * The default factory that creates alerts when <code>Alert.show()</code>
 		 * is called. To use a different factory, you need to set
@@ -173,7 +175,7 @@ package feathers.controls
 		{
 			return new Alert();
 		}
-
+		
 		/**
 		 * Creates an alert, sets common properties, and adds it to the
 		 * <code>PopUpManager</code> with the specified modal and centering
@@ -194,8 +196,8 @@ package feathers.controls
 		 * }</listing>
 		 */
 		public static function show(message:String, title:String = null, buttons:ListCollection = null,
-			icon:DisplayObject = null, isModal:Boolean = true, isCentered:Boolean = true,
-			customAlertFactory:Function = null, customOverlayFactory:Function = null):Alert
+									icon:DisplayObject = null, isModal:Boolean = true, isCentered:Boolean = true,
+									customAlertFactory:Function = null, customOverlayFactory:Function = null):Alert
 		{
 			var factory:Function = customAlertFactory;
 			if(factory == null)
@@ -215,7 +217,7 @@ package feathers.controls
 			PopUpManager.addPopUp(alert, isModal, isCentered, factory);
 			return alert;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -223,7 +225,7 @@ package feathers.controls
 		{
 			return new ButtonGroup();
 		}
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -234,7 +236,7 @@ package feathers.controls
 			this.footerStyleName = DEFAULT_CHILD_STYLE_NAME_BUTTON_GROUP;
 			this.buttonGroupFactory = defaultButtonGroupFactory;
 		}
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the alert's
 		 * message text renderer. This variable is <code>protected</code> so
@@ -245,28 +247,28 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var messageStyleName:String = DEFAULT_CHILD_STYLE_NAME_MESSAGE;
-
+		
 		/**
 		 * The header sub-component.
 		 *
 		 * <p>For internal use in subclasses.</p>
 		 */
 		protected var headerHeader:Header;
-
+		
 		/**
 		 * The button group sub-component.
 		 *
 		 * <p>For internal use in subclasses.</p>
 		 */
 		protected var buttonGroupFooter:ButtonGroup;
-
+		
 		/**
 		 * The message text renderer sub-component.
 		 *
 		 * <p>For internal use in subclasses.</p>
 		 */
 		protected var messageTextRenderer:ITextRenderer;
-
+		
 		/**
 		 * @private
 		 */
@@ -274,12 +276,12 @@ package feathers.controls
 		{
 			return Alert.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _message:String = null;
-
+		
 		/**
 		 * The alert's main text content.
 		 */
@@ -287,7 +289,7 @@ package feathers.controls
 		{
 			return this._message;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -300,12 +302,12 @@ package feathers.controls
 			this._message = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _icon:DisplayObject;
-
+		
 		/**
 		 * The alert's optional icon content to display next to the text.
 		 */
@@ -313,7 +315,7 @@ package feathers.controls
 		{
 			return this._icon;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -339,12 +341,12 @@ package feathers.controls
 			this.displayListBypassEnabled = oldDisplayListBypassEnabled;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _gap:Number = 0;
-
+		
 		/**
 		 * The space, in pixels, between the alert's icon and its message text
 		 * renderer.
@@ -360,7 +362,7 @@ package feathers.controls
 		{
 			return this._gap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -373,12 +375,12 @@ package feathers.controls
 			this._gap = value;
 			this.invalidate(INVALIDATION_FLAG_LAYOUT);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _buttonsDataProvider:ListCollection;
-
+		
 		/**
 		 * The data provider of the alert's <code>ButtonGroup</code>.
 		 */
@@ -386,7 +388,7 @@ package feathers.controls
 		{
 			return this._buttonsDataProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -399,12 +401,12 @@ package feathers.controls
 			this._buttonsDataProvider = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _messageFactory:Function;
-
+		
 		/**
 		 * A function used to instantiate the alert's message text renderer
 		 * sub-component. By default, the alert will use the global text
@@ -443,7 +445,7 @@ package feathers.controls
 		{
 			return this._messageFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -456,12 +458,12 @@ package feathers.controls
 			this._messageFactory = value;
 			this.invalidate(INVALIDATION_FLAG_TEXT_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _messageProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the alert's message text
 		 * renderer sub-component, and the properties will be passed down to the
@@ -502,7 +504,7 @@ package feathers.controls
 			}
 			return this._messageProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -527,12 +529,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customMessageStyleName:String;
-
+		
 		/**
 		 * A style name to add to the alert's message text renderer
 		 * sub-component. Typically used by a theme to provide different styles
@@ -561,7 +563,7 @@ package feathers.controls
 		{
 			return this._customMessageStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -574,7 +576,7 @@ package feathers.controls
 			this._customMessageStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_TEXT_RENDERER);
 		}
-
+		
 		/**
 		 * A function used to generate the alerts's button group sub-component.
 		 * The button group must be an instance of <code>ButtonGroup</code>.
@@ -604,7 +606,7 @@ package feathers.controls
 		{
 			return super.footerFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -612,7 +614,7 @@ package feathers.controls
 		{
 			super.footerFactory = value;
 		}
-
+		
 		/**
 		 * A style name to add to the alert's button group sub-component.
 		 * Typically used by a theme to provide different styles to different alerts.
@@ -640,7 +642,7 @@ package feathers.controls
 		{
 			return super.customFooterStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -648,7 +650,7 @@ package feathers.controls
 		{
 			super.customFooterStyleName = value;
 		}
-
+		
 		/**
 		 * An object that stores properties for the alert's button group
 		 * sub-component, and the properties will be passed down to the button
@@ -679,7 +681,7 @@ package feathers.controls
 		{
 			return super.footerProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -687,7 +689,7 @@ package feathers.controls
 		{
 			super.footerProperties = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -701,7 +703,7 @@ package feathers.controls
 			}
 			super.initialize();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -710,24 +712,24 @@ package feathers.controls
 			var dataInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_DATA);
 			var stylesInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STYLES)
 			var textRendererInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_TEXT_RENDERER);
-
+			
 			if(textRendererInvalid)
 			{
 				this.createMessage();
 			}
-
+			
 			if(textRendererInvalid || dataInvalid)
 			{
 				this.messageTextRenderer.text = this._message;
 			}
-
+			
 			if(textRendererInvalid || stylesInvalid)
 			{
 				this.refreshMessageStyles();
 			}
-
+			
 			super.draw();
-
+			
 			if(this._icon)
 			{
 				if(this._icon is IValidating)
@@ -738,102 +740,195 @@ package feathers.controls
 				this._icon.y = this._topViewPortOffset + (this._viewPort.visibleHeight - this._icon.height) / 2;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override protected function autoSizeIfNeeded():Boolean
 		{
+			if(this._autoSizeMode === AutoSizeMode.STAGE)
+			{
+				//the implementation in a super class can handle this
+				return super.autoSizeIfNeeded();
+			}
+			
 			var needsWidth:Boolean = this._explicitWidth !== this._explicitWidth; //isNaN
 			var needsHeight:Boolean = this._explicitHeight !== this._explicitHeight; //isNaN
-			if(!needsWidth && !needsHeight)
+			var needsMinWidth:Boolean = this._explicitMinWidth !== this._explicitMinWidth; //isNaN
+			var needsMinHeight:Boolean = this._explicitMinHeight !== this._explicitMinHeight; //isNaN
+			if(!needsWidth && !needsHeight && !needsMinWidth && !needsMinHeight)
 			{
 				return false;
 			}
-
+			
+			resetFluidChildDimensionsForMeasurement(this.currentBackgroundSkin,
+				this._explicitWidth, this._explicitHeight,
+				this._explicitMinWidth, this._explicitMinHeight,
+				this._explicitMaxWidth, this._explicitMaxHeight,
+				this._explicitBackgroundWidth, this._explicitBackgroundHeight,
+				this._explicitBackgroundMinWidth, this._explicitBackgroundMinHeight,
+				this._explicitBackgroundMaxWidth, this._explicitBackgroundMaxHeight);
+			var measureBackground:IMeasureDisplayObject = this.currentBackgroundSkin as IMeasureDisplayObject;
+			if(this.currentBackgroundSkin is IValidating)
+			{
+				IValidating(this.currentBackgroundSkin).validate();
+			}
+			
 			if(this._icon is IValidating)
 			{
 				IValidating(this._icon).validate();
 			}
-
-			var oldIgnoreHeaderResizing:Boolean = this._ignoreHeaderResizing;
-			this._ignoreHeaderResizing = true;
-			var oldIgnoreFooterResizing:Boolean = this._ignoreFooterResizing;
-			this._ignoreFooterResizing = true;
-
-			var oldHeaderWidth:Number = this.header.width;
-			var oldHeaderHeight:Number = this.header.height;
-			this.header.width = this._explicitWidth;
-			this.header.maxWidth = this._maxWidth;
-			this.header.height = NaN;
-			this.header.validate();
-
-			if(this.footer)
-			{
-				var oldFooterWidth:Number = this.footer.width;
-				var oldFooterHeight:Number = this.footer.height;
-				this.footer.width = this._explicitWidth;
-				this.footer.maxWidth = this._maxWidth;
-				this.footer.height = NaN;
-				this.footer.validate();
-			}
-
+			
+			//we don't measure the header and footer here because they are
+			//handled in calculateViewPortOffsets(), which is automatically
+			//called by Scroller before autoSizeIfNeeded().
+			
 			var newWidth:Number = this._explicitWidth;
 			var newHeight:Number = this._explicitHeight;
+			var newMinWidth:Number = this._explicitMinWidth;
+			var newMinHeight:Number = this._explicitMinHeight;
 			if(needsWidth)
 			{
-				newWidth = this._viewPort.width + this._rightViewPortOffset + this._leftViewPortOffset;
-				if(this._icon)
+				if(this._measureViewPort)
 				{
-					var iconWidth:Number = this._icon.width;
-					if(iconWidth === iconWidth) //!isNaN
+					newWidth = this._viewPort.visibleWidth;
+				}
+				else
+				{
+					newWidth = 0;
+				}
+				//we don't need to account for the icon and gap because it is
+				//already included in the left offset
+				newWidth += this._rightViewPortOffset + this._leftViewPortOffset;
+				var headerWidth:Number = this.header.width + this._outerPaddingLeft + this._outerPaddingRight;
+				if(headerWidth > newWidth)
+				{
+					newWidth = headerWidth;
+				}
+				if(this.footer !== null)
+				{
+					var footerWidth:Number = this.footer.width + this._outerPaddingLeft + this._outerPaddingRight;
+					if(footerWidth > newWidth)
 					{
-						newWidth += this._icon.width + this._gap;
+						newWidth = footerWidth;
 					}
 				}
-				newWidth = Math.max(newWidth, this.header.width);
-				if(this.footer)
+				if(this.currentBackgroundSkin !== null &&
+					this.currentBackgroundSkin.width > newWidth)
 				{
-					newWidth = Math.max(newWidth, this.footer.width);
-				}
-				if(this.originalBackgroundWidth === this.originalBackgroundWidth && //!isNaN
-					this.originalBackgroundWidth > newWidth)
-				{
-					newWidth = this.originalBackgroundWidth;
+					newWidth = this.currentBackgroundSkin.width;
 				}
 			}
 			if(needsHeight)
 			{
-				newHeight = this._viewPort.height;
-				if(this._icon)
+				if(this._measureViewPort)
+				{
+					newHeight = this._viewPort.visibleHeight;
+				}
+				else
+				{
+					newHeight = 0;
+				}
+				if(this._icon !== null)
 				{
 					var iconHeight:Number = this._icon.height;
-					if(iconHeight === iconHeight) //!isNaN
+					if(iconHeight === iconHeight && //!isNaN
+						iconHeight > newHeight)
 					{
-						newHeight = Math.max(newHeight, this._icon.height);
+						newHeight = iconHeight;
 					}
 				}
 				newHeight += this._bottomViewPortOffset + this._topViewPortOffset;
-				if(this.originalBackgroundHeight === this.originalBackgroundHeight && //!isNaN
-					this.originalBackgroundHeight > newHeight)
+				//we don't need to account for the header and footer because
+				//they're already included in the top and bottom offsets
+				if(this.currentBackgroundSkin !== null &&
+					this.currentBackgroundSkin.height > newHeight)
 				{
-					newHeight = this.originalBackgroundHeight;
+					newHeight = this.currentBackgroundSkin.height;
 				}
 			}
-
-			this.header.width = oldHeaderWidth;
-			this.header.height = oldHeaderHeight;
-			if(this.footer)
+			if(needsMinWidth)
 			{
-				this.footer.width = oldFooterWidth;
-				this.footer.height = oldFooterHeight;
+				if(this._measureViewPort)
+				{
+					newMinWidth = this._viewPort.minVisibleWidth;
+				}
+				else
+				{
+					newMinWidth = 0;
+				}
+				//we don't need to account for the icon and gap because it is
+				//already included in the left offset
+				newMinWidth += this._rightViewPortOffset + this._leftViewPortOffset;
+				var headerMinWidth:Number = this.header.minWidth + this._outerPaddingLeft + this._outerPaddingRight;
+				if(headerMinWidth > newMinWidth)
+				{
+					newMinWidth = headerMinWidth;
+				}
+				if(this.footer !== null)
+				{
+					var footerMinWidth:Number = this.footer.minWidth + this._outerPaddingLeft + this._outerPaddingRight;
+					if(footerMinWidth > newMinWidth)
+					{
+						newMinWidth = footerMinWidth;
+					}
+				}
+				if(this.currentBackgroundSkin !== null)
+				{
+					if(measureBackground !== null)
+					{
+						if(measureBackground.minWidth > newMinWidth)
+						{
+							newMinWidth = measureBackground.minWidth;
+						}
+					}
+					else if(this._explicitBackgroundMinWidth > newMinWidth)
+					{
+						newMinWidth = this._explicitBackgroundMinWidth;
+					}
+				}
 			}
-			this._ignoreHeaderResizing = oldIgnoreHeaderResizing;
-			this._ignoreFooterResizing = oldIgnoreFooterResizing;
-
-			return this.setSizeInternal(newWidth, newHeight, false);
+			if(needsMinHeight)
+			{
+				if(this._measureViewPort)
+				{
+					newMinHeight = this._viewPort.minVisibleHeight;
+				}
+				else
+				{
+					newMinHeight = 0;
+				}
+				if(this._icon !== null)
+				{
+					iconHeight = this._icon.height;
+					if(iconHeight === iconHeight && //!isNaN
+						iconHeight > newMinHeight)
+					{
+						newMinHeight = iconHeight;
+					}
+				}
+				newMinHeight += this._bottomViewPortOffset + this._topViewPortOffset;
+				//we don't need to account for the header and footer because
+				//they're already included in the top and bottom offsets
+				if(this.currentBackgroundSkin !== null)
+				{
+					if(measureBackground !== null)
+					{
+						if(measureBackground.minHeight > newMinHeight)
+						{
+							newMinHeight = measureBackground.minHeight;
+						}
+					}
+					else if(this._explicitBackgroundMinHeight > newMinHeight)
+					{
+						newMinHeight = this._explicitBackgroundMinHeight;
+					}
+				}
+			}
+			
+			return this.saveMeasurements(newWidth, newHeight, newMinWidth, newMinHeight);
 		}
-
+		
 		/**
 		 * Creates and adds the <code>header</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -850,7 +945,7 @@ package feathers.controls
 			super.createHeader();
 			this.headerHeader = Header(this.header);
 		}
-
+		
 		/**
 		 * Creates and adds the <code>buttonGroupFooter</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -872,7 +967,7 @@ package feathers.controls
 			this.buttonGroupFooter = ButtonGroup(this.footer);
 			this.buttonGroupFooter.addEventListener(Event.TRIGGERED, buttonsFooter_triggeredHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -880,7 +975,7 @@ package feathers.controls
 		{
 			this.createButtonGroup();
 		}
-
+		
 		/**
 		 * Creates and adds the <code>messageTextRenderer</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -899,7 +994,7 @@ package feathers.controls
 				this.removeChild(DisplayObject(this.messageTextRenderer), true);
 				this.messageTextRenderer = null;
 			}
-
+			
 			var factory:Function = this._messageFactory != null ? this._messageFactory : FeathersControl.defaultTextRendererFactory;
 			this.messageTextRenderer = ITextRenderer(factory());
 			var messageStyleName:String = this._customMessageStyleName != null ? this._customMessageStyleName : this.messageStyleName;
@@ -908,7 +1003,7 @@ package feathers.controls
 			uiTextRenderer.touchable = false;
 			this.addChild(DisplayObject(this.messageTextRenderer));
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -917,7 +1012,7 @@ package feathers.controls
 			super.refreshFooterStyles();
 			this.buttonGroupFooter.dataProvider = this._buttonsDataProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -929,27 +1024,27 @@ package feathers.controls
 				this.messageTextRenderer[propertyName] = propertyValue;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override protected function calculateViewPortOffsets(forceScrollBars:Boolean = false, useActualBounds:Boolean = false):void
 		{
 			super.calculateViewPortOffsets(forceScrollBars, useActualBounds);
-			if(this._icon)
+			if(this._icon !== null)
 			{
 				if(this._icon is IValidating)
 				{
 					IValidating(this._icon).validate();
 				}
 				var iconWidth:Number = this._icon.width;
-				if(iconWidth == iconWidth) //!isNaN
+				if(iconWidth === iconWidth) //!isNaN
 				{
-					this._leftViewPortOffset += this._icon.width + this._gap;
+					this._leftViewPortOffset += iconWidth + this._gap;
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -959,7 +1054,7 @@ package feathers.controls
 			this.dispatchEventWith(Event.CLOSE, false, data);
 			this.dispose();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -967,6 +1062,6 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_LAYOUT);
 		}
-
+		
 	}
 }

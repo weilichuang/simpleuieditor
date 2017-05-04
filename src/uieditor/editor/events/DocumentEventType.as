@@ -21,6 +21,10 @@ package uieditor.editor.events
 		
 		public static const UPDATE_LIBRARY:String = "updateLibrary";
 
+		public static const OPEN_NEW_FILE:String = "openNewFile";
+		
+		public static const BACK_GROUND_COLOR_CHANGE:String = "backgroundColorChange";
+		
 		public function DocumentEventType()
 		{
 		}

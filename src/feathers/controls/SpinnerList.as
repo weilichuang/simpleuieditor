@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -15,13 +15,13 @@ package feathers.controls
 	import feathers.layout.ISpinnerLayout;
 	import feathers.layout.VerticalSpinnerLayout;
 	import feathers.skins.IStyleProvider;
-
+	
 	import flash.ui.Keyboard;
-
+	
 	import starling.display.DisplayObject;
 	import starling.events.Event;
 	import starling.events.KeyboardEvent;
-
+	
 	/**
 	 * A customized <code>List</code> component where scrolling updates the
 	 * the selected item. Layouts may loop infinitely.
@@ -65,7 +65,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -79,7 +79,7 @@ package feathers.controls
 			this.addEventListener(Event.TRIGGERED, spinnerList_triggeredHandler);
 			this.addEventListener(FeathersEventType.SCROLL_COMPLETE, spinnerList_scrollCompleteHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -91,7 +91,7 @@ package feathers.controls
 			}
 			return List.globalStyleProvider;
 		}
-
+		
 		/**
 		 * <code>SpinnerList</code> requires that the <code>snapToPages</code>
 		 * property is set to <code>true</code>. Attempts to set it to
@@ -107,7 +107,7 @@ package feathers.controls
 			}
 			super.snapToPages = value;
 		}
-
+		
 		/**
 		 * <code>SpinnerList</code> requires that the <code>allowMultipleSelection</code>
 		 * property is set to <code>false</code>. Attempts to set it to
@@ -123,7 +123,7 @@ package feathers.controls
 			}
 			super.allowMultipleSelection = value;
 		}
-
+		
 		/**
 		 * <code>SpinnerList</code> requires that the <code>isSelectable</code>
 		 * property is set to <code>true</code>. Attempts to set it to
@@ -139,7 +139,7 @@ package feathers.controls
 			}
 			super.snapToPages = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -151,19 +151,43 @@ package feathers.controls
 			}
 			super.layout = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override public function set selectedIndex(value:int):void
 		{
-			if(this._selectedIndex != value)
+			if(value < 0 && this._dataProvider !== null && this._dataProvider.length > 0)
+			{
+				//a SpinnerList must always select an item, unless the data
+				//provider is empty
+				return;
+			}
+			if(this._selectedIndex !== value)
 			{
 				this.scrollToDisplayIndex(value, 0);
 			}
 			super.selectedIndex = value;
 		}
-
+		
+		/**
+		 * @private
+		 */
+		override public function set selectedItem(value:Object):void
+		{
+			if(this._dataProvider === null)
+			{
+				this.selectedIndex = -1;
+				return;
+			}
+			var index:int = this._dataProvider.getItemIndex(value);
+			if(index < 0)
+			{
+				return;
+			}
+			this.selectedIndex = index; 
+		}
+		
 		/**
 		 * @private
 		 */
@@ -183,12 +207,12 @@ package feathers.controls
 				this.selectedIndex = 0;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _selectionOverlaySkin:DisplayObject;
-
+		
 		/**
 		 * An optional skin to display in the horizontal or vertical center of
 		 * the list to highlight the currently selected item. If the list
@@ -210,7 +234,7 @@ package feathers.controls
 		{
 			return this._selectionOverlaySkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -231,7 +255,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -247,7 +271,7 @@ package feathers.controls
 					//position is 0, similar to iOS.
 					this.verticalScrollPolicy = ScrollPolicy.ON;
 				}
-
+				
 				var layout:VerticalSpinnerLayout = new VerticalSpinnerLayout();
 				layout.useVirtualLayout = true;
 				layout.padding = 0;
@@ -256,10 +280,10 @@ package feathers.controls
 				layout.requestedRowCount = 4;
 				this.layout = layout;
 			}
-
+			
 			super.initialize();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -275,7 +299,7 @@ package feathers.controls
 				this.actualPageWidth = ISpinnerLayout(this._layout).snapInterval;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -298,14 +322,14 @@ package feathers.controls
 			}
 			super.handlePendingScroll();
 		}
-
+		
 		/**
 		 * @private
 		 */
 		override protected function layoutChildren():void
 		{
 			super.layoutChildren();
-
+			
 			if(this._selectionOverlaySkin)
 			{
 				if(this._selectionOverlaySkin is IValidating)
@@ -338,7 +362,7 @@ package feathers.controls
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -367,7 +391,7 @@ package feathers.controls
 			}
 			return previousPageIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -388,7 +412,7 @@ package feathers.controls
 			}
 			this.selectedIndex = pageIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -406,7 +430,7 @@ package feathers.controls
 				this.throwToPage(itemIndex, this._verticalPageIndex);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */

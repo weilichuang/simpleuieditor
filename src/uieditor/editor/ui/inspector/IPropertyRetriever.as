@@ -10,5 +10,7 @@ package uieditor.editor.ui.inspector
 		function get target() : Object;
 		
 		function set target(value:Object):void;
+		
+		function dispose():void;
 	}
 }

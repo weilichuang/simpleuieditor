@@ -35,13 +35,16 @@ package starling.events
      */  
     public class Touch
     {
+		/** The current phase the touch is in. @see TouchPhase */
+		public var phase:String;
+		
         private var _id:int;
         private var _globalX:Number;
         private var _globalY:Number;
         private var _previousGlobalX:Number;
         private var _previousGlobalY:Number;
         private var _tapCount:int;
-        private var _phase:String;
+        
         private var _target:DisplayObject;
         private var _timestamp:Number;
         private var _pressure:Number;
@@ -58,7 +61,7 @@ package starling.events
         {
             _id = id;
             _tapCount = 0;
-            _phase = TouchPhase.HOVER;
+            phase = TouchPhase.HOVER;
             _pressure = _width = _height = 1.0;
             _bubbleChain = new <EventDispatcher>[];
         }
@@ -105,7 +108,7 @@ package starling.events
         public function toString():String
         {
             return StringUtil.format("[Touch {0}: globalX={1}, globalY={2}, phase={3}]",
-                                     _id, _globalX, _globalY, _phase);
+                                     _id, _globalX, _globalY, phase);
         }
         
         /** Creates a clone of the Touch object. */
@@ -116,7 +119,7 @@ package starling.events
             clone._globalY = _globalY;
             clone._previousGlobalX = _previousGlobalX;
             clone._previousGlobalY = _previousGlobalY;
-            clone._phase = _phase;
+            clone.phase = phase;
             clone._tapCount = _tapCount;
             clone._timestamp = _timestamp;
             clone._pressure = _pressure;
@@ -181,10 +184,6 @@ package starling.events
          *  double-taps / double-clicks, etc. */ 
         public function get tapCount():int { return _tapCount; }
         public function set tapCount(value:int):void { _tapCount = value; }
-        
-        /** The current phase the touch is in. @see TouchPhase */
-        public function get phase():String { return _phase; }
-        public function set phase(value:String):void { _phase = value; }
         
         /** The display object at which the touch occurred. */
         public function get target():DisplayObject { return _target; }

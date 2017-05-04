@@ -255,7 +255,7 @@ class IrisTween extends Tween
 		this._savedHeight = height;
 		this._onCompleteCallback = onCompleteCallback;
 		this.onComplete = this.cleanupTween;
-		Starling.juggler.add(this);
+		Starling.current.juggler.add(this);
 	}
 
 	private var _newScreenDelegate:RenderDelegate;

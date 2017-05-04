@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -14,15 +14,15 @@ package feathers.media
 	import feathers.events.MediaPlayerEventType;
 	import feathers.layout.Direction;
 	import feathers.skins.IStyleProvider;
-
+	
 	import flash.media.SoundTransform;
-
+	
 	import starling.events.Event;
 	import starling.events.EventDispatcher;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
-
+	
 	/**
 	 * Dispatched when the pop-up volume slider is opened.
 	 *
@@ -44,7 +44,7 @@ package feathers.media
 	 * @eventType starling.events.Event.OPEN
 	 */
 	[Event(name="open",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the pop-up volume slider is closed.
 	 *
@@ -66,7 +66,7 @@ package feathers.media
 	 * @eventType starling.events.Event.CLOSE
 	 */
 	[Event(name="close",type="starling.events.Event")]
-
+	
 	/**
 	 * A specialized toggle button that controls whether a media player's volume
 	 * is muted or not.
@@ -97,7 +97,7 @@ package feathers.media
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * @private
 		 */
@@ -107,7 +107,7 @@ package feathers.media
 			slider.direction = Direction.VERTICAL;
 			return slider;
 		}
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -117,7 +117,7 @@ package feathers.media
 			this.addEventListener(Event.CHANGE, muteToggleButton_changeHandler);
 			this.addEventListener(TouchEvent.TOUCH, muteToggleButton_touchHandler);
 		}
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the
 		 * pop-up volume slider. This variable is <code>protected</code> so that
@@ -132,32 +132,32 @@ package feathers.media
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var volumeSliderStyleName:String = DEFAULT_CHILD_STYLE_NAME_VOLUME_SLIDER;
-
+		
 		/**
 		 * @private
 		 */
 		protected var slider:VolumeSlider;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _oldVolume:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _ignoreChanges:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _touchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _popUpTouchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
@@ -165,12 +165,12 @@ package feathers.media
 		{
 			return MuteToggleButton.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _mediaPlayer:IAudioPlayer;
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -178,7 +178,7 @@ package feathers.media
 		{
 			return this._mediaPlayer;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -196,12 +196,12 @@ package feathers.media
 			}
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _popUpContentManager:IPopUpContentManager;
-
+		
 		/**
 		 * A manager that handles the details of how to display the pop-up
 		 * volume slider.
@@ -217,7 +217,7 @@ package feathers.media
 		{
 			return this._popUpContentManager;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -242,12 +242,12 @@ package feathers.media
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _showVolumeSliderOnHover:Boolean = false;
-
+		
 		/**
 		 * Determines if a <code>VolumeSlider</code> component is displayed as a
 		 * pop-up when hovering over the toggle button. This property is
@@ -268,7 +268,7 @@ package feathers.media
 		{
 			return this._showVolumeSliderOnHover;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -281,12 +281,12 @@ package feathers.media
 			this._showVolumeSliderOnHover = value;
 			this.invalidate(INVALIDATION_FLAG_VOLUME_SLIDER_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _volumeSliderFactory:Function;
-
+		
 		/**
 		 * A function used to generate the button's pop-up volume slider
 		 * sub-component. The volume slider must be an instance of
@@ -320,7 +320,7 @@ package feathers.media
 		{
 			return this._volumeSliderFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -333,12 +333,12 @@ package feathers.media
 			this._volumeSliderFactory = value;
 			this.invalidate(INVALIDATION_FLAG_VOLUME_SLIDER_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customVolumeSliderStyleName:String;
-
+		
 		/**
 		 * A style name to add to the button's volume slider sub-component.
 		 * Typically used by a theme to provide different styles to different
@@ -368,7 +368,7 @@ package feathers.media
 		{
 			return this._customVolumeSliderStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -381,12 +381,12 @@ package feathers.media
 			this._customVolumeSliderStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_VOLUME_SLIDER_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _volumeSliderProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the button's pop-up volume
 		 * slider sub-component, and the properties will be passed down to the
@@ -423,7 +423,7 @@ package feathers.media
 			}
 			return this._volumeSliderProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -457,17 +457,17 @@ package feathers.media
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isOpenPopUpPending:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isClosePopUpPending:Boolean = false;
-
+		
 		/**
 		 * Opens the pop-up list, if it isn't already open.
 		 */
@@ -489,7 +489,7 @@ package feathers.media
 			this._popUpTouchPointID = -1;
 			this.slider.addEventListener(TouchEvent.TOUCH, volumeSlider_touchHandler);
 		}
-
+		
 		/**
 		 * Closes the pop-up list, if it is open.
 		 */
@@ -513,7 +513,7 @@ package feathers.media
 			//instead, clean up in the Event.REMOVED_FROM_STAGE listener.
 			this._popUpContentManager.close();
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -533,7 +533,7 @@ package feathers.media
 			}
 			super.dispose();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -546,8 +546,9 @@ package feathers.media
 				popUpContentManager.primaryDirection = DropDownPopUpContentManager.PRIMARY_DIRECTION_UP;
 				this.popUpContentManager = popUpContentManager;
 			}
+			super.initialize();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -560,7 +561,7 @@ package feathers.media
 			{
 				this.createVolumeSlider();
 			}
-
+			
 			if(this.slider && (volumeSliderFactoryInvalid || stylesInvalid))
 			{
 				this.refreshVolumeSliderProperties();
@@ -570,7 +571,7 @@ package feathers.media
 			
 			this.handlePendingActions();
 		}
-
+		
 		/**
 		 * Creates and adds the <code>list</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -595,14 +596,14 @@ package feathers.media
 			{
 				return;
 			}
-
+			
 			var factory:Function = this._volumeSliderFactory != null ? this._volumeSliderFactory : defaultVolumeSliderFactory;
 			var volumeSliderStyleName:String = this._customVolumeSliderStyleName != null ? this._customVolumeSliderStyleName : this.volumeSliderStyleName;
 			this.slider = VolumeSlider(factory());
 			this.slider.focusOwner = this;
 			this.slider.styleNameList.add(volumeSliderStyleName);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -615,7 +616,7 @@ package feathers.media
 			}
 			this.slider.mediaPlayer = this._mediaPlayer;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -630,7 +631,7 @@ package feathers.media
 				this.closePopUp();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -648,7 +649,7 @@ package feathers.media
 			}
 			this._ignoreChanges = oldIgnoreChanges;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -656,7 +657,7 @@ package feathers.media
 		{
 			this.refreshVolumeFromMediaPlayer();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -690,7 +691,7 @@ package feathers.media
 				this._mediaPlayer.soundTransform = soundTransform;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -726,7 +727,7 @@ package feathers.media
 				this.openPopUp();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -756,7 +757,7 @@ package feathers.media
 				this._popUpTouchPointID = touch.id;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -764,7 +765,7 @@ package feathers.media
 		{
 			this.dispatchEventWith(Event.OPEN);
 		}
-
+		
 		/**
 		 * @private
 		 */

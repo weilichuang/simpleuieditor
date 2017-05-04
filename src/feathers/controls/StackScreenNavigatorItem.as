@@ -530,7 +530,8 @@ package feathers.controls
 			{
 				return;
 			}
-			this._popEvents.removeAt(index);
+
+			_popEvents.splice(index, 1);
 		}
 
 		/**
@@ -586,7 +587,8 @@ package feathers.controls
 			{
 				return;
 			}
-			this._popToRootEvents.removeAt(index);
+
+			_popToRootEvents.splice(index, 1);
 		}
 
 		/**

@@ -1,7 +1,7 @@
 package uieditor.editor.ui.inspector
 {
 	import feathers.controls.Slider;
-
+	
 	import starling.events.Event;
 
 	public class SliderPropertyComponent extends BasePropertyComponent
@@ -23,11 +23,7 @@ package uieditor.editor.ui.inspector
 			if ( !isNaN( min ) && !isNaN( max ))
 			{
 				_slider = new Slider();
-				_slider.addEventListener( Event.CHANGE, function( event : Event ) : void {
-					_oldValue = _propertyRetriever.get( name );
-					_propertyRetriever.set( name, _slider.value );
-					setChanged();
-				});
+				_slider.addEventListener( Event.CHANGE, onSliderChange);
 				_slider.minimum = min;
 				_slider.maximum = max;
 				_slider.value = Number( _propertyRetriever.get( name ));
@@ -40,6 +36,23 @@ package uieditor.editor.ui.inspector
 			{
 				throw new Error( "Min and Max have to be defined!" )
 			}
+		}
+		
+		private function onSliderChange( event : Event ) : void
+		{
+			_oldValue = _propertyRetriever.get( _param.name );
+			_propertyRetriever.set( _param.name, _slider.value );
+			setChanged();
+		}
+		
+		override public function dispose() : void
+		{
+			if ( _slider != null )
+			{
+				_slider.removeEventListener( Event.CHANGE, onSliderChange );
+				_slider = null;
+			}
+			super.dispose();
 		}
 
 		override public function update() : void

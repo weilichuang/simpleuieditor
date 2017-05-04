@@ -3,17 +3,17 @@ package uieditor.editor.controller
 	import flash.filesystem.File;
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
-
+	
 	import feathers.core.FeathersControl;
 	import feathers.data.ListCollection;
 	import feathers.dragDrop.IDropTarget;
-
+	
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.display.Sprite;
 	import starling.events.Event;
 	import starling.utils.AssetManager;
-
+	
 	import uieditor.editor.UIEditorApp;
 	import uieditor.editor.UIEditorScreen;
 	import uieditor.editor.data.TemplateData;
@@ -27,7 +27,6 @@ package uieditor.editor.controller
 	import uieditor.engine.UIBuilder;
 
 	//TODO 添加拖动物品时判断是否可以移入鼠标下的容器内
-	//TODO 创建一个类似于Flash中库的概念，避免相同对象需要分别多次编辑
 	public class DocumentEditor extends AbstractDocumentEditor implements IDocumentEditor, IUIEditorThemeMediator, IDropTarget
 	{
 		private var _uiBuilderForGame : IUIBuilder;
@@ -123,37 +122,6 @@ package uieditor.editor.controller
 			return _uiBuilder.save( _layoutContainer, _extraParamsDict, _librarys, _atlas, exportSetting());
 		}
 
-		private function exportSetting() : Object
-		{
-			var setting : Object = {};
-
-			if ( canvasSize )
-			{
-				setting.canvasSize = { x: _canvasSize.x, y: _canvasSize.y };
-			}
-
-			setting.backgroundColor = backgroundColor;
-
-			return setting;
-		}
-
-		private function importSetting( setting : Object ) : void
-		{
-			if ( setting )
-			{
-				if ( setting.canvasSize )
-				{
-					canvasSize = new Point( setting.canvasSize.x, setting.canvasSize.y );
-				}
-				if ( setting.hasOwnProperty( "backgroundColor" ))
-				{
-					backgroundColor = setting.backgroundColor;
-				}
-			}
-
-			setChanged();
-		}
-
 		/**
 		 * 刷新窗口
 		 */
@@ -200,6 +168,8 @@ package uieditor.editor.controller
 
 			setLayerChanged();
 			setChanged();
+			
+			dispatchEventWith(DocumentEventType.OPEN_NEW_FILE);
 		}
 
 		public function hasLibrary( linkage : String ) : Boolean
@@ -228,6 +198,14 @@ package uieditor.editor.controller
 				dispatchEventWith( DocumentEventType.UPDATE_LIBRARY );
 			}
 		}
+		
+		public function cleanLibrarys():void
+		{
+			_librarys = new Dictionary();
+			
+			setChanged();
+			dispatchEventWith( DocumentEventType.UPDATE_LIBRARY );
+		}
 
 		public function getLibrary( linkage : String ) : Object
 		{
@@ -242,7 +220,6 @@ package uieditor.editor.controller
 			hoverObject( null );
 
 			_mutliSelectBox.clean();
-			_selectRect.clear();
 
 			_layoutContainer.removeChildren( 0, -1, true );
 			_snapContainer.removeChildren( 0, -1, true );
@@ -270,7 +247,9 @@ package uieditor.editor.controller
 			createRoot( param.rootContainerClass );
 			canvasSize = new Point( param.width, param.height );
 			refreshLabels();
+			cleanLibrarys();
 			setChanged();
+			dispatchEventWith(DocumentEventType.OPEN_NEW_FILE);
 		}
 
 		override public function setChanged() : void

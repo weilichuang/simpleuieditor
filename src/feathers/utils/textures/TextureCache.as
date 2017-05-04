@@ -298,7 +298,9 @@ package feathers.utils.textures
 			{
 				return;
 			}
-			this._unretainedKeys.removeAt(index);
+
+			this._unretainedKeys.splice(index, 1);
+			
 			delete this._unretainedTextures[key];
 		}
 

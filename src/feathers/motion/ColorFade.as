@@ -147,7 +147,7 @@ class ColorFadeTween extends Tween
 		this._overlay.touchable = false;
 		navigator.addChild(this._overlay);
 
-		Starling.juggler.add(this);
+		Starling.current.juggler.add(this);
 	}
 
 	private var _otherTarget:DisplayObject;

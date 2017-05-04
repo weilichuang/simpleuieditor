@@ -21,8 +21,6 @@ package uieditor.editor.ui.inspector
 			PropertyPanel.globalDispatcher.addEventListener( UIMapperEventType.PROPERTY_CHANGE, onPropertyChange );
 		}
 
-
-
 		override public function reloadData( target : Object = null, params : Array = null ) : void
 		{
 			super.reloadData( target, params );

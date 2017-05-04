@@ -224,7 +224,7 @@ package starling.geom
                 if (earFound)
                 {
                     indexData.addTriangle(i0 + offset, i1 + offset, i2 + offset);
-                    sRestIndices.removeAt((restIndexPos + 1) % numRestIndices);
+                    sRestIndices.splice((restIndexPos + 1) % numRestIndices,1);
 
                     numRestIndices--;
                     restIndexPos = 0;

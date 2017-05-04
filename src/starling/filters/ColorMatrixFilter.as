@@ -198,8 +198,8 @@ import flash.display3D.Context3D;
 import flash.display3D.Context3DProgramType;
 
 import starling.rendering.FilterEffect;
+import starling.rendering.Painter;
 import starling.rendering.Program;
-import starling.utils.RenderUtil;
 
 class ColorMatrixEffect extends FilterEffect
 {
@@ -224,7 +224,7 @@ class ColorMatrixEffect extends FilterEffect
     {
         var vertexShader:String = FilterEffect.STD_VERTEX_SHADER;
         var fragmentShader:String = [
-            RenderUtil.createAGALTexOperation("ft0", "v0", 0, texture), // read texture color
+            tex("ft0", "v0", 0, texture,true,false,textureRepeat,textureSmoothing), // read texture color
             "max ft0, ft0, fc5              ", // avoid division through zero in next step
             "div ft0.xyz, ft0.xyz, ft0.www  ", // restore original (non-PMA) RGB values
             "m44 ft0, ft0, fc0              ", // multiply color with 4x4 matrix
@@ -236,9 +236,9 @@ class ColorMatrixEffect extends FilterEffect
         return Program.fromSource(vertexShader, fragmentShader);
     }
 
-    override protected function beforeDraw(context:Context3D):void
+    override protected function beforeDraw( painter : Painter, context : Context3D ):void
     {
-        super.beforeDraw(context);
+		super.beforeDraw(painter,context);
 
         context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, _shaderMatrix);
         context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 5, MIN_COLOR);

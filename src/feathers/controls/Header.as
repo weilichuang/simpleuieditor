@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -9,6 +9,7 @@ package feathers.controls
 {
 	import feathers.core.FeathersControl;
 	import feathers.core.IFeathersControl;
+	import feathers.core.IMeasureDisplayObject;
 	import feathers.core.ITextRenderer;
 	import feathers.core.IValidating;
 	import feathers.core.PropertyProxy;
@@ -20,17 +21,19 @@ package feathers.controls
 	import feathers.layout.ViewPortBounds;
 	import feathers.skins.IStyleProvider;
 	import feathers.system.DeviceCapabilities;
-
+	import feathers.utils.skins.resetFluidChildDimensionsForMeasurement;
+	
 	import flash.display.Stage;
 	import flash.display.StageDisplayState;
 	import flash.events.FullScreenEvent;
 	import flash.geom.Point;
 	import flash.system.Capabilities;
-
+	
 	import starling.core.Starling;
 	import starling.display.DisplayObject;
 	import starling.events.Event;
-
+	import starling.utils.Pool;
+	
 	/**
 	 * A header that displays an optional title along with a horizontal regions
 	 * on the sides for additional UI controls. The left side is typically for
@@ -62,37 +65,42 @@ package feathers.controls
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_LEFT_CONTENT:String = "leftContent";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_RIGHT_CONTENT:String = "rightContent";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_CENTER_CONTENT:String = "centerContent";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const IOS_STATUS_BAR_HEIGHT:Number = 20;
-
+		
 		/**
 		 * @private
 		 */
-		protected static const IOS_DPI:Number = 132;
-
+		protected static const IPAD_1X_DPI:Number = 132;
+		
+		/**
+		 * @private
+		 */
+		protected static const IPHONE_1X_DPI:Number = 163;
+		
 		/**
 		 * @private
 		 */
 		protected static const IOS_NAME_PREFIX:String = "iPhone OS ";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const STATUS_BAR_MIN_IOS_VERSION:int = 7;
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>Header</code>
 		 * components.
@@ -101,32 +109,40 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
-		 * The title will appear in the center of the header.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.CENTER</code>.
 		 *
-		 * @see #titleAlign
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const TITLE_ALIGN_CENTER:String = "center";
-
+		
 		/**
-		 * The title will appear on the left of the header, if there is no other
-		 * content on that side. If there is content, the title will appear in
-		 * the center.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.LEFT</code>.
 		 *
-		 * @see #titleAlign
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const TITLE_ALIGN_PREFER_LEFT:String = "preferLeft";
-
+		
 		/**
-		 * The title will appear on the right of the header, if there is no
-		 * other content on that side. If there is content, the title will
-		 * appear in the center.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.RIGHT</code>.
 		 *
-		 * @see #titleAlign
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const TITLE_ALIGN_PREFER_RIGHT:String = "preferRight";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.TOP</code>.
@@ -137,7 +153,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_TOP:String = "top";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.MIDDLE</code>.
@@ -148,7 +164,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_MIDDLE:String = "middle";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.BOTTOM</code>.
@@ -159,7 +175,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_BOTTOM:String = "bottom";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the header's
 		 * items.
@@ -167,7 +183,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_ITEM:String = "feathers-header-item";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the header's
 		 * title.
@@ -175,22 +191,17 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_TITLE:String = "feathers-header-title";
-
+		
 		/**
 		 * @private
 		 */
 		private static const HELPER_BOUNDS:ViewPortBounds = new ViewPortBounds();
-
+		
 		/**
 		 * @private
 		 */
 		private static const HELPER_LAYOUT_RESULT:LayoutBoundsResult = new LayoutBoundsResult();
-
-		/**
-		 * @private
-		 */
-		private static const HELPER_POINT:Point = new Point();
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -200,7 +211,7 @@ package feathers.controls
 			this.addEventListener(Event.ADDED_TO_STAGE, header_addedToStageHandler);
 			this.addEventListener(Event.REMOVED_FROM_STAGE, header_removedFromStageHandler);
 		}
-
+		
 		/**
 		 * The text renderer for the header's title.
 		 *
@@ -211,7 +222,7 @@ package feathers.controls
 		 * @see #createTitle()
 		 */
 		protected var titleTextRenderer:ITextRenderer;
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the header's
 		 * title text renderer. This variable is <code>protected</code> so that
@@ -222,7 +233,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var titleStyleName:String = DEFAULT_CHILD_STYLE_NAME_TITLE;
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of each of the
 		 * header's items. This variable is <code>protected</code> so that
@@ -233,23 +244,23 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var itemStyleName:String = DEFAULT_CHILD_STYLE_NAME_ITEM;
-
+		
 		/**
 		 * @private
 		 */
 		protected var leftItemsWidth:Number = 0;
-
+		
 		/**
 		 * @private
 		 */
 		protected var rightItemsWidth:Number = 0;
-
+		
 		/**
 		 * @private
 		 * The layout algorithm. Shared by both sides.
 		 */
 		protected var _layout:HorizontalLayout;
-
+		
 		/**
 		 * @private
 		 */
@@ -257,12 +268,12 @@ package feathers.controls
 		{
 			return Header.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected var _title:String = "";
-
+		protected var _title:String = null;
+		
 		/**
 		 * The text displayed for the header's title.
 		 *
@@ -279,29 +290,25 @@ package feathers.controls
 		{
 			return this._title;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		public function set title(value:String):void
 		{
-			if(value === null)
-			{
-				value = "";
-			}
-			if(this._title == value)
+			if(this._title === value)
 			{
 				return;
 			}
 			this._title = value;
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _titleFactory:Function;
-
+		
 		/**
 		 * A function used to instantiate the header's title text renderer
 		 * sub-component. By default, the header will use the global text
@@ -340,7 +347,7 @@ package feathers.controls
 		{
 			return this._titleFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -353,12 +360,12 @@ package feathers.controls
 			this._titleFactory = value;
 			this.invalidate(INVALIDATION_FLAG_TEXT_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _disposeItems:Boolean = true;
-
+		
 		/**
 		 * Determines if the <code>leftItems</code>, <code>centerItems</code>,
 		 * and <code>rightItems</code> are disposed or not when the header is
@@ -374,7 +381,7 @@ package feathers.controls
 		{
 			return this._disposeItems;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -382,14 +389,18 @@ package feathers.controls
 		{
 			this._disposeItems = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _leftItems:Vector.<DisplayObject>;
-
+		
 		/**
 		 * The UI controls that appear in the left region of the header.
+		 * 
+		 * <p>If <code>leftItems</code> is not empty, and
+		 * <code>titleAlign</code> is <code>HorizontalAlign.LEFT</code>, the
+		 * title text renderer will appear to the right of the left items.</p>
 		 *
 		 * <p>In the following example, a back button is displayed on the left
 		 * side of the header:</p>
@@ -407,7 +418,7 @@ package feathers.controls
 		{
 			return this._leftItems;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -442,17 +453,17 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_LEFT_CONTENT);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _centerItems:Vector.<DisplayObject>;
-
+		
 		/**
 		 * The UI controls that appear in the center region of the header. If
-		 * <code>centerItems</code> is not <code>null</code>, and the
-		 * <code>titleAlign</code> property is <code>Header.TITLE_ALIGN_CENTER</code>,
-		 * the title text renderer will be hidden.
+		 * <code>centerItems</code> is not empty, and <code>titleAlign</code>
+		 * is <code>HorizontalAlign.CENTER</code>, the title text renderer will
+		 * be hidden.
 		 *
 		 * <p>In the following example, a settings button is displayed in the
 		 * center of the header:</p>
@@ -469,7 +480,7 @@ package feathers.controls
 		{
 			return this._centerItems;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -504,14 +515,18 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_CENTER_CONTENT);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _rightItems:Vector.<DisplayObject>;
-
+		
 		/**
 		 * The UI controls that appear in the right region of the header.
+		 *
+		 * <p>If <code>rightItems</code> is not empty, and
+		 * <code>titleAlign</code> is <code>HorizontalAlign.RIGHT</code>, the
+		 * title text renderer will appear to the left of the right items.</p>
 		 *
 		 * <p>In the following example, a settings button is displayed on the
 		 * right side of the header:</p>
@@ -528,7 +543,7 @@ package feathers.controls
 		{
 			return this._rightItems;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -563,7 +578,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_RIGHT_CONTENT);
 		}
-
+		
 		/**
 		 * Quickly sets all padding properties to the same value. The
 		 * <code>padding</code> getter always returns the value of
@@ -586,7 +601,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -597,12 +612,12 @@ package feathers.controls
 			this.paddingBottom = value;
 			this.paddingLeft = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingTop:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the header's top edge and the
 		 * header's content.
@@ -619,7 +634,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -632,12 +647,12 @@ package feathers.controls
 			this._paddingTop = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingRight:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the header's right edge and the
 		 * header's content.
@@ -654,7 +669,7 @@ package feathers.controls
 		{
 			return this._paddingRight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -667,12 +682,12 @@ package feathers.controls
 			this._paddingRight = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingBottom:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the header's bottom edge and
 		 * the header's content.
@@ -689,7 +704,7 @@ package feathers.controls
 		{
 			return this._paddingBottom;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -702,12 +717,12 @@ package feathers.controls
 			this._paddingBottom = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingLeft:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the header's left edge and the
 		 * header's content.
@@ -724,7 +739,7 @@ package feathers.controls
 		{
 			return this._paddingLeft;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -737,12 +752,12 @@ package feathers.controls
 			this._paddingLeft = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _gap:Number = 0;
-
+		
 		/**
 		 * Space, in pixels, between items. The same value is used with the
 		 * <code>leftItems</code> and <code>rightItems</code>.
@@ -766,7 +781,7 @@ package feathers.controls
 		{
 			return _gap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -779,12 +794,12 @@ package feathers.controls
 			this._gap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _titleGap:Number = NaN;
-
+		
 		/**
 		 * Space, in pixels, between the title and the left or right groups of
 		 * items. If <code>NaN</code> (the default), the default <code>gap</code>
@@ -804,7 +819,7 @@ package feathers.controls
 		{
 			return _titleGap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -817,12 +832,12 @@ package feathers.controls
 			this._titleGap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _useExtraPaddingForOSStatusBar:Boolean = false;
-
+		
 		/**
 		 * If enabled, the header's top padding will be increased to account for
 		 * the height of the OS status bar when the app is rendered under the OS
@@ -846,7 +861,7 @@ package feathers.controls
 		{
 			return this._useExtraPaddingForOSStatusBar;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -859,12 +874,12 @@ package feathers.controls
 			this._useExtraPaddingForOSStatusBar = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalAlign:String = VerticalAlign.MIDDLE;
-
+		
 		[Inspectable(type="String",enumeration="top,middle,bottom")]
 		/**
 		 * The alignment of the items vertically, on the y-axis.
@@ -885,7 +900,7 @@ package feathers.controls
 		{
 			return this._verticalAlign;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -898,27 +913,47 @@ package feathers.controls
 			this._verticalAlign = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
-		/**
-		 * @private
-		 */
-		protected var originalBackgroundWidth:Number = NaN;
-
-		/**
-		 * @private
-		 */
-		protected var originalBackgroundHeight:Number = NaN;
-
+		
 		/**
 		 * @private
 		 */
 		protected var currentBackgroundSkin:DisplayObject;
-
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMinHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMaxWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMaxHeight:Number;
+		
 		/**
 		 * @private
 		 */
 		protected var _backgroundSkin:DisplayObject;
-
+		
 		/**
 		 * A display object displayed behind the header's content.
 		 *
@@ -934,7 +969,7 @@ package feathers.controls
 		{
 			return this._backgroundSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -944,7 +979,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			if(this._backgroundSkin && this._backgroundSkin != this._backgroundDisabledSkin)
 			{
 				this.removeChild(this._backgroundSkin);
@@ -957,12 +992,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _backgroundDisabledSkin:DisplayObject;
-
+		
 		/**
 		 * A background to display when the header is disabled. If the property
 		 * is <code>null</code>, the value of the <code>backgroundSkin</code>
@@ -980,7 +1015,7 @@ package feathers.controls
 		{
 			return this._backgroundDisabledSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -990,7 +1025,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			if(this._backgroundDisabledSkin && this._backgroundDisabledSkin != this._backgroundSkin)
 			{
 				this.removeChild(this._backgroundDisabledSkin);
@@ -1003,12 +1038,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customTitleStyleName:String;
-
+		
 		/**
 		 * A style name to add to the header's title text renderer
 		 * sub-component. Typically used by a theme to provide different styles
@@ -1036,7 +1071,7 @@ package feathers.controls
 		{
 			return this._customTitleStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1049,12 +1084,12 @@ package feathers.controls
 			this._customTitleStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_TEXT_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _titleProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the header's title text renderer
 		 * sub-component, and the properties will be passed down to the text
@@ -1095,7 +1130,7 @@ package feathers.controls
 			}
 			return this._titleProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1120,42 +1155,62 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected var _titleAlign:String = TITLE_ALIGN_CENTER;
-
-		[Inspectable(type="String",enumeration="center,preferLeft,preferRight")]
+		protected var _titleAlign:String = HorizontalAlign.CENTER;
+		
+		[Inspectable(type="String",enumeration="center,left,right")]
 		/**
-		 * The preferred position of the title. If <code>leftItems</code> and/or
-		 * <code>rightItems</code> are not <code>null</code>, the title may be
-		 * forced to the center even if the preferred position is on the left or
-		 * right. If <code>centerItems</code> is not <code>null</code>, and the
-		 * title is centered, the title will be hidden.
+		 * The preferred horizontal position of the title.
+		 * 
+		 * <p>If <code>titleAlign</code> is set to
+		 * <code>HorizontalAlign.LEFT</code>, but <code>leftItems</code> is not
+		 * empty, the title will be positioned slightly to the right of the
+		 * left items. If <code>centerItems</code> is also not empty, the title
+		 * will not be displayed.</p>
 		 *
-		 * <p>In the following example, the header's title aligment is set to
+		 * <p>If <code>titleAlign</code> is set to
+		 * <code>HorizontalAlign.RIGHT</code>, but <code>rightItems</code> is
+		 * not empty, the title will be positioned slightly to the left of the
+		 * right items. If <code>centerItems</code> is also not empty, the title
+		 * will not be displayed.</p>
+		 * 
+		 * <p>If <code>titleAlign</code> is set to
+		 * <code>HorizontalAlign.CENTER</code>, but <code>centerItems</code> is
+		 * not <code>null</code>, the title will not be displayed.</p>
+		 *
+		 * <p>In the following example, the header's title alignment is set to
 		 * prefer the left side:</p>
 		 *
 		 * <listing version="3.0">
-		 * header.titleAlign = Header.TITLE_ALIGN_PREFER_LEFT;</listing>
+		 * header.titleAlign = HorizontalAlign.LEFT;</listing>
 		 *
-		 * @default Header.TITLE_ALIGN_CENTER
+		 * @default feathers.layout.HorizontalAlign.CENTER
 		 *
-		 * @see #TITLE_ALIGN_CENTER
-		 * @see #TITLE_ALIGN_PREFER_LEFT
-		 * @see #TITLE_ALIGN_PREFER_RIGHT
+		 * @see feathers.layout.HorizontalAlign#CENTER
+		 * @see feathers.layout.HorizontalAlign#LEFT
+		 * @see feathers.layout.HorizontalAlign#RIGHT
 		 */
 		public function get titleAlign():String
 		{
 			return this._titleAlign;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		public function set titleAlign(value:String):void
 		{
+			if(value === TITLE_ALIGN_PREFER_LEFT)
+			{
+				value = HorizontalAlign.LEFT;
+			}
+			else if(value === TITLE_ALIGN_PREFER_RIGHT)
+			{
+				value = HorizontalAlign.RIGHT;
+			}
 			if(this._titleAlign == value)
 			{
 				return;
@@ -1163,7 +1218,7 @@ package feathers.controls
 			this._titleAlign = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1189,7 +1244,7 @@ package feathers.controls
 			this.centerItems = null;
 			super.dispose();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1202,7 +1257,7 @@ package feathers.controls
 				this._layout.verticalAlign = VerticalAlign.MIDDLE;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1216,22 +1271,22 @@ package feathers.controls
 			var rightContentInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_RIGHT_CONTENT);
 			var centerContentInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_CENTER_CONTENT);
 			var textRendererInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_TEXT_RENDERER);
-
+			
 			if(textRendererInvalid)
 			{
 				this.createTitle();
 			}
-
+			
 			if(textRendererInvalid || dataInvalid)
 			{
 				this.titleTextRenderer.text = this._title;
 			}
-
+			
 			if(stateInvalid || stylesInvalid)
 			{
 				this.refreshBackground();
 			}
-
+			
 			if(textRendererInvalid || stylesInvalid || sizeInvalid)
 			{
 				this.refreshLayout();
@@ -1240,7 +1295,7 @@ package feathers.controls
 			{
 				this.refreshTitleStyles();
 			}
-
+			
 			if(leftContentInvalid)
 			{
 				if(this._leftItems)
@@ -1255,7 +1310,7 @@ package feathers.controls
 					}
 				}
 			}
-
+			
 			if(rightContentInvalid)
 			{
 				if(this._rightItems)
@@ -1270,7 +1325,7 @@ package feathers.controls
 					}
 				}
 			}
-
+			
 			if(centerContentInvalid)
 			{
 				if(this._centerItems)
@@ -1285,19 +1340,16 @@ package feathers.controls
 					}
 				}
 			}
-
+			
 			if(stateInvalid || textRendererInvalid)
 			{
 				this.refreshEnabled();
 			}
-
+			
 			sizeInvalid = this.autoSizeIfNeeded() || sizeInvalid;
-
-			if(sizeInvalid || stylesInvalid)
-			{
-				this.layoutBackground();
-			}
-
+			
+			this.layoutBackground();
+			
 			if(sizeInvalid || leftContentInvalid || rightContentInvalid || centerContentInvalid || stylesInvalid)
 			{
 				this.leftItemsWidth = 0;
@@ -1315,14 +1367,14 @@ package feathers.controls
 					this.layoutCenterItems();
 				}
 			}
-
+			
 			if(textRendererInvalid || sizeInvalid || stylesInvalid || dataInvalid || leftContentInvalid || rightContentInvalid || centerContentInvalid)
 			{
 				this.layoutTitle();
 			}
-
+			
 		}
-
+		
 		/**
 		 * If the component's dimensions have not been set explicitly, it will
 		 * measure its content and determine an ideal size for itself. If the
@@ -1332,7 +1384,7 @@ package feathers.controls
 		 * explicit value will not be measured, but the other non-explicit
 		 * dimension will still need measurement.
 		 *
-		 * <p>Calls <code>setSizeInternal()</code> to set up the
+		 * <p>Calls <code>saveMeasurements()</code> to set up the
 		 * <code>actualWidth</code> and <code>actualHeight</code> member
 		 * variables used for layout.</p>
 		 *
@@ -1343,143 +1395,200 @@ package feathers.controls
 		{
 			var needsWidth:Boolean = this._explicitWidth !== this._explicitWidth; //isNaN
 			var needsHeight:Boolean = this._explicitHeight !== this._explicitHeight; //isNaN
-			if(!needsWidth && !needsHeight)
+			var needsMinWidth:Boolean = this._explicitMinWidth !== this._explicitMinWidth; //isNaN
+			var needsMinHeight:Boolean = this._explicitMinHeight !== this._explicitMinHeight; //isNaN
+			if(!needsWidth && !needsHeight && !needsMinWidth && !needsMinHeight)
 			{
 				return false;
 			}
-			var newWidth:Number = needsWidth ? (this._paddingLeft + this._paddingRight) : this._explicitWidth;
-			var newHeight:Number = needsHeight ? 0 : this._explicitHeight;
-
-			var totalItemWidth:Number = 0;
-			var leftItemCount:int = this._leftItems ? this._leftItems.length : 0;
-			for(var i:int = 0; i < leftItemCount; i++)
+			
+			resetFluidChildDimensionsForMeasurement(this.currentBackgroundSkin,
+				this._explicitWidth, this._explicitHeight,
+				this._explicitMinWidth, this._explicitMinHeight,
+				this._explicitMaxWidth, this._explicitMaxHeight,
+				this._explicitBackgroundWidth, this._explicitBackgroundHeight,
+				this._explicitBackgroundMinWidth, this._explicitBackgroundMinHeight,
+				this._explicitBackgroundMaxWidth, this._explicitBackgroundMaxHeight);
+			var measureSkin:IMeasureDisplayObject = this.currentBackgroundSkin as IMeasureDisplayObject;
+			if(this.currentBackgroundSkin is IValidating)
 			{
-				var item:DisplayObject = this._leftItems[i];
-				if(item is IValidating)
+				IValidating(this.currentBackgroundSkin).validate();
+			}
+			
+			var extraPaddingTop:Number = this.calculateExtraOSStatusBarPadding();
+			
+			var totalContentWidth:Number = 0;
+			var maxContentHeight:Number = 0;
+			var hasLeftItems:Boolean = this._leftItems !== null && this._leftItems.length > 0;
+			var hasRightItems:Boolean = this._rightItems !== null && this._rightItems.length > 0;
+			var hasCenterItems:Boolean = this._centerItems !== null && this._centerItems.length > 0;
+			if(hasLeftItems)
+			{
+				var itemCount:int = this._leftItems.length;
+				for(var i:int = 0; i < itemCount; i++)
 				{
-					IValidating(item).validate();
-				}
-				var itemWidth:Number = item.width;
-				if(needsWidth &&
-					itemWidth === itemWidth) //!isNaN
-				{
-					totalItemWidth += itemWidth;
-					if(i > 0)
+					var item:DisplayObject = this._leftItems[i];
+					if(item is IValidating)
 					{
-						totalItemWidth += this._gap;
+						IValidating(item).validate();
+					}
+					var itemWidth:Number = item.width;
+					if(itemWidth === itemWidth) //!isNaN
+					{
+						totalContentWidth += itemWidth;
+						if(i > 0)
+						{
+							totalContentWidth += this._gap;
+						}
+					}
+					var itemHeight:Number = item.height;
+					if(itemHeight === itemHeight && //!isNaN
+						itemHeight > maxContentHeight)
+					{
+						maxContentHeight = itemHeight;
 					}
 				}
-				var itemHeight:Number = item.height;
-				if(needsHeight &&
-					itemHeight === itemHeight && //!isNaN
-					itemHeight > newHeight)
-				{
-					newHeight = itemHeight;
-				}
 			}
-			var centerItemCount:int = this._centerItems ? this._centerItems.length : 0;
-			for(i = 0; i < centerItemCount; i++)
+			if(hasCenterItems)
 			{
-				item = this._centerItems[i];
-				if(item is IValidating)
+				itemCount = this._centerItems.length;
+				for(i = 0; i < itemCount; i++)
 				{
-					IValidating(item).validate();
-				}
-				itemWidth = item.width;
-				if(needsWidth &&
-					itemWidth === itemWidth) //!isNaN
-				{
-					totalItemWidth += itemWidth;
-					if(i > 0)
+					item = this._centerItems[i];
+					if(item is IValidating)
 					{
-						totalItemWidth += this._gap;
+						IValidating(item).validate();
+					}
+					itemWidth = item.width;
+					if(itemWidth === itemWidth) //!isNaN
+					{
+						totalContentWidth += itemWidth;
+						if(i > 0)
+						{
+							totalContentWidth += this._gap;
+						}
+					}
+					itemHeight = item.height;
+					if(itemHeight === itemHeight && //!isNaN
+						itemHeight > maxContentHeight)
+					{
+						maxContentHeight = itemHeight;
 					}
 				}
-				itemHeight = item.height;
-				if(needsHeight &&
-					itemHeight === itemHeight && //!isNaN
-					itemHeight > newHeight)
-				{
-					newHeight = itemHeight;
-				}
 			}
-			var rightItemCount:int = this._rightItems ? this._rightItems.length : 0;
-			for(i = 0; i < rightItemCount; i++)
+			if(hasRightItems)
 			{
-				item = this._rightItems[i];
-				if(item is IValidating)
+				itemCount = this._rightItems.length;
+				for(i = 0; i < itemCount; i++)
 				{
-					IValidating(item).validate();
-				}
-				itemWidth = item.width
-				if(needsWidth &&
-					itemWidth === itemWidth) //!isNaN
-				{
-					totalItemWidth += itemWidth;
-					if(i > 0)
+					item = this._rightItems[i];
+					if(item is IValidating)
 					{
-						totalItemWidth += this._gap;
+						IValidating(item).validate();
+					}
+					itemWidth = item.width;
+					if(itemWidth === itemWidth) //!isNaN
+					{
+						totalContentWidth += itemWidth;
+						if(i > 0)
+						{
+							totalContentWidth += this._gap;
+						}
+					}
+					itemHeight = item.height;
+					if(itemHeight === itemHeight && //!isNaN
+						itemHeight > maxContentHeight)
+					{
+						maxContentHeight = itemHeight;
 					}
 				}
-				itemHeight = item.height;
-				if(needsHeight &&
-					itemHeight === itemHeight && //!isNaN
-					itemHeight > newHeight)
+			}
+			
+			if(this._titleAlign === HorizontalAlign.CENTER && hasCenterItems)
+			{
+				if(hasLeftItems)
 				{
-					newHeight = itemHeight;
+					totalContentWidth += this._gap;
+				}
+				if(hasRightItems)
+				{
+					totalContentWidth += this._gap;
 				}
 			}
-			newWidth += totalItemWidth;
-
-			if(this._title && !(this._titleAlign == TITLE_ALIGN_CENTER && this._centerItems))
+			else if(this._title !== null)
 			{
 				var calculatedTitleGap:Number = this._titleGap;
 				if(calculatedTitleGap !== calculatedTitleGap) //isNaN
 				{
 					calculatedTitleGap = this._gap;
 				}
-				newWidth += 2 * calculatedTitleGap;
-				var maxTitleWidth:Number = (needsWidth ? this._maxWidth : this._explicitWidth) - totalItemWidth;
-				if(leftItemCount > 0)
+				var maxTitleWidth:Number = this._explicitWidth;
+				if(needsWidth)
+				{
+					maxTitleWidth = this._explicitMaxWidth;
+				}
+				maxTitleWidth -= totalContentWidth;
+				if(hasLeftItems)
 				{
 					maxTitleWidth -= calculatedTitleGap;
 				}
-				if(centerItemCount > 0)
+				if(hasCenterItems)
 				{
 					maxTitleWidth -= calculatedTitleGap;
 				}
-				if(rightItemCount > 0)
+				if(hasRightItems)
 				{
 					maxTitleWidth -= calculatedTitleGap;
+				}
+				if(maxTitleWidth < 0)
+				{
+					maxTitleWidth = 0;
 				}
 				this.titleTextRenderer.maxWidth = maxTitleWidth;
-				this.titleTextRenderer.measureText(HELPER_POINT);
-				var measuredTitleWidth:Number = HELPER_POINT.x;
-				var measuredTitleHeight:Number = HELPER_POINT.y;
-				if(needsWidth &&
-					measuredTitleWidth === measuredTitleWidth) //!isNaN
+				var point:Point = Pool.getPoint();
+				this.titleTextRenderer.measureText(point);
+				var measuredTitleWidth:Number = point.x;
+				var measuredTitleHeight:Number = point.y;
+				Pool.putPoint(point);
+				if(measuredTitleWidth === measuredTitleWidth) //!isNaN
 				{
-					newWidth += measuredTitleWidth;
-					if(leftItemCount > 0)
+					if(hasLeftItems)
 					{
-						newWidth += calculatedTitleGap;
+						measuredTitleWidth += calculatedTitleGap;
 					}
-					if(rightItemCount > 0)
+					if(hasRightItems)
 					{
-						newWidth += calculatedTitleGap;
+						measuredTitleWidth += calculatedTitleGap;
 					}
 				}
-				if(needsHeight &&
-					measuredTitleHeight === measuredTitleHeight && //!isNaN
-					measuredTitleHeight > newHeight)
+				else
 				{
-					newHeight = measuredTitleHeight;
+					measuredTitleWidth = 0;
+				}
+				totalContentWidth += measuredTitleWidth;
+				if(measuredTitleHeight === measuredTitleHeight && //!isNaN
+					measuredTitleHeight > maxContentHeight)
+				{
+					maxContentHeight = measuredTitleHeight;
 				}
 			}
+			
+			var newWidth:Number = this._explicitWidth;
+			if(needsWidth)
+			{
+				newWidth = totalContentWidth + this._paddingLeft + this._paddingRight;
+				if(this.currentBackgroundSkin !== null &&
+					this.currentBackgroundSkin.width > newWidth)
+				{
+					newWidth = this.currentBackgroundSkin.width;
+				}
+			}
+			
+			var newHeight:Number = this._explicitHeight;
 			if(needsHeight)
 			{
+				newHeight = maxContentHeight;
 				newHeight += this._paddingTop + this._paddingBottom;
-				var extraPaddingTop:Number = this.calculateExtraOSStatusBarPadding();
 				if(extraPaddingTop > 0)
 				{
 					//account for the minimum height before adding the padding
@@ -1489,23 +1598,66 @@ package feathers.controls
 					}
 					newHeight += extraPaddingTop;
 				}
+				if(this.currentBackgroundSkin !== null &&
+					this.currentBackgroundSkin.height > newHeight)
+				{
+					newHeight = this.currentBackgroundSkin.height;
+				}
 			}
-			if(needsWidth &&
-				this.originalBackgroundWidth === this.originalBackgroundWidth && //!isNaN
-				this.originalBackgroundWidth > newWidth)
+			
+			var newMinWidth:Number = this._explicitMinWidth;
+			if(needsMinWidth)
 			{
-				newWidth = this.originalBackgroundWidth;
+				newMinWidth = totalContentWidth + this._paddingLeft + this._paddingRight;
+				if(this.currentBackgroundSkin !== null)
+				{
+					if(measureSkin !== null)
+					{
+						if(measureSkin.minWidth > newMinWidth)
+						{
+							newMinWidth = measureSkin.minWidth;
+						}
+					}
+					else if(this._explicitBackgroundMinWidth > newMinWidth)
+					{
+						newMinWidth = this._explicitBackgroundMinWidth;
+					}
+				}
 			}
-			if(needsHeight &&
-				this.originalBackgroundHeight === this.originalBackgroundHeight && //!isNaN
-				this.originalBackgroundHeight > newHeight)
+			
+			var newMinHeight:Number = this._explicitMinHeight;
+			if(needsMinHeight)
 			{
-				newHeight = this.originalBackgroundHeight;
+				newMinHeight = maxContentHeight;
+				newMinHeight += this._paddingTop + this._paddingBottom;
+				if(extraPaddingTop > 0)
+				{
+					//account for the minimum height before adding the padding
+					if(newMinHeight < this._explicitMinHeight)
+					{
+						newMinHeight = this._explicitMinHeight;
+					}
+					newMinHeight += extraPaddingTop;
+				}
+				if(this.currentBackgroundSkin !== null)
+				{
+					if(measureSkin !== null)
+					{
+						if(measureSkin.minHeight > newMinHeight)
+						{
+							newMinHeight = measureSkin.minHeight;
+						}
+					}
+					else if(this._explicitBackgroundMinHeight > newMinHeight)
+					{
+						newMinHeight = this._explicitBackgroundMinHeight;
+					}
+				}
 			}
-
-			return this.setSizeInternal(newWidth, newHeight, false);
+			
+			return this.saveMeasurements(newWidth, newHeight, newMinWidth, newMinHeight);
 		}
-
+		
 		/**
 		 * Creates and adds the <code>titleTextRenderer</code> sub-component and
 		 * removes the old instance, if one exists.
@@ -1524,7 +1676,7 @@ package feathers.controls
 				this.removeChild(DisplayObject(this.titleTextRenderer), true);
 				this.titleTextRenderer = null;
 			}
-
+			
 			var factory:Function = this._titleFactory != null ? this._titleFactory : FeathersControl.defaultTextRendererFactory;
 			this.titleTextRenderer = ITextRenderer(factory());
 			var uiTitleRenderer:IFeathersControl = IFeathersControl(this.titleTextRenderer);
@@ -1532,7 +1684,7 @@ package feathers.controls
 			uiTitleRenderer.styleNameList.add(titleStyleName);
 			this.addChild(DisplayObject(uiTitleRenderer));
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1541,31 +1693,46 @@ package feathers.controls
 			this.currentBackgroundSkin = this._backgroundSkin;
 			if(!this._isEnabled && this._backgroundDisabledSkin)
 			{
-				if(this._backgroundSkin)
+				if(this._backgroundSkin !== null)
 				{
 					this._backgroundSkin.visible = false;
 				}
 				this.currentBackgroundSkin = this._backgroundDisabledSkin;
 			}
-			else if(this._backgroundDisabledSkin)
+			else if(this._backgroundDisabledSkin !== null)
 			{
 				this._backgroundDisabledSkin.visible = false;
 			}
-			if(this.currentBackgroundSkin)
+			if(this.currentBackgroundSkin !== null)
 			{
 				this.currentBackgroundSkin.visible = true;
-
-				if(this.originalBackgroundWidth !== this.originalBackgroundWidth) //isNaN
+				
+				if(this.currentBackgroundSkin is IFeathersControl)
 				{
-					this.originalBackgroundWidth = this.currentBackgroundSkin.width;
+					IFeathersControl(this.currentBackgroundSkin).initializeNow();
 				}
-				if(this.originalBackgroundHeight !== this.originalBackgroundHeight) //isNaN
+				if(this.currentBackgroundSkin is IMeasureDisplayObject)
 				{
-					this.originalBackgroundHeight = this.currentBackgroundSkin.height;
+					var measureSkin:IMeasureDisplayObject = IMeasureDisplayObject(this.currentBackgroundSkin);
+					this._explicitBackgroundWidth = measureSkin.explicitWidth;
+					this._explicitBackgroundHeight = measureSkin.explicitHeight;
+					this._explicitBackgroundMinWidth = measureSkin.explicitMinWidth;
+					this._explicitBackgroundMinHeight = measureSkin.explicitMinHeight;
+					this._explicitBackgroundMaxWidth = measureSkin.explicitMaxWidth;
+					this._explicitBackgroundMaxHeight = measureSkin.explicitMaxHeight;
+				}
+				else
+				{
+					this._explicitBackgroundWidth = this.currentBackgroundSkin.width;
+					this._explicitBackgroundHeight = this.currentBackgroundSkin.height;
+					this._explicitBackgroundMinWidth = this._explicitBackgroundWidth;
+					this._explicitBackgroundMinHeight = this._explicitBackgroundHeight;
+					this._explicitBackgroundMaxWidth = this._explicitBackgroundWidth;
+					this._explicitBackgroundMaxHeight = this._explicitBackgroundHeight;
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1576,7 +1743,7 @@ package feathers.controls
 			this._layout.paddingBottom = this._paddingBottom;
 			this._layout.verticalAlign = this._verticalAlign;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1584,7 +1751,7 @@ package feathers.controls
 		{
 			this.titleTextRenderer.isEnabled = this._isEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1596,7 +1763,7 @@ package feathers.controls
 				this.titleTextRenderer[propertyName] = propertyValue;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1616,14 +1783,20 @@ package feathers.controls
 			//next, we check if the app is full screen or not. if it is full
 			//screen, then the status bar isn't visible, and we don't need the
 			//extra padding.
-			var nativeStage:Stage = Starling.current.nativeStage;
-			if(nativeStage.displayState != StageDisplayState.NORMAL)
+			var starling:Starling = this.stage !== null ? this.stage.starling : Starling.current;
+			var nativeStage:Stage = starling.nativeStage;
+			if(nativeStage.displayState !== StageDisplayState.NORMAL)
 			{
 				return 0;
 			}
-			return IOS_STATUS_BAR_HEIGHT * Math.floor(DeviceCapabilities.dpi / IOS_DPI) / Starling.current.contentScaleFactor;
+			
+			if(DeviceCapabilities.dpi % IPAD_1X_DPI === 0)
+			{
+				return IOS_STATUS_BAR_HEIGHT * Math.floor(DeviceCapabilities.dpi / IPAD_1X_DPI) / Starling.contentScaleFactor;
+			}
+			return IOS_STATUS_BAR_HEIGHT * Math.floor(DeviceCapabilities.dpi / IPHONE_1X_DPI) / Starling.contentScaleFactor;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1636,7 +1809,7 @@ package feathers.controls
 			this.currentBackgroundSkin.width = this.actualWidth;
 			this.currentBackgroundSkin.height = this.actualHeight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1662,9 +1835,9 @@ package feathers.controls
 			{
 				this.leftItemsWidth = 0;
 			}
-
+			
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1691,7 +1864,7 @@ package feathers.controls
 				this.rightItemsWidth = 0;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1713,13 +1886,26 @@ package feathers.controls
 			this._layout.paddingLeft = this._paddingLeft;
 			this._layout.layout(this._centerItems, HELPER_BOUNDS, HELPER_LAYOUT_RESULT);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function layoutTitle():void
 		{
-			if((this._titleAlign == TITLE_ALIGN_CENTER && this._centerItems) || this._title.length == 0)
+			var hasLeftItems:Boolean = this._leftItems !== null && this._leftItems.length > 0;
+			var hasRightItems:Boolean = this._rightItems !== null && this._rightItems.length > 0;
+			var hasCenterItems:Boolean = this._centerItems !== null && this._centerItems.length > 0;
+			if(this._titleAlign === HorizontalAlign.CENTER && hasCenterItems)
+			{
+				this.titleTextRenderer.visible = false;
+				return;
+			}
+			if(this._titleAlign === HorizontalAlign.LEFT && hasLeftItems && hasCenterItems)
+			{
+				this.titleTextRenderer.visible = false;
+				return;
+			}
+			if(this._titleAlign === HorizontalAlign.RIGHT && hasRightItems && hasCenterItems)
 			{
 				this.titleTextRenderer.visible = false;
 				return;
@@ -1730,32 +1916,63 @@ package feathers.controls
 			{
 				calculatedTitleGap = this._gap;
 			}
-			//left and right offsets already include padding
-			var leftOffset:Number = (this._leftItems && this._leftItems.length > 0) ? (this.leftItemsWidth + calculatedTitleGap) : 0;
-			var rightOffset:Number = (this._rightItems && this._rightItems.length > 0) ? (this.rightItemsWidth + calculatedTitleGap) : 0;
-			if(this._titleAlign == TITLE_ALIGN_PREFER_LEFT && (!this._leftItems || this._leftItems.length == 0))
+			var leftOffset:Number = this._paddingLeft;
+			if(hasLeftItems)
 			{
-				this.titleTextRenderer.maxWidth = this.actualWidth - this._paddingLeft - rightOffset;
-				this.titleTextRenderer.validate();
-				this.titleTextRenderer.x = this._paddingLeft;
+				//leftItemsWidth already includes padding
+				leftOffset = this.leftItemsWidth + calculatedTitleGap;
 			}
-			else if(this._titleAlign == TITLE_ALIGN_PREFER_RIGHT && (!this._rightItems || this._rightItems.length == 0))
+			var rightOffset:Number = this._paddingRight;
+			if(hasRightItems)
 			{
-				this.titleTextRenderer.maxWidth = this.actualWidth - this._paddingRight - leftOffset;
-				this.titleTextRenderer.validate();
-				this.titleTextRenderer.x = this.actualWidth - this._paddingRight - this.titleTextRenderer.width;
+				//rightItemsWidth already includes padding
+				rightOffset = this.rightItemsWidth + calculatedTitleGap;
 			}
-			else
+			if(this._titleAlign === HorizontalAlign.LEFT)
+			{
+				var titleMaxWidth:Number = this.actualWidth - leftOffset - rightOffset;
+				if(titleMaxWidth < 0)
+				{
+					titleMaxWidth = 0;
+				}
+				this.titleTextRenderer.maxWidth = titleMaxWidth;
+				this.titleTextRenderer.validate();
+				this.titleTextRenderer.x = leftOffset;
+			}
+			else if(this._titleAlign === HorizontalAlign.RIGHT)
+			{
+				titleMaxWidth = this.actualWidth - leftOffset - rightOffset;
+				if(titleMaxWidth < 0)
+				{
+					titleMaxWidth = 0;
+				}
+				this.titleTextRenderer.maxWidth = titleMaxWidth;
+				this.titleTextRenderer.validate();
+				this.titleTextRenderer.x = this.actualWidth - this.titleTextRenderer.width - rightOffset;
+			}
+			else //center
 			{
 				var actualWidthMinusPadding:Number = this.actualWidth - this._paddingLeft - this._paddingRight;
+				if(actualWidthMinusPadding < 0)
+				{
+					actualWidthMinusPadding = 0;
+				}
 				var actualWidthMinusOffsets:Number = this.actualWidth - leftOffset - rightOffset;
+				if(actualWidthMinusOffsets < 0)
+				{
+					actualWidthMinusOffsets = 0;
+				}
 				this.titleTextRenderer.maxWidth = actualWidthMinusOffsets;
 				this.titleTextRenderer.validate();
-				var idealTitlePosition:Number = this._paddingLeft + (actualWidthMinusPadding - this.titleTextRenderer.width) / 2;
+				//we try to keep the title centered between the paddings, if
+				//possible. however, if the combined width of the left or right
+				//items is too large to allow that, we center between the items.
+				//this seems to match the behavior on iOS.
+				var idealTitlePosition:Number = this._paddingLeft + Math.round((actualWidthMinusPadding - this.titleTextRenderer.width) / 2);
 				if(leftOffset > idealTitlePosition ||
 					(idealTitlePosition + this.titleTextRenderer.width) > (this.actualWidth - rightOffset))
 				{
-					this.titleTextRenderer.x = leftOffset + (actualWidthMinusOffsets - this.titleTextRenderer.width) / 2;
+					this.titleTextRenderer.x = leftOffset + Math.round((actualWidthMinusOffsets - this.titleTextRenderer.width) / 2);
 				}
 				else
 				{
@@ -1763,36 +1980,44 @@ package feathers.controls
 				}
 			}
 			var paddingTop:Number = this._paddingTop + this.calculateExtraOSStatusBarPadding();
-			if(this._verticalAlign == VerticalAlign.TOP)
+			switch(this._verticalAlign)
 			{
-				this.titleTextRenderer.y = paddingTop;
-			}
-			else if(this._verticalAlign == VerticalAlign.BOTTOM)
-			{
-				this.titleTextRenderer.y = this.actualHeight - this._paddingBottom - this.titleTextRenderer.height;
-			}
-			else
-			{
-				this.titleTextRenderer.y = paddingTop + (this.actualHeight - paddingTop - this._paddingBottom - this.titleTextRenderer.height) / 2;
+				case VerticalAlign.TOP:
+				{
+					this.titleTextRenderer.y = paddingTop;
+					break;
+				}
+				case VerticalAlign.BOTTOM:
+				{
+					this.titleTextRenderer.y = this.actualHeight - this._paddingBottom - this.titleTextRenderer.height;
+					break;
+				}
+				default: //center
+				{
+					this.titleTextRenderer.y = paddingTop + Math.round((this.actualHeight - paddingTop - this._paddingBottom - this.titleTextRenderer.height) / 2);
+					break;
+				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function header_addedToStageHandler(event:Event):void
 		{
-			Starling.current.nativeStage.addEventListener("fullScreen", nativeStage_fullScreenHandler);
+			var starling:Starling = this.stage !== null ? this.stage.starling : Starling.current;
+			starling.nativeStage.addEventListener("fullScreen", nativeStage_fullScreenHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function header_removedFromStageHandler(event:Event):void
 		{
-			Starling.current.nativeStage.removeEventListener("fullScreen", nativeStage_fullScreenHandler);
+			var starling:Starling = this.stage !== null ? this.stage.starling : Starling.current;
+			starling.nativeStage.removeEventListener("fullScreen", nativeStage_fullScreenHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1800,7 +2025,7 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1808,7 +2033,7 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */

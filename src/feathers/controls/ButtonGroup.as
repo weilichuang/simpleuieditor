@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -23,10 +23,12 @@ package feathers.controls
 	import feathers.layout.VerticalLayout;
 	import feathers.layout.ViewPortBounds;
 	import feathers.skins.IStyleProvider;
-
+	
+	import flash.utils.Dictionary;
+	
 	import starling.display.DisplayObject;
 	import starling.events.Event;
-
+	
 	/**
 	 * Dispatched when one of the buttons is triggered. The <code>data</code>
 	 * property of the event contains the item from the data provider that is
@@ -66,7 +68,7 @@ package feathers.controls
 	 * @eventType starling.events.Event.TRIGGERED
 	 */
 	[Event(name="triggered", type="starling.events.Event")]
-
+	
 	/**
 	 * A set of related buttons with layout, customized using a data provider.
 	 *
@@ -95,53 +97,53 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_BUTTON_FACTORY:String = "buttonFactory";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const LABEL_FIELD:String = "label";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const ENABLED_FIELD:String = "isEnabled";
-
+		
 		/**
 		 * @private
 		 */
 		private static const DEFAULT_BUTTON_FIELDS:Vector.<String> = new <String>
-		[
-			"defaultIcon",
-			"upIcon",
-			"downIcon",
-			"hoverIcon",
-			"disabledIcon",
-			"defaultSelectedIcon",
-			"selectedUpIcon",
-			"selectedDownIcon",
-			"selectedHoverIcon",
-			"selectedDisabledIcon",
-			"isSelected",
-			"isToggle",
-			"isLongPressEnabled",
-			"name",
-		];
-
+			[
+				"defaultIcon",
+				"upIcon",
+				"downIcon",
+				"hoverIcon",
+				"disabledIcon",
+				"defaultSelectedIcon",
+				"selectedUpIcon",
+				"selectedDownIcon",
+				"selectedHoverIcon",
+				"selectedDisabledIcon",
+				"isSelected",
+				"isToggle",
+				"isLongPressEnabled",
+				"name",
+			];
+		
 		/**
 		 * @private
 		 */
 		private static const DEFAULT_BUTTON_EVENTS:Vector.<String> = new <String>
-		[
-			Event.TRIGGERED,
-			Event.CHANGE,
-			FeathersEventType.LONG_PRESS,
-		];
-
+			[
+				Event.TRIGGERED,
+				Event.CHANGE,
+				FeathersEventType.LONG_PRESS,
+			];
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.HORIZONTAL</code>.
@@ -152,7 +154,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_HORIZONTAL:String = "horizontal";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.VERTICAL</code>.
@@ -163,7 +165,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const DIRECTION_VERTICAL:String = "vertical";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.LEFT</code>.
@@ -174,7 +176,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const HORIZONTAL_ALIGN_LEFT:String = "left";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.CENTER</code>.
@@ -185,7 +187,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const HORIZONTAL_ALIGN_CENTER:String = "center";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.RIGHT</code>.
@@ -196,7 +198,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const HORIZONTAL_ALIGN_RIGHT:String = "right";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.HorizontalAlign.JUSTIFY</code>.
@@ -207,7 +209,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const HORIZONTAL_ALIGN_JUSTIFY:String = "justify";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.TOP</code>.
@@ -218,7 +220,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_TOP:String = "top";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.MIDDLE</code>.
@@ -229,7 +231,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_MIDDLE:String = "middle";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.BOTTOM</code>.
@@ -240,7 +242,7 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_BOTTOM:String = "bottom";
-
+		
 		/**
 		 * @private
 		 * DEPRECATED: Replaced by <code>feathers.layout.VerticalAlign.JUSTIFY</code>.
@@ -251,14 +253,14 @@ package feathers.controls
 		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const VERTICAL_ALIGN_JUSTIFY:String = "justify";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the buttons.
 		 *
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_BUTTON:String = "feathers-button-group-button";
-
+		
 		/**
 		 * @private
 		 */
@@ -266,7 +268,7 @@ package feathers.controls
 		{
 			return new Button();
 		}
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -274,7 +276,7 @@ package feathers.controls
 		{
 			super();
 		}
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the buttons.
 		 * This variable is <code>protected</code> so that sub-classes can
@@ -289,7 +291,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var buttonStyleName:String = DEFAULT_CHILD_STYLE_NAME_BUTTON;
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the first button.
 		 *
@@ -300,7 +302,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var firstButtonStyleName:String = DEFAULT_CHILD_STYLE_NAME_BUTTON;
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the last button.
 		 *
@@ -311,42 +313,47 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var lastButtonStyleName:String = DEFAULT_CHILD_STYLE_NAME_BUTTON;
-
+		
 		/**
 		 * @private
 		 */
 		protected var activeFirstButton:Button;
-
+		
 		/**
 		 * @private
 		 */
 		protected var inactiveFirstButton:Button;
-
+		
 		/**
 		 * @private
 		 */
 		protected var activeLastButton:Button;
-
+		
 		/**
 		 * @private
 		 */
 		protected var inactiveLastButton:Button;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _layoutItems:Vector.<DisplayObject> = new <DisplayObject>[];
-
+		
 		/**
 		 * @private
 		 */
 		protected var activeButtons:Vector.<Button> = new <Button>[];
-
+		
 		/**
 		 * @private
 		 */
 		protected var inactiveButtons:Vector.<Button> = new <Button>[];
-
+		
+		/**
+		 * @private
+		 */
+		protected var _buttonToItem:Dictionary = new Dictionary(true);
+		
 		/**
 		 * @private
 		 */
@@ -354,12 +361,12 @@ package feathers.controls
 		{
 			return ButtonGroup.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _dataProvider:ListCollection;
-
+		
 		/**
 		 * The collection of data to be displayed with buttons.
 		 *
@@ -424,7 +431,7 @@ package feathers.controls
 		{
 			return this._dataProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -449,27 +456,27 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var layout:ILayout;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _viewPortBounds:ViewPortBounds = new ViewPortBounds();
-
+		
 		/**
 		 * @private
 		 */
 		protected var _layoutResult:LayoutBoundsResult = new LayoutBoundsResult();
-
+		
 		/**
 		 * @private
 		 */
 		protected var _direction:String = Direction.VERTICAL;
-
+		
 		[Inspectable(type="String",enumeration="horizontal,vertical")]
 		/**
 		 * The button group layout is either vertical or horizontal.
@@ -495,7 +502,7 @@ package feathers.controls
 		{
 			return _direction;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -508,12 +515,12 @@ package feathers.controls
 			this._direction = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalAlign:String = HorizontalAlign.JUSTIFY;
-
+		
 		[Inspectable(type="String",enumeration="left,center,right,justify")]
 		/**
 		 * Determines how the buttons are horizontally aligned within the bounds
@@ -535,7 +542,7 @@ package feathers.controls
 		{
 			return this._horizontalAlign;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -548,12 +555,12 @@ package feathers.controls
 			this._horizontalAlign = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalAlign:String = VerticalAlign.JUSTIFY;
-
+		
 		[Inspectable(type="String",enumeration="top,middle,bottom,justify")]
 		/**
 		 * Determines how the buttons are vertically aligned within the bounds
@@ -575,7 +582,7 @@ package feathers.controls
 		{
 			return _verticalAlign;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -588,12 +595,12 @@ package feathers.controls
 			this._verticalAlign = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _distributeButtonSizes:Boolean = true;
-
+		
 		/**
 		 * If <code>true</code>, the buttons will be equally sized in the
 		 * direction of the layout. In other words, if the button group is
@@ -613,7 +620,7 @@ package feathers.controls
 		{
 			return this._distributeButtonSizes;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -626,12 +633,12 @@ package feathers.controls
 			this._distributeButtonSizes = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _gap:Number = 0;
-
+		
 		/**
 		 * Space, in pixels, between buttons.
 		 *
@@ -647,7 +654,7 @@ package feathers.controls
 		{
 			return this._gap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -660,12 +667,12 @@ package feathers.controls
 			this._gap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _firstGap:Number = NaN;
-
+		
 		/**
 		 * Space, in pixels, between the first two buttons. If <code>NaN</code>,
 		 * the default <code>gap</code> property will be used.
@@ -686,7 +693,7 @@ package feathers.controls
 		{
 			return this._firstGap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -699,12 +706,12 @@ package feathers.controls
 			this._firstGap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _lastGap:Number = NaN;
-
+		
 		/**
 		 * Space, in pixels, between the last two buttons. If <code>NaN</code>,
 		 * the default <code>gap</code> property will be used.
@@ -725,7 +732,7 @@ package feathers.controls
 		{
 			return this._lastGap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -738,7 +745,7 @@ package feathers.controls
 			this._lastGap = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * Quickly sets all padding properties to the same value. The
 		 * <code>padding</code> getter always returns the value of
@@ -762,7 +769,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -773,12 +780,12 @@ package feathers.controls
 			this.paddingBottom = value;
 			this.paddingLeft = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingTop:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the group's top edge and the
 		 * group's buttons.
@@ -795,7 +802,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -808,12 +815,12 @@ package feathers.controls
 			this._paddingTop = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingRight:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the group's right edge and the
 		 * group's buttons.
@@ -830,7 +837,7 @@ package feathers.controls
 		{
 			return this._paddingRight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -843,12 +850,12 @@ package feathers.controls
 			this._paddingRight = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingBottom:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the group's bottom edge and the
 		 * group's buttons.
@@ -865,7 +872,7 @@ package feathers.controls
 		{
 			return this._paddingBottom;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -878,12 +885,12 @@ package feathers.controls
 			this._paddingBottom = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingLeft:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the group's left edge and the
 		 * group's buttons.
@@ -900,7 +907,7 @@ package feathers.controls
 		{
 			return this._paddingLeft;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -913,12 +920,12 @@ package feathers.controls
 			this._paddingLeft = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _buttonFactory:Function = defaultButtonFactory;
-
+		
 		/**
 		 * Creates a new button. A button must be an instance of <code>Button</code>.
 		 * This factory can be used to change properties on the buttons when
@@ -951,7 +958,7 @@ package feathers.controls
 		{
 			return this._buttonFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -964,12 +971,12 @@ package feathers.controls
 			this._buttonFactory = value;
 			this.invalidate(INVALIDATION_FLAG_BUTTON_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _firstButtonFactory:Function;
-
+		
 		/**
 		 * Creates a new first button. If the <code>firstButtonFactory</code> is
 		 * <code>null</code>, then the button group will use the <code>buttonFactory</code>.
@@ -1004,7 +1011,7 @@ package feathers.controls
 		{
 			return this._firstButtonFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1017,12 +1024,12 @@ package feathers.controls
 			this._firstButtonFactory = value;
 			this.invalidate(INVALIDATION_FLAG_BUTTON_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _lastButtonFactory:Function;
-
+		
 		/**
 		 * Creates a new last button. If the <code>lastButtonFactory</code> is
 		 * <code>null</code>, then the button group will use the <code>buttonFactory</code>.
@@ -1057,7 +1064,7 @@ package feathers.controls
 		{
 			return this._lastButtonFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1070,12 +1077,12 @@ package feathers.controls
 			this._lastButtonFactory = value;
 			this.invalidate(INVALIDATION_FLAG_BUTTON_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _buttonInitializer:Function = defaultButtonInitializer;
-
+		
 		/**
 		 * Modifies a button, perhaps by changing its label and icons, based on the
 		 * item from the data provider that the button is meant to represent. The
@@ -1103,7 +1110,7 @@ package feathers.controls
 		{
 			return this._buttonInitializer;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1116,12 +1123,54 @@ package feathers.controls
 			this._buttonInitializer = value;
 			this.invalidate(INVALIDATION_FLAG_BUTTON_FACTORY);
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected var _buttonReleaser:Function = defaultButtonReleaser;
+		
+		/**
+		 * Resets the properties of an individual button, using the item from the
+		 * data provider that was associated with the button.
+		 *
+		 * <p>This function is expected to have one of the following signatures:</p>
+		 * <pre>function( tab:Button ):void</pre>
+		 * <pre>function( tab:Button, oldItem:Object ):void</pre>
+		 *
+		 * <p>In the following example, a custom button releaser is passed to the
+		 * button group:</p>
+		 *
+		 * <listing version="3.0">
+		 * group.buttonReleaser = function( button:Button, oldItem:Object ):void
+		 * {
+		 *     button.label = null;
+		 * };</listing>
+		 *
+		 * @see #buttonInitializer
+		 */
+		public function get buttonReleaser():Function
+		{
+			return this._buttonReleaser;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function set buttonReleaser(value:Function):void
+		{
+			if(this._buttonReleaser == value)
+			{
+				return;
+			}
+			this._buttonReleaser = value;
+			this.invalidate(INVALIDATION_FLAG_DATA);
+		}
+		
 		/**
 		 * @private
 		 */
 		protected var _customButtonStyleName:String;
-
+		
 		/**
 		 * A style name to add to all buttons in this button group. Typically
 		 * used by a theme to provide different styles to different button groups.
@@ -1146,7 +1195,7 @@ package feathers.controls
 		{
 			return this._customButtonStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1159,12 +1208,12 @@ package feathers.controls
 			this._customButtonStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_BUTTON_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customFirstButtonStyleName:String;
-
+		
 		/**
 		 * A style name to add to the first button in this button group.
 		 * Typically used by a theme to provide different styles to the first
@@ -1189,7 +1238,7 @@ package feathers.controls
 		{
 			return this._customFirstButtonStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1202,12 +1251,12 @@ package feathers.controls
 			this._customFirstButtonStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_BUTTON_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customLastButtonStyleName:String;
-
+		
 		/**
 		 * A style name to add to the last button in this button group.
 		 * Typically used by a theme to provide different styles to the last
@@ -1232,7 +1281,7 @@ package feathers.controls
 		{
 			return this._customLastButtonStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1245,12 +1294,12 @@ package feathers.controls
 			this._customLastButtonStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_BUTTON_FACTORY);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _buttonProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for all of the button group's
 		 * buttons, and the properties will be passed down to every button when
@@ -1293,7 +1342,7 @@ package feathers.controls
 			}
 			return this._buttonProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1327,7 +1376,7 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -1340,7 +1389,7 @@ package feathers.controls
 			var firstButton:Button = this.activeButtons[0];
 			return this.scaleY * (firstButton.y + firstButton.baseline);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1349,7 +1398,7 @@ package feathers.controls
 			this.dataProvider = null;
 			super.dispose();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1360,30 +1409,30 @@ package feathers.controls
 			var stateInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_STATE);
 			var buttonFactoryInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_BUTTON_FACTORY);
 			var sizeInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_SIZE);
-
+			
 			if(dataInvalid || stateInvalid || buttonFactoryInvalid)
 			{
 				this.refreshButtons(buttonFactoryInvalid);
 			}
-
+			
 			if(dataInvalid || buttonFactoryInvalid || stylesInvalid)
 			{
 				this.refreshButtonStyles();
 			}
-
+			
 			if(dataInvalid || stateInvalid || buttonFactoryInvalid)
 			{
 				this.commitEnabled();
 			}
-
+			
 			if(stylesInvalid)
 			{
 				this.refreshLayoutStyles();
 			}
-
+			
 			this.layoutButtons();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1396,7 +1445,7 @@ package feathers.controls
 				button.isEnabled &&= this._isEnabled;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1411,7 +1460,7 @@ package feathers.controls
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1478,7 +1527,7 @@ package feathers.controls
 				IVirtualLayout(layout).useVirtualLayout = false;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1502,6 +1551,16 @@ package feathers.controls
 				{
 					button.isEnabled = this._isEnabled;
 				}
+				
+				if(item.hasOwnProperty("toolTip"))
+				{
+					button.toolTip = item.toolTip;
+				}
+				else
+				{
+					button.toolTip = null;
+				}
+				
 				for each(var field:String in DEFAULT_BUTTON_FIELDS)
 				{
 					if(item.hasOwnProperty(field))
@@ -1515,11 +1574,11 @@ package feathers.controls
 					if(item.hasOwnProperty(field))
 					{
 						var listener:Function = item[field] as Function;
-						if(listener == null)
+						if(listener === null)
 						{
 							continue;
 						}
-						removeListener =  false;
+						removeListener = false;
 						//we can't add the listener directly because we don't
 						//know how to remove it later if the data provider
 						//changes and we lose the old item. we'll use another
@@ -1539,7 +1598,35 @@ package feathers.controls
 				button.isEnabled = this._isEnabled;
 			}
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected function defaultButtonReleaser(button:Button, oldItem:Object):void
+		{
+			button.label = null;
+			for each(var field:String in DEFAULT_BUTTON_FIELDS)
+			{
+				if(oldItem.hasOwnProperty(field))
+				{
+					button[field] = null;
+				}
+			}
+			for each(field in DEFAULT_BUTTON_EVENTS)
+			{
+				var removeListener:Boolean = true;
+				if(oldItem.hasOwnProperty(field))
+				{
+					var listener:Function = oldItem[field] as Function;
+					if(listener === null)
+					{
+						continue;
+					}
+					button.removeEventListener(field, defaultButtonEventsListener);
+				}
+			}
+		}
+		
 		/**
 		 * @private
 		 */
@@ -1562,7 +1649,7 @@ package feathers.controls
 					this.inactiveButtons.shift();
 				}
 				this.inactiveFirstButton = this.activeFirstButton;
-
+				
 				if(this.activeLastButton)
 				{
 					this.inactiveButtons.pop();
@@ -1571,7 +1658,7 @@ package feathers.controls
 			}
 			this.activeFirstButton = null;
 			this.activeLastButton = null;
-
+			
 			var pushIndex:int = 0;
 			var itemCount:int = this._dataProvider ? this._dataProvider.length : 0;
 			var lastItemIndex:int = itemCount - 1;
@@ -1596,7 +1683,7 @@ package feathers.controls
 			}
 			this.clearInactiveButtons();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1608,29 +1695,30 @@ package feathers.controls
 				var button:Button = this.inactiveButtons.shift();
 				this.destroyButton(button);
 			}
-
+			
 			if(this.inactiveFirstButton)
 			{
 				this.destroyButton(this.inactiveFirstButton);
 				this.inactiveFirstButton = null;
 			}
-
+			
 			if(this.inactiveLastButton)
 			{
 				this.destroyButton(this.inactiveLastButton);
 				this.inactiveLastButton = null;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function createFirstButton(item:Object):Button
 		{
 			var isNewInstance:Boolean = false;
-			if(this.inactiveFirstButton)
+			if(this.inactiveFirstButton !== null)
 			{
 				var button:Button = this.inactiveFirstButton;
+				this.releaseButton(button);
 				this.inactiveFirstButton = null;
 			}
 			else
@@ -1653,6 +1741,7 @@ package feathers.controls
 				this.addChild(button);
 			}
 			this._buttonInitializer(button, item);
+			this._buttonToItem[button] = item;
 			if(isNewInstance)
 			{
 				//we need to listen for Event.TRIGGERED after the initializer
@@ -1662,16 +1751,17 @@ package feathers.controls
 			}
 			return button;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function createLastButton(item:Object):Button
 		{
 			var isNewInstance:Boolean = false;
-			if(this.inactiveLastButton)
+			if(this.inactiveLastButton !== null)
 			{
 				var button:Button = this.inactiveLastButton;
+				this.releaseButton(button);
 				this.inactiveLastButton = null;
 			}
 			else
@@ -1694,6 +1784,7 @@ package feathers.controls
 				this.addChild(button);
 			}
 			this._buttonInitializer(button, item);
+			this._buttonToItem[button] = item;
 			if(isNewInstance)
 			{
 				//we need to listen for Event.TRIGGERED after the initializer
@@ -1703,14 +1794,14 @@ package feathers.controls
 			}
 			return button;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function createButton(item:Object):Button
 		{
 			var isNewInstance:Boolean = false;
-			if(this.inactiveButtons.length == 0)
+			if(this.inactiveButtons.length === 0)
 			{
 				isNewInstance = true;
 				var button:Button = this._buttonFactory();
@@ -1727,8 +1818,10 @@ package feathers.controls
 			else
 			{
 				button = this.inactiveButtons.shift();
+				this.releaseButton(button);
 			}
 			this._buttonInitializer(button, item);
+			this._buttonToItem[button] = item;
 			if(isNewInstance)
 			{
 				//we need to listen for Event.TRIGGERED after the initializer
@@ -1738,16 +1831,34 @@ package feathers.controls
 			}
 			return button;
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected function releaseButton(button:Button):void
+		{
+			var item:Object = this._buttonToItem[button];
+			delete this._buttonToItem[button];
+			if(this._buttonReleaser.length === 1)
+			{
+				this._buttonReleaser(button);
+			}
+			else
+			{
+				this._buttonReleaser(button, item);
+			}
+		}
+		
 		/**
 		 * @private
 		 */
 		protected function destroyButton(button:Button):void
 		{
 			button.removeEventListener(Event.TRIGGERED, button_triggeredHandler);
+			this.releaseButton(button);
 			this.removeChild(button, true);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1761,17 +1872,22 @@ package feathers.controls
 			this._viewPortBounds.explicitHeight = this._explicitHeight;
 			this._viewPortBounds.minWidth = this._explicitMinWidth;
 			this._viewPortBounds.minHeight = this._explicitMinHeight;
-			this._viewPortBounds.maxWidth = this._maxWidth;
-			this._viewPortBounds.maxHeight = this._maxHeight;
+			this._viewPortBounds.maxWidth = this._explicitMaxWidth;
+			this._viewPortBounds.maxHeight = this._explicitMaxHeight;
 			this.layout.layout(this._layoutItems, this._viewPortBounds, this._layoutResult);
-			this.setSizeInternal(this._layoutResult.contentWidth, this._layoutResult.contentHeight, false);
+			
+			var contentWidth:Number = this._layoutResult.contentWidth;
+			var contentHeight:Number = this._layoutResult.contentHeight;
+			//minimum dimensions are the same as the measured dimensions
+			this.saveMeasurements(contentWidth, contentHeight, contentWidth, contentHeight);
+			
 			//final validation to avoid juggler next frame issues
 			for each(var button:Button in this.activeButtons)
 			{
 				button.validate();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1779,7 +1895,7 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1787,7 +1903,7 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1795,7 +1911,7 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1803,7 +1919,7 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_DATA);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1819,7 +1935,7 @@ package feathers.controls
 			var item:Object = this._dataProvider.getItemAt(index);
 			this.dispatchEventWith(Event.TRIGGERED, false, item);
 		}
-
+		
 		/**
 		 * @private
 		 */

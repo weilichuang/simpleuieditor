@@ -39,7 +39,7 @@ package starling.text
         private var _leading:Number;
 
         /** Creates a new TextFormat instance with the given properties. */
-        public function TextFormat(font:String="Verdana", size:Number=12, color:uint=0x0,
+        public function TextFormat(font:String="SimSun", size:Number=12, color:uint=0x0B333C,
                                    horizontalAlign:String="center", verticalAlign:String="center")
         {
             _font = font;
@@ -107,8 +107,11 @@ package starling.text
             return out;
         }
 
-        /** The name of the font. TrueType fonts will be looked up from embedded fonts and
-         *  system fonts; bitmap fonts must be registered at the TextField class first. */
+		/** The name of the font. TrueType fonts will be looked up from embedded fonts and
+		 *  system fonts; bitmap fonts must be registered at the TextField class first.
+		 *  Beware: If you loaded an embedded font at runtime, you must call
+		 *  <code>TextField.updateEmbeddedFonts()</code> for Starling to recognize it.
+		 */
         public function get font():String { return _font; }
         public function set font(value:String):void
         {

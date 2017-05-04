@@ -3,6 +3,7 @@ package uieditor.editor.ui.inspector
 	import feathers.controls.LayoutGroup;
 	import feathers.core.IFeathersControl;
 
+	import starling.display.DisplayObject;
 	import starling.events.Event;
 
 	public class BasePropertyComponent extends LayoutGroup implements IUIMapper
@@ -17,8 +18,28 @@ package uieditor.editor.ui.inspector
 			_propertyRetriever = propertyRetriever;
 			_param = param;
 		}
-		
-		public function set target(value:Object):void
+
+		public function get isValid() : Boolean
+		{
+			var target : Object = _propertyRetriever.target;
+			if ( target == null )
+				return false;
+			if ( target is DisplayObject )
+			{
+				return !DisplayObject( target ).isDisposed();
+			}
+			return true;
+		}
+
+		override public function dispose() : void
+		{
+			_propertyRetriever = null;
+			_param = null;
+			_oldValue = null;
+			super.dispose();
+		}
+
+		public function set target( value : Object ) : void
 		{
 			_propertyRetriever.target = value;
 		}

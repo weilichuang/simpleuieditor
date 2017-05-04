@@ -1047,7 +1047,7 @@ package feathers.layout
 		public function addToVariableVirtualCacheAtIndex(index:int, item:DisplayObject = null):void
 		{
 			var heightValue:* = item ? item.height : undefined;
-			this._heightCache.insertAt(index, heightValue);
+			this._heightCache.splice(index,0, heightValue);
 		}
 
 		/**
@@ -1055,7 +1055,7 @@ package feathers.layout
 		 */
 		public function removeFromVariableVirtualCacheAtIndex(index:int):void
 		{
-			this._heightCache.removeAt(index);
+			this._heightCache.splice(index,1);
 		}
 
 		/**

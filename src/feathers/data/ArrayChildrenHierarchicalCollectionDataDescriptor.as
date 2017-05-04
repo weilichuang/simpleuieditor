@@ -70,7 +70,7 @@ package feathers.data
 		 */
 		public function getItemAt(data:Object, index:int, ...rest:Array):Object
 		{
-			rest.insertAt(0, index);
+			rest.splice(0, 0, index);
 			var branch:Array = data as Array;
 			var indexCount:int = rest.length - 1;
 			for(var i:int = 0; i < indexCount; i++)
@@ -87,7 +87,7 @@ package feathers.data
 		 */
 		public function setItemAt(data:Object, item:Object, index:int, ...rest:Array):void
 		{
-			rest.insertAt(0, index);
+			rest.splice(0,0, index);
 			var branch:Array = data as Array;
 			var indexCount:int = rest.length - 1;
 			for(var i:int = 0; i < indexCount; i++)
@@ -104,7 +104,7 @@ package feathers.data
 		 */
 		public function addItemAt(data:Object, item:Object, index:int, ...rest:Array):void
 		{
-			rest.insertAt(0, index);
+			rest.splice(0,0, index);
 			var branch:Array = data as Array;
 			var indexCount:int = rest.length - 1;
 			for(var i:int = 0; i < indexCount; i++)
@@ -113,7 +113,7 @@ package feathers.data
 				branch = branch[index][childrenField] as Array;
 			}
 			var lastIndex:int = rest[indexCount];
-			branch.insertAt(lastIndex, item);
+			branch.splice(lastIndex,0, item);
 		}
 
 		/**
@@ -121,7 +121,7 @@ package feathers.data
 		 */
 		public function removeItemAt(data:Object, index:int, ...rest:Array):Object
 		{
-			rest.insertAt(0, index);
+			rest.splice(0,0, index);
 			var branch:Array = data as Array;
 			var indexCount:int = rest.length - 1;
 			for(var i:int = 0; i < indexCount; i++)
@@ -130,7 +130,7 @@ package feathers.data
 				branch = branch[index][childrenField] as Array;
 			}
 			var lastIndex:int = rest[indexCount];
-			return branch.removeAt(lastIndex);
+			return branch.splice(lastIndex,1)[0];
 		}
 
 		/**

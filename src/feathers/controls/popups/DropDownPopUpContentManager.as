@@ -1,28 +1,32 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
 */
 package feathers.controls.popups
 {
-	import feathers.core.IFeathersControl;
-	import feathers.core.IValidating;
-	import feathers.core.PopUpManager;
-	import feathers.core.ValidationQueue;
-	import feathers.events.FeathersEventType;
-	import feathers.utils.display.getDisplayObjectDepthFromStage;
-	import feathers.utils.display.stageToStarling;
-
 	import flash.errors.IllegalOperationError;
 	import flash.events.KeyboardEvent;
 	import flash.geom.Rectangle;
 	import flash.ui.Keyboard;
-
+	
+	import feathers.core.IFeathersControl;
+	import feathers.core.IValidating;
+	import feathers.core.PopUpManager;
+	import feathers.core.ValidationQueue;
+	import feathers.display.RenderDelegate;
+	import feathers.events.FeathersEventType;
+	import feathers.layout.RelativePosition;
+	import feathers.utils.display.getDisplayObjectDepthFromStage;
+	
+	import starling.animation.Transitions;
+	import starling.animation.Tween;
 	import starling.core.Starling;
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
+	import starling.display.Quad;
 	import starling.display.Stage;
 	import starling.events.Event;
 	import starling.events.EventDispatcher;
@@ -30,7 +34,7 @@ package feathers.controls.popups
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
-
+	
 	/**
 	 * Dispatched when the pop-up content opens.
 	 *
@@ -52,7 +56,7 @@ package feathers.controls.popups
 	 * @eventType starling.events.Event.OPEN
 	 */
 	[Event(name="open",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the pop-up content closes.
 	 *
@@ -74,7 +78,7 @@ package feathers.controls.popups
 	 * @eventType starling.events.Event.CLOSE
 	 */
 	[Event(name="close",type="starling.events.Event")]
-
+	
 	/**
 	 * Displays pop-up content as a desktop-style drop-down.
 	 */
@@ -84,18 +88,26 @@ package feathers.controls.popups
 		 * @private
 		 */
 		private static const HELPER_RECTANGLE:Rectangle = new Rectangle();
-
+		
 		/**
-		 * The pop-up content will be positioned below the source, if possible. 
-		 * 
-		 * @see #primaryDirection
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.RelativePosition.BOTTOM</code>.
+		 *
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const PRIMARY_DIRECTION_DOWN:String = "down";
-
+		
 		/**
-		 * The pop-up content will be positioned above the source, if possible.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.RelativePosition.TOP</code>.
 		 *
-		 * @see #primaryDirection
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const PRIMARY_DIRECTION_UP:String = "up";
 		
@@ -104,18 +116,34 @@ package feathers.controls.popups
 		 */
 		public function DropDownPopUpContentManager()
 		{
+			super();
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var content:DisplayObject;
-
+		
 		/**
 		 * @private
 		 */
 		protected var source:DisplayObject;
-
+		
+		/**
+		 * @private
+		 */
+		protected var _delegate:RenderDelegate;
+		
+		/**
+		 * @private
+		 */
+		protected var _openCloseTweenTarget:DisplayObject;
+		
+		/**
+		 * @private
+		 */
+		protected var _openCloseTween:Tween;
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -123,12 +151,12 @@ package feathers.controls.popups
 		{
 			return this.content !== null;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isModal:Boolean = false;
-
+		
 		/**
 		 * Determines if the pop-up will be modal or not.
 		 *
@@ -147,7 +175,7 @@ package feathers.controls.popups
 		{
 			return this._isModal;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -155,12 +183,12 @@ package feathers.controls.popups
 		{
 			this._isModal = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _overlayFactory:Function;
-
+		
 		/**
 		 * If <code>isModal</code> is <code>true</code>, this function may be
 		 * used to customize the modal overlay displayed by the pop-up manager.
@@ -182,14 +210,14 @@ package feathers.controls.popups
 		 * };</listing>
 		 *
 		 * @default null
-		 * 
+		 *
 		 * @see feathers.core.PopUpManager#overlayFactory
 		 */
 		public function get overlayFactory():Function
 		{
 			return this._overlayFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -197,12 +225,12 @@ package feathers.controls.popups
 		{
 			this._overlayFactory = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _gap:Number = 0;
-
+		
 		/**
 		 * The space, in pixels, between the source and the pop-up.
 		 */
@@ -210,7 +238,7 @@ package feathers.controls.popups
 		{
 			return this._gap;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -218,38 +246,95 @@ package feathers.controls.popups
 		{
 			this._gap = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected var _primaryDirection:String = PRIMARY_DIRECTION_DOWN;
-
+		protected var _openCloseDuration:Number = 0.2;
+		
 		/**
-		 * The space, in pixels, between the source and the pop-up.
-		 * 
-		 * @default DropDownPopUpContentManager.PRIMARY_DIRECTION_DOWN
-		 * 
-		 * @see #PRIMARY_DIRECTION_DOWN
-		 * @see #PRIMARY_DIRECTION_UP
+		 * The duration, in seconds, of the open and close animation.
+		 */
+		public function get openCloseDuration():Number
+		{
+			return this._openCloseDuration;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function set openCloseDuration(value:Number):void
+		{
+			this._openCloseDuration = value;
+		}
+		
+		/**
+		 * @private
+		 */
+		protected var _openCloseEase:Object = Transitions.EASE_OUT;
+		
+		/**
+		 * The easing function to use for the open and close animation.
+		 */
+		public function get openCloseEase():Object
+		{
+			return this._openCloseEase;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function set openCloseEase(value:Object):void
+		{
+			this._openCloseEase = value;
+		}
+		
+		/**
+		 * @private
+		 */
+		protected var _actualDirection:String;
+		
+		/**
+		 * @private
+		 */
+		protected var _primaryDirection:String = RelativePosition.BOTTOM;
+		
+		/**
+		 * The preferred position of the pop-up, relative to the source. If
+		 * there is not enough space to position pop-up at the preferred
+		 * position, it may be positioned elsewhere.
+		 *
+		 * @default feathers.layout.RelativePosition.BOTTOM
+		 *
+		 * @see feathers.layout.RelativePosition#BOTTOM
+		 * @see feathers.layout.RelativePosition#TOP
 		 */
 		public function get primaryDirection():String
 		{
 			return this._primaryDirection;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		public function set primaryDirection(value:String):void
 		{
+			if(value === PRIMARY_DIRECTION_UP)
+			{
+				value = RelativePosition.TOP;
+			}
+			else if(value === PRIMARY_DIRECTION_DOWN)
+			{
+				value = RelativePosition.BOTTOM;
+			}
 			this._primaryDirection = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _fitContentMinWidthToOrigin:Boolean = true;
-
+		
 		/**
 		 * If enabled, the pop-up content's <code>minWidth</code> property will
 		 * be set to the <code>width</code> property of the origin, if it is
@@ -261,7 +346,7 @@ package feathers.controls.popups
 		{
 			return this._fitContentMinWidthToOrigin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -269,17 +354,17 @@ package feathers.controls.popups
 		{
 			this._fitContentMinWidthToOrigin = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _lastGlobalX:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _lastGlobalY:Number;
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -289,28 +374,57 @@ package feathers.controls.popups
 			{
 				throw new IllegalOperationError("Pop-up content is already open. Close the previous content before opening new content.");
 			}
-
+			
 			this.content = content;
 			this.source = source;
-			PopUpManager.addPopUp(this.content, this._isModal, false, this._overlayFactory);
-			if(this.content is IFeathersControl)
+			PopUpManager.addPopUp(content, this._isModal, false, this._overlayFactory);
+			if(content is IFeathersControl)
 			{
-				this.content.addEventListener(FeathersEventType.RESIZE, content_resizeHandler);
+				content.addEventListener(FeathersEventType.RESIZE, content_resizeHandler);
 			}
-			this.content.addEventListener(Event.REMOVED_FROM_STAGE, content_removedFromStageHandler);
+			content.addEventListener(Event.REMOVED_FROM_STAGE, content_removedFromStageHandler);
 			this.layout();
+			if(this._openCloseTween !== null)
+			{
+				this._openCloseTween.advanceTime(this._openCloseTween.totalTime);
+			}
+			if(this._openCloseDuration > 0)
+			{
+				this._delegate = new RenderDelegate(content);
+				//temporarily hide the content while the delegate is displayed
+				content.visible = false;
+				PopUpManager.addPopUp(this._delegate, false, false);
+				this._delegate.x = content.x;
+				if(this._actualDirection === RelativePosition.TOP)
+				{
+					this._delegate.y = content.y + content.height;
+				}
+				else //bottom
+				{
+					this._delegate.y = content.y - content.height;
+				}
+				var mask:Quad = new Quad(content.width, content.height, 0xff00ff);
+				this._delegate.mask = mask;
+				mask.height = 0;
+				this._openCloseTween = new Tween(this._delegate, this._openCloseDuration, this._openCloseEase);
+				this._openCloseTweenTarget = content;
+				this._openCloseTween.animate("y", content.y);
+				this._openCloseTween.onUpdate = openCloseTween_onUpdate;
+				this._openCloseTween.onComplete = openTween_onComplete;
+				Starling.juggler.add(this._openCloseTween);
+			}
 			var stage:Stage = this.source.stage;
 			stage.addEventListener(TouchEvent.TOUCH, stage_touchHandler);
 			stage.addEventListener(ResizeEvent.RESIZE, stage_resizeHandler);
 			stage.addEventListener(Event.ENTER_FRAME, stage_enterFrameHandler);
-
+			
 			//using priority here is a hack so that objects higher up in the
 			//display list have a chance to cancel the event first.
 			var priority:int = -getDisplayObjectDepthFromStage(this.content);
 			Starling.current.nativeStage.addEventListener(KeyboardEvent.KEY_DOWN, nativeStage_keyDownHandler, false, priority, true);
 			this.dispatchEventWith(Event.OPEN);
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -320,14 +434,18 @@ package feathers.controls.popups
 			{
 				return;
 			}
+			if(this._openCloseTween !== null)
+			{
+				this._openCloseTween.advanceTime(this._openCloseTween.totalTime);
+			}
 			var content:DisplayObject = this.content;
-			this.content = null;
 			this.source = null;
+			this.content = null;
 			var stage:Stage = content.stage;
 			stage.removeEventListener(TouchEvent.TOUCH, stage_touchHandler);
 			stage.removeEventListener(ResizeEvent.RESIZE, stage_resizeHandler);
 			stage.removeEventListener(Event.ENTER_FRAME, stage_enterFrameHandler);
-			var starling:Starling = stageToStarling(stage);
+			var starling:Starling = Starling.current;
 			starling.nativeStage.removeEventListener(KeyboardEvent.KEY_DOWN, nativeStage_keyDownHandler);
 			if(content is IFeathersControl)
 			{
@@ -338,17 +456,43 @@ package feathers.controls.popups
 			{
 				content.removeFromParent(false);
 			}
-			this.dispatchEventWith(Event.CLOSE);
+			if(this._openCloseDuration > 0)
+			{
+				this._delegate = new RenderDelegate(content);
+				PopUpManager.addPopUp(this._delegate, false, false);
+				this._delegate.x = content.x;
+				this._delegate.y = content.y;
+				var mask:Quad = new Quad(content.width, content.height, 0xff00ff);
+				this._delegate.mask = mask;
+				this._openCloseTween = new Tween(this._delegate, this._openCloseDuration, this._openCloseEase);
+				this._openCloseTweenTarget = content;
+				if(this._actualDirection === RelativePosition.TOP)
+				{
+					this._openCloseTween.animate("y", content.y + content.height);
+				}
+				else
+				{
+					this._openCloseTween.animate("y", content.y - content.height);
+				}
+				this._openCloseTween.onUpdate = openCloseTween_onUpdate;
+				this._openCloseTween.onComplete = closeTween_onComplete;
+				Starling.juggler.add(this._openCloseTween);
+			}
+			else
+			{
+				this.dispatchEventWith(Event.CLOSE);
+			}
 		}
-
+		
 		/**
 		 * @inheritDoc
 		 */
 		public function dispose():void
 		{
+			this.openCloseDuration = 0;
 			this.close();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -364,7 +508,7 @@ package feathers.controls.popups
 					return;
 				}
 			}
-
+			
 			var sourceWidth:Number = this.source.width;
 			var hasSetBounds:Boolean = false;
 			var uiContent:IFeathersControl = this.content as IFeathersControl;
@@ -381,12 +525,12 @@ package feathers.controls.popups
 			{
 				this.content.width = sourceWidth;
 			}
-
+			
 			var stage:Stage = this.source.stage;
 			
 			//we need to be sure that the source is properly positioned before
 			//positioning the content relative to it.
-			var starling:Starling = stageToStarling(stage);
+			var starling:Starling = Starling.current;
 			var validationQueue:ValidationQueue = ValidationQueue.forStarling(starling);
 			if(validationQueue && !validationQueue.isValidating)
 			{
@@ -394,19 +538,19 @@ package feathers.controls.popups
 				//but only if we're not already doing that...
 				validationQueue.advanceTime(0);
 			}
-
+			
 			var globalOrigin:Rectangle = this.source.getBounds(stage);
 			this._lastGlobalX = globalOrigin.x;
 			this._lastGlobalY = globalOrigin.y;
-
+			
 			var downSpace:Number = (stage.stageHeight - this.content.height) - (globalOrigin.y + globalOrigin.height + this._gap);
 			//skip this if the primary direction is up
-			if(this._primaryDirection == PRIMARY_DIRECTION_DOWN && downSpace >= 0)
+			if(this._primaryDirection == RelativePosition.BOTTOM && downSpace >= 0)
 			{
 				layoutBelow(globalOrigin);
 				return;
 			}
-
+			
 			var upSpace:Number = globalOrigin.y - this._gap - this.content.height;
 			if(upSpace >= 0)
 			{
@@ -415,12 +559,12 @@ package feathers.controls.popups
 			}
 			
 			//do what we skipped earlier if the primary direction is up
-			if(this._primaryDirection == PRIMARY_DIRECTION_UP && downSpace >= 0)
+			if(this._primaryDirection == RelativePosition.TOP && downSpace >= 0)
 			{
 				layoutBelow(globalOrigin);
 				return;
 			}
-
+			
 			//worst case: pick the side that has the most available space
 			if(upSpace >= downSpace)
 			{
@@ -430,7 +574,7 @@ package feathers.controls.popups
 			{
 				layoutBelow(globalOrigin);
 			}
-
+			
 			//the content is too big for the space, so we need to adjust it to
 			//fit properly
 			var newMaxHeight:Number = stage.stageHeight - (globalOrigin.y + globalOrigin.height);
@@ -446,45 +590,100 @@ package feathers.controls.popups
 				this.content.height = newMaxHeight;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function layoutAbove(globalOrigin:Rectangle):void
 		{
-			var idealXPosition:Number = globalOrigin.x;
-			var xPosition:Number = this.content.stage.stageWidth - this.content.width;
-			if(xPosition > idealXPosition)
-			{
-				xPosition = idealXPosition;
-			}
-			if(xPosition < 0)
-			{
-				xPosition = 0;
-			}
-			this.content.x = xPosition;
+			this._actualDirection = RelativePosition.TOP;
+			this.content.x = this.calculateXPosition(globalOrigin);
 			this.content.y = globalOrigin.y - this.content.height - this._gap;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function layoutBelow(globalOrigin:Rectangle):void
 		{
+			this._actualDirection = RelativePosition.BOTTOM;
+			this.content.x = this.calculateXPosition(globalOrigin);
+			this.content.y = globalOrigin.y + globalOrigin.height + this._gap;
+		}
+		
+		/**
+		 * @private
+		 */
+		protected function calculateXPosition(globalOrigin:Rectangle):Number
+		{
 			var idealXPosition:Number = globalOrigin.x;
-			var xPosition:Number = this.content.stage.stageWidth - this.content.width;
-			if(xPosition > idealXPosition)
+			var fallbackXPosition:Number = idealXPosition + globalOrigin.width - this.content.width;
+			var maxXPosition:Number = this.source.stage.stageWidth - this.content.width;
+			var xPosition:Number = idealXPosition;
+			if(xPosition > maxXPosition)
 			{
-				xPosition = idealXPosition;
+				if(fallbackXPosition >= 0)
+				{
+					xPosition = fallbackXPosition;
+				}
+				else
+				{
+					xPosition = maxXPosition;
+				}
 			}
 			if(xPosition < 0)
 			{
 				xPosition = 0;
 			}
-			this.content.x = xPosition;
-			this.content.y = globalOrigin.y + globalOrigin.height + this._gap;
+			return xPosition;
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected function openCloseTween_onUpdate():void
+		{
+			var mask:DisplayObject = this._delegate.mask;
+			if(this._actualDirection === RelativePosition.TOP)
+			{
+				mask.height = this._openCloseTweenTarget.height - (this._delegate.y - this._openCloseTweenTarget.y);
+				mask.y = 0;
+			}
+			else
+			{
+				mask.height = this._openCloseTweenTarget.height - (this._openCloseTweenTarget.y - this._delegate.y);
+				mask.y = this._openCloseTweenTarget.height - mask.height;
+			}
+		}
+		
+		/**
+		 * @private
+		 */
+		protected function openCloseTween_onComplete():void
+		{
+			this._openCloseTween = null;
+			this._delegate.removeFromParent(true);
+			this._delegate = null;
+		}
+		
+		/**
+		 * @private
+		 */
+		protected function openTween_onComplete():void
+		{
+			this.openCloseTween_onComplete();
+			this.content.visible = true;
+		}
+		
+		/**
+		 * @private
+		 */
+		protected function closeTween_onComplete():void
+		{
+			this.openCloseTween_onComplete();
+			this.dispatchEventWith(Event.CLOSE);
+		}
+		
 		/**
 		 * @private
 		 */
@@ -492,7 +691,7 @@ package feathers.controls.popups
 		{
 			this.layout();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -504,7 +703,7 @@ package feathers.controls.popups
 				this.layout();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -512,7 +711,7 @@ package feathers.controls.popups
 		{
 			this.close();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -529,10 +728,10 @@ package feathers.controls.popups
 			}
 			//don't let the OS handle the event
 			event.preventDefault();
-
+			
 			this.close();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -540,7 +739,7 @@ package feathers.controls.popups
 		{
 			this.layout();
 		}
-
+		
 		/**
 		 * @private
 		 */

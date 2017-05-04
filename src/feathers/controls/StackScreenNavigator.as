@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -8,13 +8,12 @@ accordance with the terms of the accompanying license agreement.
 package feathers.controls
 {
 	import feathers.controls.supportClasses.BaseScreenNavigator;
-	import feathers.controls.supportClasses.BaseScreenNavigator;
 	import feathers.events.FeathersEventType;
 	import feathers.skins.IStyleProvider;
-
+	
 	import starling.display.DisplayObject;
 	import starling.events.Event;
-
+	
 	/**
 	 * A "view stack"-like container that supports navigation between screens
 	 * (any display object) through events.
@@ -36,19 +35,27 @@ package feathers.controls
 	public class StackScreenNavigator extends BaseScreenNavigator
 	{
 		/**
-		 * The screen navigator will auto size itself to fill the entire stage.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.AutoSizeMode.STAGE</code>.
 		 *
-		 * @see #autoSizeMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const AUTO_SIZE_MODE_STAGE:String = "stage";
-
+		
 		/**
-		 * The screen navigator will auto size itself to fit its content.
+		 * @private
+		 * DEPRECATED: Replaced by <code>feathers.controls.AutoSizeMode.CONTENT</code>.
 		 *
-		 * @see #autoSizeMode
+		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
+		 * starting with Feathers 3.0. It will be removed in a future version of
+		 * Feathers according to the standard
+		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
 		 */
 		public static const AUTO_SIZE_MODE_CONTENT:String = "content";
-
+		
 		/**
 		 * The default <code>IStyleProvider</code> for all <code>StackScreenNavigator</code>
 		 * components.
@@ -57,7 +64,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleProvider
 		 */
 		public static var globalStyleProvider:IStyleProvider;
-
+		
 		/**
 		 * Constructor.
 		 */
@@ -66,7 +73,7 @@ package feathers.controls
 			super();
 			this.addEventListener(FeathersEventType.INITIALIZE, stackScreenNavigator_initializeHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -74,12 +81,12 @@ package feathers.controls
 		{
 			return StackScreenNavigator.globalStyleProvider;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _pushTransition:Function;
-
+		
 		/**
 		 * Typically used to provide some kind of animation or visual effect,
 		 * this function that is called when the screen navigator pushes a new
@@ -130,7 +137,7 @@ package feathers.controls
 		{
 			return this._pushTransition;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -142,12 +149,12 @@ package feathers.controls
 			}
 			this._pushTransition = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _popTransition:Function;
-
+		
 		/**
 		 * Typically used to provide some kind of animation or visual effect,
 		 * this function that is called when the screen navigator pops a screen
@@ -198,7 +205,7 @@ package feathers.controls
 		{
 			return this._popTransition;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -210,12 +217,12 @@ package feathers.controls
 			}
 			this._popTransition = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _popToRootTransition:Function = null;
-
+		
 		/**
 		 * Typically used to provide some kind of animation or visual effect, a
 		 * function that is called when the screen navigator clears its stack,
@@ -270,7 +277,7 @@ package feathers.controls
 		{
 			return this._popToRootTransition;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -282,12 +289,12 @@ package feathers.controls
 			}
 			this._popToRootTransition = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _stack:Vector.<StackItem> = new <StackItem>[];
-
+		
 		/**
 		 * @private
 		 */
@@ -304,32 +311,32 @@ package feathers.controls
 			}
 			return 0;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _pushScreenEvents:Object = {};
-
+		
 		/**
 		 * @private
 		 */
 		protected var _replaceScreenEvents:Object;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _popScreenEvents:Vector.<String>;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _popToRootScreenEvents:Vector.<String>;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _tempRootScreenID:String;
-
+		
 		/**
 		 * Sets the first screen at the bottom of the stack, or the root screen.
 		 * When this screen is shown, there will be no transition.
@@ -357,7 +364,7 @@ package feathers.controls
 			}
 			return this._stack[0].id;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -389,7 +396,7 @@ package feathers.controls
 				this._tempRootScreenID = value;
 			}
 		}
-
+		
 		/**
 		 * Registers a new screen with a string identifier that can be used
 		 * to reference the screen in other calls, like <code>removeScreen()</code>
@@ -401,7 +408,7 @@ package feathers.controls
 		{
 			this.addScreenInternal(id, item);
 		}
-
+		
 		/**
 		 * Removes an existing screen using the identifier assigned to it in the
 		 * call to <code>addScreen()</code>.
@@ -417,14 +424,14 @@ package feathers.controls
 				var item:StackItem = this._stack[i];
 				if(item.id === id)
 				{
-					this._stack.removeAt(i);
+					this._stack.splice(i,1);
 					//don't break here because there might be multiple screens
 					//with this ID in the stack
 				}
 			}
 			return StackScreenNavigatorItem(this.removeScreenInternal(id));
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -433,7 +440,7 @@ package feathers.controls
 			this._stack.length = 0;
 			super.removeAllScreens();
 		}
-
+		
 		/**
 		 * Returns the <code>StackScreenNavigatorItem</code> instance with the
 		 * specified identifier.
@@ -446,7 +453,7 @@ package feathers.controls
 			}
 			return null;
 		}
-
+		
 		/**
 		 * Pushes a screen onto the top of the stack.
 		 *
@@ -487,7 +494,7 @@ package feathers.controls
 			}
 			return this.showScreenInternal(id, transition);
 		}
-
+		
 		/**
 		 * Pops the current screen from the top of the stack, returning to the
 		 * previous screen.
@@ -503,7 +510,7 @@ package feathers.controls
 		 */
 		public function popScreen(transition:Function = null):DisplayObject
 		{
-			if(this._stack.length == 0)
+			if(this._stack.length === 0)
 			{
 				return this._activeScreen;
 			}
@@ -522,7 +529,7 @@ package feathers.controls
 			var stackItem:StackItem = this._stack.pop();
 			return this.showScreenInternal(stackItem.id, transition, stackItem.properties);
 		}
-
+		
 		/**
 		 * Returns to the root screen, at the bottom of the stack.
 		 *
@@ -555,7 +562,7 @@ package feathers.controls
 			this._stack.length = 0;
 			return this.showScreenInternal(item.id, transition, item.properties);
 		}
-
+		
 		/**
 		 * Pops all screens from the stack, leaving the
 		 * <code>StackScreenNavigator</code> empty.
@@ -575,11 +582,10 @@ package feathers.controls
 			{
 				transition = this.popTransition;
 			}
-			var item:StackItem = this._stack[0];
 			this._stack.length = 0;
 			this.clearScreenInternal(transition);
 		}
-
+		
 		/**
 		 * Returns to the root screen, at the bottom of the stack, but replaces
 		 * it with a new root screen.
@@ -608,7 +614,7 @@ package feathers.controls
 			this._stack.length = 0;
 			return this.showScreenInternal(id, transition);
 		}
-
+		
 		/**
 		 * Replaces the current screen on the top of the stack with a new
 		 * screen. May be used in the case where you want to navigate from
@@ -640,7 +646,7 @@ package feathers.controls
 			}
 			return this.showScreenInternal(id, transition);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -652,7 +658,7 @@ package feathers.controls
 			this.addPopEventsToActiveScreen(item);
 			this.addPopToRootEventsToActiveScreen(item);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -664,7 +670,7 @@ package feathers.controls
 			this.removePopEventsFromActiveScreen(item);
 			this.removePopToRootEventsFromActiveScreen(item);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -713,7 +719,7 @@ package feathers.controls
 			}
 			this._pushScreenEvents[this._activeScreenID] = savedScreenEvents;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -756,7 +762,7 @@ package feathers.controls
 			}
 			this._pushScreenEvents[this._activeScreenID] = null;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -802,7 +808,7 @@ package feathers.controls
 			}
 			this._replaceScreenEvents[this._activeScreenID] = savedScreenEvents;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -838,7 +844,7 @@ package feathers.controls
 			}
 			this._replaceScreenEvents[this._activeScreenID] = null;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -872,7 +878,7 @@ package feathers.controls
 			}
 			this._popScreenEvents = popEvents;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -903,7 +909,7 @@ package feathers.controls
 			}
 			this._popScreenEvents = null;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -934,7 +940,7 @@ package feathers.controls
 			}
 			this._popToRootScreenEvents = null;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -968,7 +974,7 @@ package feathers.controls
 			}
 			this._popToRootScreenEvents = popToRootEvents;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -979,10 +985,10 @@ package feathers.controls
 			{
 				self.pushScreen(screenID, data);
 			};
-
+			
 			return eventListener;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1009,10 +1015,10 @@ package feathers.controls
 					self.pushScreen(screenID, data);
 				};
 			}
-
+			
 			return signalListener;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1023,10 +1029,10 @@ package feathers.controls
 			{
 				self.replaceScreen(screenID);
 			};
-
+			
 			return eventListener;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1048,10 +1054,10 @@ package feathers.controls
 					self.replaceScreen(screenID);
 				};
 			}
-
+			
 			return signalListener;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1059,7 +1065,7 @@ package feathers.controls
 		{
 			this.popScreen();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1067,7 +1073,7 @@ package feathers.controls
 		{
 			this.popScreen();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1075,7 +1081,7 @@ package feathers.controls
 		{
 			this.popToRootScreen();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1083,7 +1089,7 @@ package feathers.controls
 		{
 			this.popToRootScreen();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1106,7 +1112,7 @@ final class StackItem
 		this.id = id;
 		this.properties = properties;
 	}
-
+	
 	public var id:String;
 	public var properties:Object;
 }

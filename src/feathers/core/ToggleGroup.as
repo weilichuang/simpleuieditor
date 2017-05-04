@@ -1,6 +1,6 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
@@ -8,10 +8,10 @@ accordance with the terms of the accompanying license agreement.
 package feathers.core
 {
 	import flash.errors.IllegalOperationError;
-
+	
 	import starling.events.Event;
 	import starling.events.EventDispatcher;
-
+	
 	/**
 	 * Dispatched when the selection changes.
 	 *
@@ -33,7 +33,7 @@ package feathers.core
 	 * @eventType starling.events.Event.CHANGE
 	 */
 	[Event(name="change",type="starling.events.Event")]
-
+	
 	/**
 	 * Controls the selection of two or more IToggle instances where only one
 	 * may be selected at a time.
@@ -47,23 +47,24 @@ package feathers.core
 		 */
 		public function ToggleGroup()
 		{
+			super();
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _items:Vector.<IToggle> = new Vector.<IToggle>;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _ignoreChanges:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isSelectionRequired:Boolean = true;
-
+		
 		/**
 		 * Determines if the user can deselect the currently selected item or
 		 * not. The selection may always be cleared programmatically by setting
@@ -86,7 +87,7 @@ package feathers.core
 		{
 			return this._isSelectionRequired;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -162,7 +163,7 @@ package feathers.core
 			}
 			var hasChanged:Boolean = this._selectedIndex != value;
 			this._selectedIndex = value;
-
+			
 			//refresh all the items
 			this._ignoreChanges = true;
 			for(var i:int = 0; i < itemCount; i++)
@@ -179,6 +180,14 @@ package feathers.core
 				//item (happens below in the item's onChange listener).
 				this.dispatchEventWith(Event.CHANGE);
 			}
+		}
+		
+		/**
+		 * The number of items added to the group.
+		 */
+		public function get numItems():int
+		{
+			return this._items.length;
 		}
 		
 		/**
@@ -213,7 +222,7 @@ package feathers.core
 				item.isSelected = false;
 			}
 			item.addEventListener(Event.CHANGE, item_changeHandler);
-
+			
 			if(item is IGroupedToggle)
 			{
 				IGroupedToggle(item).toggleGroup = this;
@@ -238,7 +247,9 @@ package feathers.core
 			{
 				return;
 			}
-			this._items.removeAt(index);
+
+			this._items.splice(index, 1);
+			
 			item.removeEventListener(Event.CHANGE, item_changeHandler);
 			if(item is IGroupedToggle)
 			{
@@ -277,7 +288,7 @@ package feathers.core
 				}
 			}
 		}
-
+		
 		/**
 		 * Removes all toggles from the group. No item will be selected.
 		 *
@@ -300,7 +311,7 @@ package feathers.core
 			}
 			this.selectedIndex = -1;
 		}
-
+		
 		/**
 		 * Determines if the group includes the specified item.
 		 *
@@ -317,7 +328,23 @@ package feathers.core
 			var index:int = this._items.indexOf(item);
 			return index >= 0;
 		}
-
+		
+		/**
+		 * Returns the item at the specified index. If the index is out of
+		 * range, a <code>RangeError</code> will be thrown.
+		 *
+		 * <p>In the following example, an item's at a specific index is returned:</p>
+		 *
+		 * <listing version="3.0">
+		 * var item:IToggle = group.getItemAt( 2 );</listing>
+		 * 
+		 * @see #numItems
+		 */
+		public function getItemAt(index:int):IToggle
+		{
+			return this._items[index];
+		}
+		
 		/**
 		 * Returns the index of the specified item. Result will be <code>-1</code>
 		 * if the item has not been added to the group.
@@ -331,7 +358,7 @@ package feathers.core
 		{
 			return this._items.indexOf(item);
 		}
-
+		
 		/**
 		 * Changes the index of a specified item. Throws an <code>ArgumentError</code>
 		 * if the specified item hasn't already been added to this group.
@@ -353,8 +380,10 @@ package feathers.core
 				//no change needed
 				return;
 			}
-			this._items.removeAt(oldIndex);
-			this._items.insertAt(index, item);
+			
+			this._items.splice(oldIndex,1);
+			this._items.splice(index, 0, item);
+			
 			if(this._selectedIndex >= 0)
 			{
 				if(this._selectedIndex == oldIndex)
@@ -381,7 +410,7 @@ package feathers.core
 			{
 				return;
 			}
-
+			
 			var item:IToggle = IToggle(event.currentTarget);
 			var index:int = this._items.indexOf(item);
 			if(item.isSelected || (this._isSelectionRequired && this._selectedIndex == index))

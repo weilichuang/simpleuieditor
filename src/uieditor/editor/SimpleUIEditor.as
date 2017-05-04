@@ -1,15 +1,8 @@
-/**
- *  Starling Builder
- *  Copyright 2015 SGN Inc. All Rights Reserved.
- *
- *  This program is free software. You can redistribute and/or modify it in
- *  accordance with the terms of the accompanying license agreement.
- */
 package uieditor.editor
 {
 	import com.greensock.TweenLite;
 	import com.greensock.easing.Sine;
-
+	
 	import flash.display.Loader;
 	import flash.display.NativeWindow;
 	import flash.display.NativeWindowInitOptions;
@@ -30,9 +23,12 @@ package uieditor.editor
 	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.utils.Timer;
-
+	
+	import org.taomee.artificialMouse.ArtificialMouse;
+	import org.taomee.shader.Buffer3DManager;
+	
 	import starling.core.Starling;
-
+	
 	import uieditor.editor.feathers.popup.MsgBox;
 	import uieditor.editor.util.AppUpdater;
 
@@ -63,6 +59,7 @@ package uieditor.editor
 
 		private function _start( e : Event ) : void
 		{
+			Buffer3DManager.getInstance().initContext(Starling.current.context);
 			_starling.start();
 		}
 
@@ -133,15 +130,20 @@ package uieditor.editor
 
 		private function init() : void
 		{
+			ArtificialMouse.useCustomMouse = false;
+			ArtificialMouse.init(this.stage);
+			
 			_viewport = new Rectangle( 0, 0, stage.stageWidth, stage.stageHeight );
 
 			_starling = new Starling( UIEditorApp, stage, _viewport, null, Context3DRenderMode.AUTO, Context3DProfile.BASELINE );
-
+			_starling.skipUnchangedFrames = false;
 			_starling.enableErrorChecking = false;
 
 			_starling.stage3D.addEventListener( Event.CONTEXT3D_CREATE, _start );
 
 			loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
+			
+			UIEditorApp.SWF_VERSION = loaderInfo.swfVersion;
 		}
 
 		private function stage_resizeHandler( event : Event ) : void

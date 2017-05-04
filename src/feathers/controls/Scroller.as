@@ -1,16 +1,25 @@
 /*
 Feathers
-Copyright 2012-2015 Bowler Hat LLC. All Rights Reserved.
+Copyright 2012-2016 Bowler Hat LLC. All Rights Reserved.
 
 This program is free software. You can redistribute and/or modify it in
 accordance with the terms of the accompanying license agreement.
 */
 package feathers.controls
 {
-	import feathers.controls.ScrollInteractionMode;
+	import flash.display.Stage;
+	import flash.events.MouseEvent;
+	import flash.geom.Point;
+	import flash.geom.Rectangle;
+	import flash.ui.Keyboard;
+	import flash.utils.getTimer;
+	
 	import feathers.controls.supportClasses.IViewPort;
 	import feathers.core.FeathersControl;
+	import feathers.core.IFeathersControl;
 	import feathers.core.IFocusDisplayObject;
+	import feathers.core.IMeasureDisplayObject;
+	import feathers.core.IValidating;
 	import feathers.core.PropertyProxy;
 	import feathers.events.ExclusiveTouch;
 	import feathers.events.FeathersEventType;
@@ -20,13 +29,10 @@ package feathers.controls
 	import feathers.utils.math.roundDownToNearest;
 	import feathers.utils.math.roundToNearest;
 	import feathers.utils.math.roundUpToNearest;
-
-	import flash.events.MouseEvent;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
-	import flash.ui.Keyboard;
-	import flash.utils.getTimer;
-
+	import feathers.utils.skins.resetFluidChildDimensionsForMeasurement;
+	
+	import org.taomee.artificialMouse.ArtificialMouse;
+	
 	import starling.animation.Transitions;
 	import starling.animation.Tween;
 	import starling.core.Starling;
@@ -38,7 +44,7 @@ package feathers.controls
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
 	import starling.utils.MathUtil;
-
+	
 	/**
 	 * Dispatched when the scroller scrolls in either direction or when the view
 	 * port's scrolling bounds have changed. Listen for <code>FeathersEventType.SCROLL_START</code>
@@ -67,7 +73,7 @@ package feathers.controls
 	 * @see #event:scrollComplete feathers.events.FeathersEventType.SCROLL_COMPLETE
 	 */
 	[Event(name="scroll",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the scroller starts scrolling in either direction
 	 * as a result of either user interaction or animation.
@@ -98,7 +104,7 @@ package feathers.controls
 	 * @see #event:scroll feathers.events.FeathersEventType.SCROLL
 	 */
 	[Event(name="scrollStart",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the scroller finishes scrolling in either direction
 	 * as a result of either user interaction or animation. Animations may not
@@ -131,7 +137,7 @@ package feathers.controls
 	 * @see #event:scroll feathers.events.FeathersEventType.SCROLL
 	 */
 	[Event(name="scrollComplete",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the user starts dragging the scroller when
 	 * <code>ScrollInteractionMode.TOUCH</code> is enabled or when the user
@@ -163,7 +169,7 @@ package feathers.controls
 	 * @see #event:scroll feathers.events.FeathersEventType.SCROLL
 	 */
 	[Event(name="beginInteraction",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the user stops dragging the scroller when
 	 * <code>ScrollInteractionMode.TOUCH</code> is enabled or when the user
@@ -197,7 +203,7 @@ package feathers.controls
 	 * @see #event:scroll feathers.events.FeathersEventType.SCROLL
 	 */
 	[Event(name="endInteraction",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the component receives focus.
 	 *
@@ -219,7 +225,7 @@ package feathers.controls
 	 * @eventType feathers.events.FeathersEventType.FOCUS_IN
 	 */
 	[Event(name="focusIn",type="starling.events.Event")]
-
+	
 	/**
 	 * Dispatched when the component loses focus.
 	 *
@@ -241,7 +247,7 @@ package feathers.controls
 	 * @eventType feathers.events.FeathersEventType.FOCUS_OUT
 	 */
 	[Event(name="focusOut",type="starling.events.Event")]
-
+	
 	/**
 	 * Allows horizontal and vertical scrolling of a <em>view port</em>. Not
 	 * meant to be used as a standalone container or component. Generally meant
@@ -262,227 +268,51 @@ package feathers.controls
 		 * @private
 		 */
 		private static const HELPER_POINT:Point = new Point();
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_SCROLL_BAR_RENDERER:String = "scrollBarRenderer";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_PENDING_SCROLL:String = "pendingScroll";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const INVALIDATION_FLAG_PENDING_REVEAL_SCROLL_BARS:String = "pendingRevealScrollBars";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.AUTO</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_POLICY_AUTO:String = "auto";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.ON</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_POLICY_ON:String = "on";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollPolicy.OFF</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_POLICY_OFF:String = "off";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FLOAT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_BAR_DISPLAY_MODE_FLOAT:String = "float";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FIXED</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_BAR_DISPLAY_MODE_FIXED:String = "fixed";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.FIXED_FLOAT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_BAR_DISPLAY_MODE_FIXED_FLOAT:String = "fixedFloat";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollBarDisplayMode.NONE</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const SCROLL_BAR_DISPLAY_MODE_NONE:String = "none";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.RIGHT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const VERTICAL_SCROLL_BAR_POSITION_RIGHT:String = "right";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.RelativePosition.LEFT</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const VERTICAL_SCROLL_BAR_POSITION_LEFT:String = "left";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.TOUCH</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const INTERACTION_MODE_TOUCH:String = "touch";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.MOUSE</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const INTERACTION_MODE_MOUSE:String = "mouse";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.ScrollInteractionMode.TOUCH_AND_SCROLL_BARS</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const INTERACTION_MODE_TOUCH_AND_SCROLL_BARS:String = "touchAndScrollBars";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.VERTICAL</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const MOUSE_WHEEL_SCROLL_DIRECTION_VERTICAL:String = "vertical";
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.layout.Direction.HORIZONTAL</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const MOUSE_WHEEL_SCROLL_DIRECTION_HORIZONTAL:String = "horizontal";
-
+		
 		/**
 		 * Flag to indicate that the clipping has changed.
 		 */
 		protected static const INVALIDATION_FLAG_CLIPPING:String = "clipping";
-
+		
 		/**
 		 * @private
 		 * The point where we stop calculating velocity changes because floating
 		 * point issues can start to appear.
 		 */
 		private static const MINIMUM_VELOCITY:Number = 0.02;
-
+		
 		/**
 		 * @private
 		 * The current velocity is given high importance.
 		 */
 		private static const CURRENT_VELOCITY_WEIGHT:Number = 2.33;
-
+		
 		/**
 		 * @private
 		 * Older saved velocities are given less importance.
 		 */
 		private static const VELOCITY_WEIGHTS:Vector.<Number> = new <Number>[1, 1.33, 1.66, 2];
-
+		
 		/**
 		 * @private
 		 */
 		private static const MAXIMUM_SAVED_VELOCITY_COUNT:int = 4;
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.DecelerationRate.NORMAL</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const DECELERATION_RATE_NORMAL:Number = 0.998;
-
-		/**
-		 * @private
-		 * DEPRECATED: Replaced by <code>feathers.controls.DecelerationRate.FAST</code>.
-		 *
-		 * <p><strong>DEPRECATION WARNING:</strong> This constant is deprecated
-		 * starting with Feathers 3.0. It will be removed in a future version of
-		 * Feathers according to the standard
-		 * <a target="_top" href="../../../help/deprecation-policy.html">Feathers deprecation policy</a>.</p>
-		 */
-		public static const DECELERATION_RATE_FAST:Number = 0.99;
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the
 		 * horizontal scroll bar.
@@ -490,7 +320,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_HORIZONTAL_SCROLL_BAR:String = "feathers-scroller-horizontal-scroll-bar";
-
+		
 		/**
 		 * The default value added to the <code>styleNameList</code> of the vertical
 		 * scroll bar.
@@ -498,17 +328,17 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		public static const DEFAULT_CHILD_STYLE_NAME_VERTICAL_SCROLL_BAR:String = "feathers-scroller-vertical-scroll-bar";
-
+		
 		/**
 		 * @private
 		 */
 		protected static const FUZZY_PAGE_SIZE_PADDING:Number = 0.000001;
-
+		
 		/**
 		 * @private
 		 */
-		protected static const PAGE_INDEX_EPSILON:Number = 0.001;
-
+		protected static const PAGE_INDEX_EPSILON:Number = 0.01;
+		
 		/**
 		 * @private
 		 */
@@ -516,7 +346,7 @@ package feathers.controls
 		{
 			return new SimpleScrollBar();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -534,11 +364,11 @@ package feathers.controls
 		public function Scroller()
 		{
 			super();
-
+			
 			this.addEventListener(Event.ADDED_TO_STAGE, scroller_addedToStageHandler);
 			this.addEventListener(Event.REMOVED_FROM_STAGE, scroller_removedFromStageHandler);
 		}
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the horizontal
 		 * scroll bar. This variable is <code>protected</code> so that
@@ -553,7 +383,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var horizontalScrollBarStyleName:String = DEFAULT_CHILD_STYLE_NAME_HORIZONTAL_SCROLL_BAR;
-
+		
 		/**
 		 * The value added to the <code>styleNameList</code> of the vertical
 		 * scroll bar. This variable is <code>protected</code> so that
@@ -568,7 +398,7 @@ package feathers.controls
 		 * @see feathers.core.FeathersControl#styleNameList
 		 */
 		protected var verticalScrollBarStyleName:String = DEFAULT_CHILD_STYLE_NAME_VERTICAL_SCROLL_BAR;
-
+		
 		/**
 		 * The horizontal scrollbar instance. May be null.
 		 *
@@ -578,7 +408,7 @@ package feathers.controls
 		 * @see #createScrollBars()
 		 */
 		protected var horizontalScrollBar:IScrollBar;
-
+		
 		/**
 		 * The vertical scrollbar instance. May be null.
 		 *
@@ -588,7 +418,7 @@ package feathers.controls
 		 * @see #createScrollBars()
 		 */
 		protected var verticalScrollBar:IScrollBar;
-
+		
 		/**
 		 * @private
 		 */
@@ -596,169 +426,169 @@ package feathers.controls
 		{
 			return (this._maxVerticalScrollPosition != this._minVerticalScrollPosition ||
 				this._maxHorizontalScrollPosition != this._minHorizontalScrollPosition) &&
-				super.isFocusEnabled;
+					super.isFocusEnabled;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _topViewPortOffset:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _rightViewPortOffset:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _bottomViewPortOffset:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _leftViewPortOffset:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _hasHorizontalScrollBar:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _hasVerticalScrollBar:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalScrollBarTouchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalScrollBarTouchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _touchPointID:int = -1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _startTouchX:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _startTouchY:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _startHorizontalScrollPosition:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _startVerticalScrollPosition:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _currentTouchX:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _currentTouchY:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _previousTouchTime:int;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _previousTouchX:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _previousTouchY:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _velocityX:Number = 0;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _velocityY:Number = 0;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _previousVelocityX:Vector.<Number> = new <Number>[];
-
+		
 		/**
 		 * @private
 		 */
 		protected var _previousVelocityY:Vector.<Number> = new <Number>[];
-
+		
 		/**
 		 * @private
 		 */
 		protected var _lastViewPortWidth:Number = 0;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _lastViewPortHeight:Number = 0;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _hasViewPortBoundsChanged:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalAutoScrollTween:Tween;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalAutoScrollTween:Tween;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isDraggingHorizontally:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isDraggingVertically:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var ignoreViewPortResizing:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _touchBlocker:Quad;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _viewPort:IViewPort;
-
+		
 		/**
 		 * The display object displayed and scrolled within the Scroller.
 		 *
@@ -768,7 +598,7 @@ package feathers.controls
 		{
 			return this._viewPort;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -778,25 +608,53 @@ package feathers.controls
 			{
 				return;
 			}
-			if(this._viewPort)
+			if(this._viewPort !== null)
 			{
 				this._viewPort.removeEventListener(FeathersEventType.RESIZE, viewPort_resizeHandler);
 				this.removeRawChildInternal(DisplayObject(this._viewPort));
 			}
 			this._viewPort = value;
-			if(this._viewPort)
+			if(this._viewPort !== null)
 			{
 				this._viewPort.addEventListener(FeathersEventType.RESIZE, viewPort_resizeHandler);
 				this.addRawChildAtInternal(DisplayObject(this._viewPort), 0);
+				if(this._viewPort is IFeathersControl)
+				{
+					IFeathersControl(this._viewPort).initializeNow();
+				}
+				this._explicitViewPortWidth = this._viewPort.explicitWidth;
+				this._explicitViewPortHeight = this._viewPort.explicitHeight;
+				this._explicitViewPortMinWidth = this._viewPort.explicitMinWidth;
+				this._explicitViewPortMinHeight = this._viewPort.explicitMinHeight;
 			}
 			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitViewPortWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitViewPortHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitViewPortMinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitViewPortMinHeight:Number;
+		
 		/**
 		 * @private
 		 */
 		protected var _measureViewPort:Boolean = true;
-
+		
 		/**
 		 * Determines if the dimensions of the view port are used when measuring
 		 * the scroller. If disabled, only children other than the view port
@@ -813,7 +671,7 @@ package feathers.controls
 		{
 			return this._measureViewPort;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -826,12 +684,12 @@ package feathers.controls
 			this._measureViewPort = value;
 			this.invalidate(INVALIDATION_FLAG_SIZE);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _snapToPages:Boolean = false;
-
+		
 		/**
 		 * Determines if scrolling will snap to the nearest page.
 		 *
@@ -846,7 +704,7 @@ package feathers.controls
 		{
 			return this._snapToPages;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -859,17 +717,17 @@ package feathers.controls
 			this._snapToPages = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _snapOnComplete:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalScrollBarFactory:Function = defaultScrollBarFactory;
-
+		
 		/**
 		 * Creates the horizontal scroll bar. The horizontal scroll bar must be
 		 * an instance of <code>IScrollBar</code>. This factory can be used to
@@ -900,7 +758,7 @@ package feathers.controls
 		{
 			return this._horizontalScrollBarFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -913,12 +771,12 @@ package feathers.controls
 			this._horizontalScrollBarFactory = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL_BAR_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customHorizontalScrollBarStyleName:String;
-
+		
 		/**
 		 * A style name to add to the container's horizontal scroll bar
 		 * sub-component. Typically used by a theme to provide different styles
@@ -947,7 +805,7 @@ package feathers.controls
 		{
 			return this._customHorizontalScrollBarStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -960,12 +818,12 @@ package feathers.controls
 			this._customHorizontalScrollBarStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL_BAR_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalScrollBarProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the container's horizontal
 		 * scroll bar, and the properties will be passed down to the horizontal
@@ -1006,7 +864,7 @@ package feathers.controls
 			}
 			return this._horizontalScrollBarProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1040,12 +898,12 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalScrollBarPosition:String = RelativePosition.RIGHT;
-
+		
 		[Inspectable(type="String",enumeration="right,left")]
 		/**
 		 * Determines where the vertical scroll bar will be positioned.
@@ -1064,7 +922,7 @@ package feathers.controls
 		{
 			return this._verticalScrollBarPosition;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1077,12 +935,12 @@ package feathers.controls
 			this._verticalScrollBarPosition = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalScrollBarFactory:Function = defaultScrollBarFactory;
-
+		
 		/**
 		 * Creates the vertical scroll bar. The vertical scroll bar must be an
 		 * instance of <code>Button</code>. This factory can be used to change
@@ -1113,7 +971,7 @@ package feathers.controls
 		{
 			return this._verticalScrollBarFactory;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1126,12 +984,12 @@ package feathers.controls
 			this._verticalScrollBarFactory = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL_BAR_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _customVerticalScrollBarStyleName:String;
-
+		
 		/**
 		 * A style name to add to the container's vertical scroll bar
 		 * sub-component. Typically used by a theme to provide different styles
@@ -1160,7 +1018,7 @@ package feathers.controls
 		{
 			return this._customVerticalScrollBarStyleName;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1173,12 +1031,12 @@ package feathers.controls
 			this._customVerticalScrollBarStyleName = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL_BAR_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalScrollBarProperties:PropertyProxy;
-
+		
 		/**
 		 * An object that stores properties for the container's vertical scroll
 		 * bar, and the properties will be passed down to the vertical scroll
@@ -1219,7 +1077,7 @@ package feathers.controls
 			}
 			return this._verticalScrollBarProperties;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1253,17 +1111,17 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var actualHorizontalScrollStep:Number = 1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var explicitHorizontalScrollStep:Number = NaN;
-
+		
 		/**
 		 * The number of pixels the horizontal scroll position can be adjusted
 		 * by a "step". Passed to the horizontal scroll bar, if one exists.
@@ -1280,7 +1138,7 @@ package feathers.controls
 		{
 			return this.actualHorizontalScrollStep;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1293,17 +1151,17 @@ package feathers.controls
 			this.explicitHorizontalScrollStep = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _targetHorizontalScrollPosition:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalScrollPosition:Number = 0;
-
+		
 		/**
 		 * The number of pixels the container has been scrolled horizontally (on
 		 * the x-axis).
@@ -1320,16 +1178,12 @@ package feathers.controls
 		{
 			return this._horizontalScrollPosition;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		public function set horizontalScrollPosition(value:Number):void
 		{
-			if(this._snapScrollPositionsToPixels)
-			{
-				value = Math.round(value);
-			}
 			if(this._horizontalScrollPosition == value)
 			{
 				return;
@@ -1342,12 +1196,12 @@ package feathers.controls
 			this._horizontalScrollPosition = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minHorizontalScrollPosition:Number = 0;
-
+		
 		/**
 		 * The number of pixels the scroller may be scrolled horizontally to the
 		 * left. This value is automatically calculated based on the bounds of
@@ -1363,12 +1217,12 @@ package feathers.controls
 		{
 			return this._minHorizontalScrollPosition;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _maxHorizontalScrollPosition:Number = 0;
-
+		
 		/**
 		 * The number of pixels the scroller may be scrolled horizontally to the
 		 * right. This value is automatically calculated based on the bounds of
@@ -1384,12 +1238,12 @@ package feathers.controls
 		{
 			return this._maxHorizontalScrollPosition;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalPageIndex:int = 0;
-
+		
 		/**
 		 * The index of the horizontal page, if snapping is enabled. If snapping
 		 * is disabled, the index will always be <code>0</code>.
@@ -1406,12 +1260,12 @@ package feathers.controls
 			}
 			return this._horizontalPageIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minHorizontalPageIndex:int = 0;
-
+		
 		/**
 		 * The minimum horizontal page index that may be displayed by this
 		 * container, if page snapping is enabled.
@@ -1424,12 +1278,12 @@ package feathers.controls
 		{
 			return this._minHorizontalPageIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _maxHorizontalPageIndex:int = 0;
-
+		
 		/**
 		 * The maximum horizontal page index that may be displayed by this
 		 * container, if page snapping is enabled.
@@ -1442,7 +1296,7 @@ package feathers.controls
 		{
 			return this._maxHorizontalPageIndex;
 		}
-
+		
 		/**
 		 * The number of horizontal pages, if snapping is enabled. If snapping
 		 * is disabled, the page count will always be <code>1</code>.
@@ -1465,12 +1319,12 @@ package feathers.controls
 			}
 			return this._maxHorizontalPageIndex - this._minHorizontalPageIndex + 1;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalScrollPolicy:String = ScrollPolicy.AUTO;
-
+		
 		[Inspectable(type="String",enumeration="auto,on,off")]
 		/**
 		 * Determines whether the scroller may scroll horizontally (on the
@@ -1491,7 +1345,7 @@ package feathers.controls
 		{
 			return this._horizontalScrollPolicy;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1505,17 +1359,17 @@ package feathers.controls
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 			this.invalidate(INVALIDATION_FLAG_SCROLL_BAR_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var actualVerticalScrollStep:Number = 1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var explicitVerticalScrollStep:Number = NaN;
-
+		
 		/**
 		 * The number of pixels the vertical scroll position can be adjusted
 		 * by a "step". Passed to the vertical scroll bar, if one exists.
@@ -1532,7 +1386,7 @@ package feathers.controls
 		{
 			return this.actualVerticalScrollStep;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1545,12 +1399,12 @@ package feathers.controls
 			this.explicitVerticalScrollStep = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalMouseWheelScrollStep:Number = NaN;
-
+		
 		/**
 		 * The number of pixels the vertical scroll position can be adjusted by
 		 * a "step" when using the mouse wheel. If this value is
@@ -1568,7 +1422,7 @@ package feathers.controls
 		{
 			return this._verticalMouseWheelScrollStep;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1581,17 +1435,17 @@ package feathers.controls
 			this._verticalMouseWheelScrollStep = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _targetVerticalScrollPosition:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalScrollPosition:Number = 0;
-
+		
 		/**
 		 * The number of pixels the container has been scrolled vertically (on
 		 * the y-axis).
@@ -1608,16 +1462,12 @@ package feathers.controls
 		{
 			return this._verticalScrollPosition;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		public function set verticalScrollPosition(value:Number):void
 		{
-			if(this._snapScrollPositionsToPixels)
-			{
-				value = Math.round(value);
-			}
 			if(this._verticalScrollPosition == value)
 			{
 				return;
@@ -1630,12 +1480,12 @@ package feathers.controls
 			this._verticalScrollPosition = value;
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minVerticalScrollPosition:Number = 0;
-
+		
 		/**
 		 * The number of pixels the scroller may be scrolled vertically beyond
 		 * the top edge. This value is automatically calculated based on the
@@ -1651,12 +1501,12 @@ package feathers.controls
 		{
 			return this._minVerticalScrollPosition;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _maxVerticalScrollPosition:Number = 0;
-
+		
 		/**
 		 * The number of pixels the scroller may be scrolled vertically beyond
 		 * the bottom edge. This value is automatically calculated based on the
@@ -1672,12 +1522,12 @@ package feathers.controls
 		{
 			return this._maxVerticalScrollPosition;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalPageIndex:int = 0;
-
+		
 		/**
 		 * The index of the vertical page, if snapping is enabled. If snapping
 		 * is disabled, the index will always be <code>0</code>.
@@ -1694,12 +1544,12 @@ package feathers.controls
 			}
 			return this._verticalPageIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minVerticalPageIndex:int = 0;
-
+		
 		/**
 		 * The minimum vertical page index that may be displayed by this
 		 * container, if page snapping is enabled.
@@ -1712,12 +1562,12 @@ package feathers.controls
 		{
 			return this._minVerticalPageIndex;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _maxVerticalPageIndex:int = 0;
-
+		
 		/**
 		 * The maximum vertical page index that may be displayed by this
 		 * container, if page snapping is enabled.
@@ -1730,7 +1580,7 @@ package feathers.controls
 		{
 			return this._maxVerticalPageIndex;
 		}
-
+		
 		/**
 		 * The number of vertical pages, if snapping is enabled. If snapping
 		 * is disabled, the page count will always be <code>1</code>.
@@ -1753,12 +1603,12 @@ package feathers.controls
 			}
 			return this._maxVerticalPageIndex - this._minVerticalPageIndex + 1;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalScrollPolicy:String = ScrollPolicy.AUTO;
-
+		
 		[Inspectable(type="String",enumeration="auto,on,off")]
 		/**
 		 * Determines whether the scroller may scroll vertically (on the
@@ -1779,7 +1629,7 @@ package feathers.controls
 		{
 			return this._verticalScrollPolicy;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1793,12 +1643,12 @@ package feathers.controls
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 			this.invalidate(INVALIDATION_FLAG_SCROLL_BAR_RENDERER);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _clipContent:Boolean = true;
-
+		
 		/**
 		 * If true, the viewport will be clipped to the scroller's bounds. In
 		 * other words, anything appearing outside the scroller's bounds will
@@ -1819,7 +1669,7 @@ package feathers.controls
 		{
 			return this._clipContent;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1836,17 +1686,17 @@ package feathers.controls
 			}
 			this.invalidate(INVALIDATION_FLAG_CLIPPING);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var actualPageWidth:Number = 0;
-
+		
 		/**
 		 * @private
 		 */
 		protected var explicitPageWidth:Number = NaN;
-
+		
 		/**
 		 * When set, the horizontal pages snap to this width value instead of
 		 * the width of the scroller.
@@ -1862,7 +1712,7 @@ package feathers.controls
 		{
 			return this.actualPageWidth;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1888,17 +1738,17 @@ package feathers.controls
 				this.actualPageWidth = this.explicitPageWidth;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var actualPageHeight:Number = 0;
-
+		
 		/**
 		 * @private
 		 */
 		protected var explicitPageHeight:Number = NaN;
-
+		
 		/**
 		 * When set, the vertical pages snap to this height value instead of
 		 * the height of the scroller.
@@ -1914,7 +1764,7 @@ package feathers.controls
 		{
 			return this.actualPageHeight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1940,12 +1790,12 @@ package feathers.controls
 				this.actualPageHeight = this.explicitPageHeight;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _hasElasticEdges:Boolean = true;
-
+		
 		/**
 		 * Determines if the scrolling can go beyond the edges of the viewport.
 		 *
@@ -1963,7 +1813,7 @@ package feathers.controls
 		{
 			return this._hasElasticEdges;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -1971,12 +1821,12 @@ package feathers.controls
 		{
 			this._hasElasticEdges = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _elasticity:Number = 0.33;
-
+		
 		/**
 		 * If the scroll position goes outside the minimum or maximum bounds
 		 * when the scroller's content is being actively dragged, the scrolling
@@ -2000,7 +1850,7 @@ package feathers.controls
 		{
 			return this._elasticity;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2008,12 +1858,12 @@ package feathers.controls
 		{
 			this._elasticity = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _throwElasticity:Number = 0.05;
-
+		
 		/**
 		 * If the scroll position goes outside the minimum or maximum bounds
 		 * when the scroller's content is "thrown", the scrolling will be
@@ -2037,7 +1887,7 @@ package feathers.controls
 		{
 			return this._throwElasticity;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2045,12 +1895,12 @@ package feathers.controls
 		{
 			this._throwElasticity = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _scrollBarDisplayMode:String = ScrollBarDisplayMode.FLOAT;
-
+		
 		[Inspectable(type="String",enumeration="float,fixed,none")]
 		/**
 		 * Determines how the scroll bars are displayed.
@@ -2071,7 +1921,7 @@ package feathers.controls
 		{
 			return this._scrollBarDisplayMode;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2084,12 +1934,12 @@ package feathers.controls
 			this._scrollBarDisplayMode = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _interactionMode:String = ScrollInteractionMode.TOUCH;
-
+		
 		[Inspectable(type="String",enumeration="touch,mouse,touchAndScrollBars")]
 		/**
 		 * Determines how the user may interact with the scroller.
@@ -2109,7 +1959,7 @@ package feathers.controls
 		{
 			return this._interactionMode;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2122,27 +1972,47 @@ package feathers.controls
 			this._interactionMode = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected var originalBackgroundWidth:Number = NaN;
-
+		protected var _explicitBackgroundWidth:Number;
+		
 		/**
 		 * @private
 		 */
-		protected var originalBackgroundHeight:Number = NaN;
-
+		protected var _explicitBackgroundHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMinWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMinHeight:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMaxWidth:Number;
+		
+		/**
+		 * @private
+		 */
+		protected var _explicitBackgroundMaxHeight:Number;
+		
 		/**
 		 * @private
 		 */
 		protected var currentBackgroundSkin:DisplayObject;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _backgroundSkin:DisplayObject;
-
+		
 		/**
 		 * The default background to display.
 		 *
@@ -2157,7 +2027,7 @@ package feathers.controls
 		{
 			return this._backgroundSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2167,7 +2037,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			if(this._backgroundSkin && this.currentBackgroundSkin == this._backgroundSkin)
 			{
 				this.removeRawChildInternal(this._backgroundSkin);
@@ -2176,12 +2046,12 @@ package feathers.controls
 			this._backgroundSkin = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _backgroundDisabledSkin:DisplayObject;
-
+		
 		/**
 		 * A background to display when the container is disabled.
 		 *
@@ -2196,7 +2066,7 @@ package feathers.controls
 		{
 			return this._backgroundDisabledSkin;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2206,7 +2076,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			if(this._backgroundDisabledSkin && this.currentBackgroundSkin == this._backgroundDisabledSkin)
 			{
 				this.removeRawChildInternal(this._backgroundDisabledSkin);
@@ -2215,12 +2085,12 @@ package feathers.controls
 			this._backgroundDisabledSkin = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _autoHideBackground:Boolean = false;
-
+		
 		/**
 		 * If <code>true</code>, the background's <code>visible</code> property
 		 * will be set to <code>false</code> when the scroll position is greater
@@ -2245,7 +2115,7 @@ package feathers.controls
 		{
 			return this._autoHideBackground;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2258,12 +2128,12 @@ package feathers.controls
 			this._autoHideBackground = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minimumDragDistance:Number = 0.04;
-
+		
 		/**
 		 * The minimum physical distance (in inches) that a touch must move
 		 * before the scroller starts scrolling.
@@ -2279,7 +2149,7 @@ package feathers.controls
 		{
 			return this._minimumDragDistance;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2287,12 +2157,12 @@ package feathers.controls
 		{
 			this._minimumDragDistance = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _minimumPageThrowVelocity:Number = 5;
-
+		
 		/**
 		 * The minimum physical velocity (in inches per second) that a touch
 		 * must move before the scroller will "throw" to the next page.
@@ -2309,7 +2179,7 @@ package feathers.controls
 		{
 			return this._minimumPageThrowVelocity;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2317,7 +2187,7 @@ package feathers.controls
 		{
 			this._minimumPageThrowVelocity = value;
 		}
-
+		
 		/**
 		 * Quickly sets all padding properties to the same value. The
 		 * <code>padding</code> getter always returns the value of
@@ -2340,7 +2210,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2351,12 +2221,12 @@ package feathers.controls
 			this.paddingBottom = value;
 			this.paddingLeft = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingTop:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the container's top edge and the
 		 * container's content.
@@ -2372,7 +2242,7 @@ package feathers.controls
 		{
 			return this._paddingTop;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2385,12 +2255,12 @@ package feathers.controls
 			this._paddingTop = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingRight:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the container's right edge and
 		 * the container's content.
@@ -2406,7 +2276,7 @@ package feathers.controls
 		{
 			return this._paddingRight;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2419,12 +2289,12 @@ package feathers.controls
 			this._paddingRight = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingBottom:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the container's bottom edge and
 		 * the container's content.
@@ -2440,7 +2310,7 @@ package feathers.controls
 		{
 			return this._paddingBottom;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2453,12 +2323,12 @@ package feathers.controls
 			this._paddingBottom = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _paddingLeft:Number = 0;
-
+		
 		/**
 		 * The minimum space, in pixels, between the container's left edge and the
 		 * container's content.
@@ -2474,7 +2344,7 @@ package feathers.controls
 		{
 			return this._paddingLeft;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2487,22 +2357,22 @@ package feathers.controls
 			this._paddingLeft = value;
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalScrollBarHideTween:Tween;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalScrollBarHideTween:Tween;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _hideScrollBarAnimationDuration:Number = 0.2;
-
+		
 		/**
 		 * The duration, in seconds, of the animation when a scroll bar fades
 		 * out.
@@ -2519,7 +2389,7 @@ package feathers.controls
 		{
 			return this._hideScrollBarAnimationDuration;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2527,12 +2397,12 @@ package feathers.controls
 		{
 			this._hideScrollBarAnimationDuration = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _hideScrollBarAnimationEase:Object = Transitions.EASE_OUT;
-
+		
 		/**
 		 * The easing function used for hiding the scroll bars, if applicable.
 		 *
@@ -2550,7 +2420,7 @@ package feathers.controls
 		{
 			return this._hideScrollBarAnimationEase;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2558,12 +2428,12 @@ package feathers.controls
 		{
 			this._hideScrollBarAnimationEase = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _elasticSnapDuration:Number = 0.5;
-
+		
 		/**
 		 * The duration, in seconds, of the animation when a the scroller snaps
 		 * back to the minimum or maximum position after going out of bounds.
@@ -2581,7 +2451,7 @@ package feathers.controls
 		{
 			return this._elasticSnapDuration;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2589,19 +2459,19 @@ package feathers.controls
 		{
 			this._elasticSnapDuration = value;
 		}
-
+		
 		/**
 		 * @private
 		 * This value is precalculated. See the <code>decelerationRate</code>
 		 * setter for the dynamic calculation.
 		 */
 		protected var _logDecelerationRate:Number = -0.0020020026706730793;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _decelerationRate:Number = DecelerationRate.NORMAL;
-
+		
 		/**
 		 * This value is used to decelerate the scroller when "thrown". The
 		 * velocity of a throw is multiplied by this value once per millisecond
@@ -2623,7 +2493,7 @@ package feathers.controls
 		{
 			return this._decelerationRate;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2637,19 +2507,19 @@ package feathers.controls
 			this._logDecelerationRate = Math.log(this._decelerationRate);
 			this._fixedThrowDuration = -0.1 / Math.log(Math.pow(this._decelerationRate, 1000 / 60))
 		}
-
+		
 		/**
 		 * @private
 		 * This value is precalculated. See the <code>decelerationRate</code>
 		 * setter for the dynamic calculation.
 		 */
 		protected var _fixedThrowDuration:Number = 2.996998998998728;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _useFixedThrowDuration:Boolean = true;
-
+		
 		/**
 		 * If <code>true</code>, the duration of a "throw" animation will be the
 		 * same no matter the value of the throw's initial velocity. This value
@@ -2675,7 +2545,7 @@ package feathers.controls
 		{
 			return this._useFixedThrowDuration;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2683,12 +2553,12 @@ package feathers.controls
 		{
 			this._useFixedThrowDuration = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _pageThrowDuration:Number = 0.5;
-
+		
 		/**
 		 * The duration, in seconds, of the animation when the scroller is
 		 * thrown to a page.
@@ -2705,7 +2575,7 @@ package feathers.controls
 		{
 			return this._pageThrowDuration;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2713,12 +2583,12 @@ package feathers.controls
 		{
 			this._pageThrowDuration = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _mouseWheelScrollDuration:Number = 0.35;
-
+		
 		/**
 		 * The duration, in seconds, of the animation when the mouse wheel
 		 * initiates a scroll action.
@@ -2735,7 +2605,7 @@ package feathers.controls
 		{
 			return this._mouseWheelScrollDuration;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2743,12 +2613,12 @@ package feathers.controls
 		{
 			this._mouseWheelScrollDuration = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalMouseWheelScrollDirection:String = Direction.VERTICAL;
-
+		
 		/**
 		 * The direction of scrolling when the user scrolls the mouse wheel
 		 * vertically. In some cases, it is common for a container that only
@@ -2770,7 +2640,7 @@ package feathers.controls
 		{
 			return this._verticalMouseWheelScrollDirection;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2778,12 +2648,12 @@ package feathers.controls
 		{
 			this._verticalMouseWheelScrollDirection = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _throwEase:Object = defaultThrowEase;
-
+		
 		/**
 		 * The easing function used for "throw" animations.
 		 *
@@ -2799,7 +2669,7 @@ package feathers.controls
 		{
 			return this._throwEase;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2811,12 +2681,12 @@ package feathers.controls
 			}
 			this._throwEase = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _snapScrollPositionsToPixels:Boolean = true;
-
+		
 		/**
 		 * If enabled, the scroll position will always be adjusted to whole
 		 * pixels.
@@ -2832,7 +2702,7 @@ package feathers.controls
 		{
 			return this._snapScrollPositionsToPixels;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2843,28 +2713,24 @@ package feathers.controls
 				return;
 			}
 			this._snapScrollPositionsToPixels = value;
-			if(this._snapScrollPositionsToPixels)
-			{
-				this.horizontalScrollPosition = Math.round(this._horizontalScrollPosition);
-				this.verticalScrollPosition = Math.round(this._verticalScrollPosition);
-			}
+			this.invalidate(INVALIDATION_FLAG_SCROLL);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalScrollBarIsScrolling:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalScrollBarIsScrolling:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isScrolling:Boolean = false;
-
+		
 		/**
 		 * Determines if the scroller is currently scrolling with user
 		 * interaction or with animation.
@@ -2873,26 +2739,26 @@ package feathers.controls
 		{
 			return this._isScrolling;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _isScrollingStopped:Boolean = false;
-
+		
 		/**
 		 * The pending horizontal scroll position to scroll to after validating.
 		 * A value of <code>NaN</code> means that the scroller won't scroll to a
 		 * horizontal position after validating.
 		 */
 		protected var pendingHorizontalScrollPosition:Number = NaN;
-
+		
 		/**
 		 * The pending vertical scroll position to scroll to after validating.
 		 * A value of <code>NaN</code> means that the scroller won't scroll to a
 		 * vertical position after validating.
 		 */
 		protected var pendingVerticalScrollPosition:Number = NaN;
-
+		
 		/**
 		 * A flag that indicates if the scroller should scroll to a new page
 		 * when it validates. If <code>true</code>, it will use the value of
@@ -2901,7 +2767,7 @@ package feathers.controls
 		 * @see #pendingHorizontalPageIndex
 		 */
 		protected var hasPendingHorizontalPageIndex:Boolean = false;
-
+		
 		/**
 		 * A flag that indicates if the scroller should scroll to a new page
 		 * when it validates. If <code>true</code>, it will use the value of
@@ -2910,7 +2776,7 @@ package feathers.controls
 		 * @see #pendingVerticalPageIndex
 		 */
 		protected var hasPendingVerticalPageIndex:Boolean = false;
-
+		
 		/**
 		 * The pending horizontal page index to scroll to after validating. The
 		 * flag <code>hasPendingHorizontalPageIndex</code> must be set to true
@@ -2919,7 +2785,7 @@ package feathers.controls
 		 * @see #hasPendingHorizontalPageIndex
 		 */
 		protected var pendingHorizontalPageIndex:int;
-
+		
 		/**
 		 * The pending vertical page index to scroll to after validating. The
 		 * flag <code>hasPendingVerticalPageIndex</code> must be set to true
@@ -2928,22 +2794,22 @@ package feathers.controls
 		 * @see #hasPendingVerticalPageIndex
 		 */
 		protected var pendingVerticalPageIndex:int;
-
+		
 		/**
 		 * The duration of the pending scroll action.
 		 */
 		protected var pendingScrollDuration:Number;
-
+		
 		/**
 		 * @private
 		 */
 		protected var isScrollBarRevealPending:Boolean = false;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _revealScrollBarsDuration:Number = 1.0;
-
+		
 		/**
 		 * The duration, in seconds, that the scroll bars will be shown when
 		 * calling <code>revealScrollBars()</code>
@@ -2956,7 +2822,7 @@ package feathers.controls
 		{
 			return this._revealScrollBarsDuration;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -2964,38 +2830,73 @@ package feathers.controls
 		{
 			this._revealScrollBarsDuration = value;
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected var _horizontalAutoScrollTweenEndRatio:Number = 1;
-
+		
 		/**
 		 * @private
 		 */
 		protected var _verticalAutoScrollTweenEndRatio:Number = 1;
-
+		
 		/**
 		 * @private
 		 */
 		override public function dispose():void
 		{
-			Starling.current.nativeStage.removeEventListener(MouseEvent.MOUSE_WHEEL, nativeStage_mouseWheelHandler);
-			Starling.current.nativeStage.removeEventListener("orientationChange", nativeStage_orientationChangeHandler);
+			var nativeStage:Stage = Starling.current.nativeStage;
+			nativeStage.removeEventListener(MouseEvent.MOUSE_WHEEL, nativeStage_mouseWheelHandler);
+			
+			this.removeEventListener(TouchEvent.TOUCH, scroller_touchHandler);
+			
+			this.removeEventListener(Event.ENTER_FRAME, scroller_enterFrameHandler);
+			
+			this.removeEventListener(Event.ADDED_TO_STAGE, scroller_addedToStageHandler);
+			this.removeEventListener(Event.REMOVED_FROM_STAGE, scroller_removedFromStageHandler);
+			
+			if(this.stage)
+				this.stage.removeEventListener(KeyboardEvent.KEY_DOWN, stage_keyDownHandler);
+			
+			this.viewPort = null;
+			
+			if(this.horizontalScrollBar)
+			{
+				this.horizontalScrollBar.removeEventListener(TouchEvent.TOUCH, horizontalScrollBar_touchHandler);
+				this.horizontalScrollBar.removeEventListener(FeathersEventType.BEGIN_INTERACTION, horizontalScrollBar_beginInteractionHandler);
+				this.horizontalScrollBar.removeEventListener(FeathersEventType.END_INTERACTION, horizontalScrollBar_endInteractionHandler);
+				this.horizontalScrollBar.removeEventListener(Event.CHANGE, horizontalScrollBar_changeHandler);
+				this.removeRawChildInternal(DisplayObject(this.horizontalScrollBar), true);
+				this.horizontalScrollBar = null;
+			}
+			
+			if(this.verticalScrollBar)
+			{
+				this.verticalScrollBar.removeEventListener(TouchEvent.TOUCH, verticalScrollBar_touchHandler);
+				this.verticalScrollBar.removeEventListener(FeathersEventType.BEGIN_INTERACTION, verticalScrollBar_beginInteractionHandler);
+				this.verticalScrollBar.removeEventListener(FeathersEventType.END_INTERACTION, verticalScrollBar_endInteractionHandler);
+				this.verticalScrollBar.removeEventListener(Event.CHANGE, verticalScrollBar_changeHandler);
+				this.removeRawChildInternal(DisplayObject(this.verticalScrollBar), true);
+				this.verticalScrollBar = null;
+			}
 			
 			//we don't dispose it if the text input is the parent because it'll
 			//already get disposed in super.dispose()
 			if(this._backgroundSkin && this._backgroundSkin.parent !== this)
 			{
 				this._backgroundSkin.dispose();
+				this._backgroundSkin = null;
 			}
+			
 			if(this._backgroundDisabledSkin && this._backgroundDisabledSkin.parent !== this)
 			{
 				this._backgroundDisabledSkin.dispose();
+				this._backgroundDisabledSkin = null;
 			}
 			super.dispose();
 		}
-
+		
 		/**
 		 * If the user is scrolling with touch or if the scrolling is animated,
 		 * calling stopScrolling() will cause the scroller to ignore the drag
@@ -3017,12 +2918,12 @@ package feathers.controls
 		{
 			if(this._horizontalAutoScrollTween)
 			{
-				Starling.juggler.remove(this._horizontalAutoScrollTween);
+				Starling.current.juggler.remove(this._horizontalAutoScrollTween);
 				this._horizontalAutoScrollTween = null;
 			}
 			if(this._verticalAutoScrollTween)
 			{
-				Starling.juggler.remove(this._verticalAutoScrollTween);
+				Starling.current.juggler.remove(this._verticalAutoScrollTween);
 				this._verticalAutoScrollTween = null;
 			}
 			this._isScrollingStopped = true;
@@ -3033,7 +2934,7 @@ package feathers.controls
 			this.hideHorizontalScrollBar();
 			this.hideVerticalScrollBar();
 		}
-
+		
 		/**
 		 * After the next validation, animates the scroll positions to a
 		 * specific location. May scroll in only one direction by passing in a
@@ -3085,7 +2986,7 @@ package feathers.controls
 			this.pendingScrollDuration = animationDuration;
 			this.invalidate(INVALIDATION_FLAG_PENDING_SCROLL);
 		}
-
+		
 		/**
 		 * After the next validation, animates the scroll position to a specific
 		 * page index. To scroll in only one direction, pass in the value of the
@@ -3130,7 +3031,7 @@ package feathers.controls
 			this.pendingScrollDuration = animationDuration;
 			this.invalidate(INVALIDATION_FLAG_PENDING_SCROLL);
 		}
-
+		
 		/**
 		 * If the scroll bars are floating, briefly show them as a hint to the
 		 * user. Useful when first navigating to a screen to give the user
@@ -3144,7 +3045,7 @@ package feathers.controls
 			this.isScrollBarRevealPending = true;
 			this.invalidate(INVALIDATION_FLAG_PENDING_REVEAL_SCROLL_BARS);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3167,7 +3068,7 @@ package feathers.controls
 			}
 			return result;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3185,28 +3086,28 @@ package feathers.controls
 			var scrollBarInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_SCROLL_BAR_RENDERER);
 			var pendingScrollInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_PENDING_SCROLL);
 			var pendingRevealScrollBarsInvalid:Boolean = this.isInvalid(INVALIDATION_FLAG_PENDING_REVEAL_SCROLL_BARS);
-
+			
 			if(scrollBarInvalid)
 			{
 				this.createScrollBars();
 			}
-
+			
 			if(sizeInvalid || stylesInvalid || stateInvalid)
 			{
 				this.refreshBackgroundSkin();
 			}
-
+			
 			if(scrollBarInvalid || stylesInvalid)
 			{
 				this.refreshScrollBarStyles();
 				this.refreshInteractionModeEvents();
 			}
-
+			
 			if(scrollBarInvalid || stateInvalid)
 			{
 				this.refreshEnabled();
 			}
-
+			
 			if(this.horizontalScrollBar)
 			{
 				this.horizontalScrollBar.validate();
@@ -3215,52 +3116,12 @@ package feathers.controls
 			{
 				this.verticalScrollBar.validate();
 			}
-
-			var needsWidthOrHeight:Boolean = this._explicitWidth !== this._explicitWidth ||
-				this._explicitHeight !== this._explicitHeight; //isNaN
+			
 			var oldMaxHorizontalScrollPosition:Number = this._maxHorizontalScrollPosition;
 			var oldMaxVerticalScrollPosition:Number = this._maxVerticalScrollPosition;
-			var loopCount:int = 0;
-			do
-			{
-				this._hasViewPortBoundsChanged = false;
-				//if we don't need to do any measurement, we can skip this stuff
-				//and improve performance
-				if(needsWidthOrHeight && this._measureViewPort)
-				{
-					//even if fixed, we need to measure without them first because
-					//if the scroll policy is auto, we only show them when needed.
-					if(scrollInvalid || dataInvalid || sizeInvalid || stylesInvalid || scrollBarInvalid)
-					{
-						this.calculateViewPortOffsets(true, false);
-						this.refreshViewPortBoundsWithoutFixedScrollBars();
-						this.calculateViewPortOffsets(false, false);
-					}
-				}
-
-				sizeInvalid = this.autoSizeIfNeeded() || sizeInvalid;
-
-				//just in case autoSizeIfNeeded() is overridden, we need to call
-				//this again and use actualWidth/Height instead of
-				//explicitWidth/Height.
-				this.calculateViewPortOffsets(false, true);
-
-				if(scrollInvalid || dataInvalid || sizeInvalid || stylesInvalid || scrollBarInvalid)
-				{
-					this.refreshViewPortBoundsWithFixedScrollBars();
-					this.refreshScrollValues();
-				}
-				loopCount++;
-				if(loopCount >= 10)
-				{
-					//if it still fails after ten tries, we've probably entered
-					//an infinite loop due to rounding errors or something
-					break;
-				}
-			}
-			while(this._hasViewPortBoundsChanged)
-			this._lastViewPortWidth = viewPort.width;
-			this._lastViewPortHeight = viewPort.height;
+			var needsMeasurement:Boolean = (scrollInvalid && this._viewPort.requiresMeasurementOnScroll) ||
+				dataInvalid || sizeInvalid || stylesInvalid || scrollBarInvalid;
+			this.refreshViewPort(needsMeasurement);
 			if(oldMaxHorizontalScrollPosition != this._maxHorizontalScrollPosition)
 			{
 				this.refreshHorizontalAutoScrollTweenEndRatio();
@@ -3275,36 +3136,80 @@ package feathers.controls
 			{
 				this.dispatchEventWith(Event.SCROLL);
 			}
-
+			
 			this.showOrHideChildren();
-
-			if(scrollInvalid || sizeInvalid || stylesInvalid || stateInvalid || scrollBarInvalid)
-			{
-				this.layoutChildren();
-			}
-
+			this.layoutChildren();
+			
 			if(scrollInvalid || sizeInvalid || stylesInvalid || scrollBarInvalid)
 			{
 				this.refreshScrollBarValues();
 			}
-
-			if(scrollInvalid || sizeInvalid || stylesInvalid || scrollBarInvalid || clippingInvalid)
+			
+			if(needsMeasurement || scrollInvalid || clippingInvalid)
 			{
 				this.refreshMask();
 			}
 			this.refreshFocusIndicator();
-
+			
 			if(pendingScrollInvalid)
 			{
 				this.handlePendingScroll();
 			}
-
+			
 			if(pendingRevealScrollBarsInvalid)
 			{
 				this.handlePendingRevealScrollBars();
 			}
 		}
-
+		
+		/**
+		 * @private
+		 */
+		protected function refreshViewPort(measure:Boolean):void
+		{
+			this._viewPort.horizontalScrollPosition = this._horizontalScrollPosition;
+			this._viewPort.verticalScrollPosition = this._verticalScrollPosition;
+			if(!measure)
+			{
+				this._viewPort.validate();
+				this.refreshScrollValues();
+				return;
+			}
+			var loopCount:int = 0;
+			do
+			{
+				this._hasViewPortBoundsChanged = false;
+				//if we don't need to do any measurement, we can skip
+				//this stuff and improve performance
+				if(this._measureViewPort)
+				{
+					this.calculateViewPortOffsets(true, false);
+					this.refreshViewPortBoundsForMeasurement();
+				}
+				this.calculateViewPortOffsets(false, false);
+				
+				this.autoSizeIfNeeded();
+				
+				//just in case autoSizeIfNeeded() is overridden, we need to call
+				//this again and use actualWidth/Height instead of
+				//explicitWidth/Height.
+				this.calculateViewPortOffsets(false, true);
+				
+				this.refreshViewPortBoundsForLayout();
+				this.refreshScrollValues();
+				loopCount++;
+				if(loopCount >= 10)
+				{
+					//if it still fails after ten tries, we've probably entered
+					//an infinite loop due to rounding errors or something
+					break;
+				}
+			}
+			while(this._hasViewPortBoundsChanged);
+			this._lastViewPortWidth = this._viewPort.width;
+			this._lastViewPortHeight = this._viewPort.height;
+		}
+		
 		/**
 		 * If the component's dimensions have not been set explicitly, it will
 		 * measure its content and determine an ideal size for itself. If the
@@ -3314,7 +3219,7 @@ package feathers.controls
 		 * explicit value will not be measured, but the other non-explicit
 		 * dimension will still need measurement.
 		 *
-		 * <p>Calls <code>setSizeInternal()</code> to set up the
+		 * <p>Calls <code>saveMeasurements()</code> to set up the
 		 * <code>actualWidth</code> and <code>actualHeight</code> member
 		 * variables used for layout.</p>
 		 *
@@ -3325,32 +3230,45 @@ package feathers.controls
 		{
 			var needsWidth:Boolean = this._explicitWidth !== this._explicitWidth; //isNaN
 			var needsHeight:Boolean = this._explicitHeight !== this._explicitHeight; //isNaN
-			if(!needsWidth && !needsHeight)
+			var needsMinWidth:Boolean = this._explicitMinWidth !== this._explicitMinWidth; //isNaN
+			var needsMinHeight:Boolean = this._explicitMinHeight !== this._explicitMinHeight; //isNaN
+			if(!needsWidth && !needsHeight && !needsMinWidth && !needsMinHeight)
 			{
 				return false;
 			}
-
+			
+			resetFluidChildDimensionsForMeasurement(this.currentBackgroundSkin,
+				this._explicitWidth, this._explicitHeight,
+				this._explicitMinWidth, this._explicitMinHeight,
+				this._explicitMaxWidth, this._explicitMaxHeight,
+				this._explicitBackgroundWidth, this._explicitBackgroundHeight,
+				this._explicitBackgroundMinWidth, this._explicitBackgroundMinHeight,
+				this._explicitBackgroundMaxWidth, this._explicitBackgroundMaxHeight);
+			var measureBackground:IMeasureDisplayObject = this.currentBackgroundSkin as IMeasureDisplayObject;
+			if(this.currentBackgroundSkin is IValidating)
+			{
+				IValidating(this.currentBackgroundSkin).validate();
+			}
+			
 			var newWidth:Number = this._explicitWidth;
 			var newHeight:Number = this._explicitHeight;
+			var newMinWidth:Number = this._explicitMinWidth;
+			var newMinHeight:Number = this._explicitMinHeight;
 			if(needsWidth)
 			{
 				if(this._measureViewPort)
 				{
 					newWidth = this._viewPort.visibleWidth;
-					if(newWidth !== newWidth) //isNaN
-					{
-						newWidth = this._viewPort.width;
-					}
-					newWidth += this._rightViewPortOffset + this._leftViewPortOffset;
 				}
 				else
 				{
 					newWidth = 0;
 				}
-				if(this.originalBackgroundWidth === this.originalBackgroundWidth && //!isNaN
-					this.originalBackgroundWidth > newWidth)
+				newWidth += this._rightViewPortOffset + this._leftViewPortOffset;
+				if(this.currentBackgroundSkin !== null &&
+					this.currentBackgroundSkin.width > newWidth)
 				{
-					newWidth = this.originalBackgroundWidth;
+					newWidth = this.currentBackgroundSkin.width;
 				}
 			}
 			if(needsHeight)
@@ -3358,25 +3276,73 @@ package feathers.controls
 				if(this._measureViewPort)
 				{
 					newHeight = this._viewPort.visibleHeight;
-					if(newHeight !== newHeight) //isNaN
-					{
-						newHeight = this._viewPort.height;
-					}
-					newHeight += this._bottomViewPortOffset + this._topViewPortOffset;
 				}
 				else
 				{
 					newHeight = 0;
 				}
-				if(this.originalBackgroundHeight === this.originalBackgroundHeight && //!isNaN
-					this.originalBackgroundHeight > newHeight)
+				newHeight += this._bottomViewPortOffset + this._topViewPortOffset;
+				if(this.currentBackgroundSkin !== null &&
+					this.currentBackgroundSkin.height > newHeight)
 				{
-					newHeight = this.originalBackgroundHeight;
+					newHeight = this.currentBackgroundSkin.height;
 				}
 			}
-			return this.setSizeInternal(newWidth, newHeight, false);
+			if(needsMinWidth)
+			{
+				if(this._measureViewPort)
+				{
+					newMinWidth = this._viewPort.minVisibleWidth;
+				}
+				else
+				{
+					newMinWidth = 0;
+				}
+				newMinWidth += this._rightViewPortOffset + this._leftViewPortOffset;
+				if(this.currentBackgroundSkin !== null)
+				{
+					if(measureBackground !== null)
+					{
+						if(measureBackground.minWidth > newMinWidth)
+						{
+							newMinWidth = measureBackground.minWidth;
+						}
+					}
+					else if(this._explicitBackgroundMinWidth > newMinWidth)
+					{
+						newMinWidth = this._explicitBackgroundMinWidth;
+					}
+				}
+			}
+			if(needsMinHeight)
+			{
+				if(this._measureViewPort)
+				{
+					newMinHeight = this._viewPort.minVisibleHeight;
+				}
+				else
+				{
+					newMinHeight = 0;
+				}
+				newMinHeight += this._bottomViewPortOffset + this._topViewPortOffset;
+				if(this.currentBackgroundSkin !== null)
+				{
+					if(measureBackground !== null)
+					{
+						if(measureBackground.minHeight > newMinHeight)
+						{
+							newMinHeight = measureBackground.minHeight;
+						}
+					}
+					else if(this._explicitBackgroundMinHeight > newMinHeight)
+					{
+						newMinHeight = this._explicitBackgroundMinHeight;
+					}
+				}
+			}
+			return this.saveMeasurements(newWidth, newHeight, newMinWidth, newMinHeight);
 		}
-
+		
 		/**
 		 * Creates and adds the <code>horizontalScrollBar</code> and
 		 * <code>verticalScrollBar</code> sub-components and removes the old
@@ -3408,7 +3374,7 @@ package feathers.controls
 				this.removeRawChildInternal(DisplayObject(this.verticalScrollBar), true);
 				this.verticalScrollBar = null;
 			}
-
+			
 			if(this._scrollBarDisplayMode != ScrollBarDisplayMode.NONE &&
 				this._horizontalScrollPolicy != ScrollPolicy.OFF && this._horizontalScrollBarFactory != null)
 			{
@@ -3440,7 +3406,7 @@ package feathers.controls
 				this.addRawChildInternal(DisplayObject(this.verticalScrollBar));
 			}
 		}
-
+		
 		/**
 		 * Choose the appropriate background skin based on the control's current
 		 * state.
@@ -3459,27 +3425,43 @@ package feathers.controls
 					this.removeRawChildInternal(this.currentBackgroundSkin);
 				}
 				this.currentBackgroundSkin = newCurrentBackgroundSkin;
-				if(this.currentBackgroundSkin)
+				if(this.currentBackgroundSkin !== null)
 				{
 					this.addRawChildAtInternal(this.currentBackgroundSkin, 0);
+					
+					if(this.currentBackgroundSkin is IFeathersControl)
+					{
+						IFeathersControl(this.currentBackgroundSkin).initializeNow();
+					}
+					
+					if(this.currentBackgroundSkin is IMeasureDisplayObject)
+					{
+						var measureSkin:IMeasureDisplayObject = IMeasureDisplayObject(this.currentBackgroundSkin);
+						this._explicitBackgroundWidth = measureSkin.explicitWidth;
+						this._explicitBackgroundHeight = measureSkin.explicitHeight;
+						this._explicitBackgroundMinWidth = measureSkin.explicitMinWidth;
+						this._explicitBackgroundMinHeight = measureSkin.explicitMinHeight;
+						this._explicitBackgroundMaxWidth = measureSkin.explicitMaxWidth;
+						this._explicitBackgroundMaxHeight = measureSkin.explicitMaxHeight;
+					}
+					else
+					{
+						this._explicitBackgroundWidth = this.currentBackgroundSkin.width;
+						this._explicitBackgroundHeight = this.currentBackgroundSkin.height;
+						this._explicitBackgroundMinWidth = this._explicitBackgroundWidth;
+						this._explicitBackgroundMinHeight = this._explicitBackgroundHeight;
+						this._explicitBackgroundMaxWidth = this._explicitBackgroundWidth;
+						this._explicitBackgroundMaxHeight = this._explicitBackgroundHeight;
+					}
 				}
 			}
-			if(this.currentBackgroundSkin)
+			if(this.currentBackgroundSkin !== null)
 			{
 				//force it to the bottom
 				this.setRawChildIndexInternal(this.currentBackgroundSkin, 0);
-
-				if(this.originalBackgroundWidth !== this.originalBackgroundWidth) //isNaN
-				{
-					this.originalBackgroundWidth = this.currentBackgroundSkin.width;
-				}
-				if(this.originalBackgroundHeight !== this.originalBackgroundHeight) //isNaN
-				{
-					this.originalBackgroundHeight = this.currentBackgroundSkin.height;
-				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3494,7 +3476,7 @@ package feathers.controls
 				}
 				if(this._horizontalScrollBarHideTween)
 				{
-					Starling.juggler.remove(this._horizontalScrollBarHideTween);
+					Starling.current.juggler.remove(this._horizontalScrollBarHideTween);
 					this._horizontalScrollBarHideTween = null;
 				}
 				this.horizontalScrollBar.alpha = this._scrollBarDisplayMode == ScrollBarDisplayMode.FLOAT ? 0 : 1;
@@ -3508,13 +3490,13 @@ package feathers.controls
 				}
 				if(this._verticalScrollBarHideTween)
 				{
-					Starling.juggler.remove(this._verticalScrollBarHideTween);
+					Starling.current.juggler.remove(this._verticalScrollBarHideTween);
 					this._verticalScrollBarHideTween = null;
 				}
 				this.verticalScrollBar.alpha = this._scrollBarDisplayMode == ScrollBarDisplayMode.FLOAT ? 0 : 1;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3533,7 +3515,7 @@ package feathers.controls
 				this.verticalScrollBar.isEnabled = this._isEnabled;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3562,134 +3544,160 @@ package feathers.controls
 				this._focusIndicatorSkin.height = this.actualHeight - this._focusPaddingTop - this._focusPaddingBottom;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected function refreshViewPortBoundsWithoutFixedScrollBars():void
+		protected function refreshViewPortBoundsForMeasurement():void
 		{
 			var horizontalWidthOffset:Number = this._leftViewPortOffset + this._rightViewPortOffset;
 			var verticalHeightOffset:Number = this._topViewPortOffset + this._bottomViewPortOffset;
-
+			
+			resetFluidChildDimensionsForMeasurement(this.currentBackgroundSkin,
+				this._explicitWidth, this._explicitHeight,
+				this._explicitMinWidth, this._explicitMinHeight,
+				this._explicitMaxWidth, this._explicitMaxHeight,
+				this._explicitBackgroundWidth, this._explicitBackgroundHeight,
+				this._explicitBackgroundMinWidth, this._explicitBackgroundMinHeight,
+				this._explicitBackgroundMaxWidth, this._explicitBackgroundMaxHeight);
+			var measureBackground:IMeasureDisplayObject = this.currentBackgroundSkin as IMeasureDisplayObject;
+			if(this.currentBackgroundSkin is IValidating)
+			{
+				IValidating(this.currentBackgroundSkin).validate();
+			}
+			
+			//we account for the explicit minimum dimensions of the view port
+			//and the minimum dimensions of the background skin because it helps
+			//the final measurements stabilize faster.
+			var viewPortMinWidth:Number = this._explicitMinWidth;
+			if(viewPortMinWidth !== viewPortMinWidth ||
+				this._explicitViewPortMinWidth > viewPortMinWidth)
+			{
+				viewPortMinWidth = this._explicitViewPortMinWidth;
+			}
+			if(viewPortMinWidth !== viewPortMinWidth ||
+				this._explicitWidth > viewPortMinWidth)
+			{
+				viewPortMinWidth = this._explicitWidth;
+			}
+			if(this.currentBackgroundSkin !== null)
+			{
+				var backgroundMinWidth:Number = this.currentBackgroundSkin.width;
+				if(measureBackground !== null)
+				{
+					backgroundMinWidth = measureBackground.minWidth;
+				}
+				if(viewPortMinWidth !== viewPortMinWidth ||
+					backgroundMinWidth > viewPortMinWidth)
+				{
+					viewPortMinWidth = backgroundMinWidth;
+				}
+			}
+			viewPortMinWidth -= horizontalWidthOffset;
+			
+			var viewPortMinHeight:Number = this._explicitMinHeight;
+			if(viewPortMinHeight !== viewPortMinHeight ||
+				this._explicitViewPortMinHeight > viewPortMinHeight)
+			{
+				viewPortMinHeight = this._explicitViewPortMinHeight;
+			}
+			if(viewPortMinHeight !== viewPortMinHeight ||
+				this._explicitHeight > viewPortMinHeight)
+			{
+				viewPortMinHeight = this._explicitHeight;
+			}
+			if(this.currentBackgroundSkin !== null)
+			{
+				var backgroundMinHeight:Number = this.currentBackgroundSkin.height;
+				if(measureBackground !== null)
+				{
+					backgroundMinHeight = measureBackground.minHeight;
+				}
+				if(viewPortMinHeight !== viewPortMinHeight ||
+					backgroundMinHeight > viewPortMinHeight)
+				{
+					viewPortMinHeight = backgroundMinHeight;
+				}
+			}
+			viewPortMinHeight -= verticalHeightOffset;
+			
+			var oldIgnoreViewPortResizing:Boolean = this.ignoreViewPortResizing;
+			//setting some of the properties below may result in a resize
+			//event, which forces another layout pass for the view port and
+			//hurts performance (because it needs to break out of an
+			//infinite loop)
+			this.ignoreViewPortResizing = true;
+			
 			//if scroll bars are fixed, we're going to include the offsets even
 			//if they may not be needed in the final pass. if not fixed, the
 			//view port fills the entire bounds.
 			this._viewPort.visibleWidth = this._explicitWidth - horizontalWidthOffset;
+			this._viewPort.minVisibleWidth = this._explicitMinWidth - horizontalWidthOffset;
+			this._viewPort.maxVisibleWidth = this._explicitMaxWidth - horizontalWidthOffset;
+			this._viewPort.minWidth = viewPortMinWidth;
+			
 			this._viewPort.visibleHeight = this._explicitHeight - verticalHeightOffset;
-			var minVisibleWidth:Number = this._explicitMinWidth;
-			if(minVisibleWidth !== minVisibleWidth) //isNaN
-			{
-				minVisibleWidth = 0;
-			}
-			minVisibleWidth -= horizontalWidthOffset;
-			if(this.originalBackgroundWidth === this.originalBackgroundWidth && //!isNaN
-			 this.originalBackgroundWidth > minVisibleWidth)
-			{
-				//to avoid going through the loop too many times, we need to
-				//account for the background skin's size.
-				minVisibleWidth = this.originalBackgroundWidth;
-			}
-			if(minVisibleWidth < 0)
-			{
-				minVisibleWidth = 0;
-			}
-			this._viewPort.minVisibleWidth = minVisibleWidth;
-			this._viewPort.maxVisibleWidth = this._maxWidth - horizontalWidthOffset;
-			var minVisibleHeight:Number = this.actualMinHeight;
-			if(minVisibleHeight !== minVisibleHeight) //isNaN
-			{
-				minVisibleHeight = 0;
-			}
-			minVisibleHeight -= verticalHeightOffset;
-			if(this.originalBackgroundHeight === this.originalBackgroundHeight && //!isNaN
-				this.originalBackgroundHeight > minVisibleHeight)
-			{
-				//see note above about the background skin size
-				minVisibleHeight = this.originalBackgroundHeight;
-			}
-			if(minVisibleHeight < 0)
-			{
-				minVisibleHeight = 0;
-			}
-			this._viewPort.minVisibleHeight = minVisibleHeight;
-			this._viewPort.maxVisibleHeight = this._maxHeight - verticalHeightOffset;
-			this._viewPort.horizontalScrollPosition = this._horizontalScrollPosition;
-			this._viewPort.verticalScrollPosition = this._verticalScrollPosition;
-
-			var oldIgnoreViewPortResizing:Boolean = this.ignoreViewPortResizing;
-			if(this._scrollBarDisplayMode == ScrollBarDisplayMode.FIXED)
-			{
-				this.ignoreViewPortResizing = true;
-			}
+			this._viewPort.minVisibleHeight = this._explicitMinHeight - verticalHeightOffset;
+			this._viewPort.maxVisibleHeight = this._explicitMaxHeight - verticalHeightOffset;
+			this._viewPort.minHeight = viewPortMinHeight;
 			this._viewPort.validate();
+			//we don't want to listen for a resize event from the view port
+			//while it is validating this time. during the next validation is
+			//where it matters if the view port resizes. 
 			this.ignoreViewPortResizing = oldIgnoreViewPortResizing;
 		}
-
+		
 		/**
 		 * @private
 		 */
-		protected function refreshViewPortBoundsWithFixedScrollBars():void
+		protected function refreshViewPortBoundsForLayout():void
 		{
 			var horizontalWidthOffset:Number = this._leftViewPortOffset + this._rightViewPortOffset;
 			var verticalHeightOffset:Number = this._topViewPortOffset + this._bottomViewPortOffset;
-			var needsWidthOrHeight:Boolean = this._explicitWidth != this._explicitWidth ||
-				this._explicitHeight !== this._explicitHeight; //isNaN
-			if(!(this._measureViewPort && needsWidthOrHeight))
+			
+			var oldIgnoreViewPortResizing:Boolean = this.ignoreViewPortResizing;
+			//setting some of the properties below may result in a resize
+			//event, which forces another layout pass for the view port and
+			//hurts performance (because it needs to break out of an
+			//infinite loop)
+			this.ignoreViewPortResizing = true;
+			
+			var visibleWidth:Number = this.actualWidth - horizontalWidthOffset;
+			//we'll only set the view port's visibleWidth and visibleHeight if
+			//our dimensions are explicit. this allows the view port to know
+			//whether it needs to re-measure on scroll.
+			if(this._viewPort.visibleWidth !== visibleWidth)
 			{
-				//if we didn't need to do any measurement, we would have skipped
-				//setting this stuff earlier, and now is the last chance
-				var minVisibleWidth:Number = this._explicitMinWidth;
-				if(minVisibleWidth !== minVisibleWidth) //isNaN
-				{
-					minVisibleWidth = 0;
-				}
-				minVisibleWidth -= horizontalWidthOffset;
-				if(this.originalBackgroundWidth === this.originalBackgroundWidth && //!isNaN
-					this.originalBackgroundWidth > minVisibleWidth)
-				{
-					//to avoid going through the loop too many times, we need to
-					//account for the background skin's size
-					minVisibleWidth = this.originalBackgroundWidth;
-				}
-				if(minVisibleWidth < 0)
-				{
-					minVisibleWidth = 0;
-				}
-				this._viewPort.minVisibleWidth = minVisibleWidth;
-				this._viewPort.maxVisibleWidth = this._maxWidth - horizontalWidthOffset;
-				var minVisibleHeight:Number = this._explicitMinHeight;
-				if(minVisibleHeight !== minVisibleHeight) //isNaN
-				{
-					minVisibleHeight = 0;
-				}
-				minVisibleHeight -= verticalHeightOffset;
-				if(this.originalBackgroundHeight === this.originalBackgroundHeight && //!isNaN
-					this.originalBackgroundHeight > minVisibleHeight)
-				{
-					//see note above about the background skin size
-					minVisibleHeight = this.originalBackgroundHeight;
-				}
-				if(minVisibleHeight < 0)
-				{
-					minVisibleHeight = 0;
-				}
-				this._viewPort.minVisibleHeight = minVisibleHeight;
-				this._viewPort.maxVisibleHeight = this._maxHeight - verticalHeightOffset;
-				this._viewPort.horizontalScrollPosition = this._horizontalScrollPosition;
-				this._viewPort.verticalScrollPosition = this._verticalScrollPosition;
+				this._viewPort.visibleWidth = visibleWidth;
 			}
-			this._viewPort.visibleWidth = this.actualWidth - horizontalWidthOffset;
-			this._viewPort.visibleHeight = this.actualHeight - verticalHeightOffset;
+			this._viewPort.minVisibleWidth = this.actualWidth - horizontalWidthOffset;
+			this._viewPort.maxVisibleWidth = this._explicitMaxWidth - horizontalWidthOffset;
+			this._viewPort.minWidth = visibleWidth;
+			
+			var visibleHeight:Number = this.actualHeight - verticalHeightOffset;
+			if(this._viewPort.visibleHeight !== visibleHeight)
+			{
+				this._viewPort.visibleHeight = visibleHeight;
+			}
+			this._viewPort.minVisibleHeight = this.actualMinHeight - verticalHeightOffset;
+			this._viewPort.maxVisibleHeight = this._explicitMaxHeight - verticalHeightOffset;
+			this._viewPort.minHeight = visibleHeight;
+			
+			//this time, we care whether a resize event is dispatched while the
+			//view port is validating because it means we'll need to try another
+			//measurement pass. we restore the flag before calling validate().
+			this.ignoreViewPortResizing = oldIgnoreViewPortResizing;
+			
 			this._viewPort.validate();
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function refreshScrollValues():void
 		{
 			this.refreshScrollSteps();
-
+			
 			var oldMaxHSP:Number = this._maxHorizontalScrollPosition;
 			var oldMaxVSP:Number = this._maxVerticalScrollPosition;
 			this.refreshMinAndMaxScrollPositions();
@@ -3698,11 +3706,11 @@ package feathers.controls
 			{
 				this.clampScrollPositions();
 			}
-
+			
 			this.refreshPageCount();
 			this.refreshPageIndices();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3743,7 +3751,7 @@ package feathers.controls
 				this.verticalScrollPosition = targetVerticalScrollPosition;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3780,7 +3788,7 @@ package feathers.controls
 				this.actualVerticalScrollStep = this.explicitVerticalScrollStep;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3828,13 +3836,6 @@ package feathers.controls
 				{
 					this._maxVerticalScrollPosition =  this._minVerticalScrollPosition;
 				}
-				if(this._snapScrollPositionsToPixels)
-				{
-					this._minHorizontalScrollPosition = Math.round(this._minHorizontalScrollPosition);
-					this._minVerticalScrollPosition = Math.round(this._minVerticalScrollPosition);
-					this._maxHorizontalScrollPosition = Math.round(this._maxHorizontalScrollPosition);
-					this._maxVerticalScrollPosition = Math.round(this._maxVerticalScrollPosition);
-				}
 			}
 			else
 			{
@@ -3844,7 +3845,7 @@ package feathers.controls
 				this._maxVerticalScrollPosition = 0;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3879,7 +3880,7 @@ package feathers.controls
 					}
 					this._maxHorizontalPageIndex = Math.ceil(horizontalScrollRange / this.actualPageWidth);
 				}
-
+				
 				var verticalScrollRange:Number = this._maxVerticalScrollPosition - this._minVerticalScrollPosition;
 				if(verticalScrollRange == Number.POSITIVE_INFINITY)
 				{
@@ -3916,7 +3917,7 @@ package feathers.controls
 				this._maxVerticalPageIndex = 0;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -3934,26 +3935,30 @@ package feathers.controls
 					{
 						this._horizontalPageIndex = this._minHorizontalPageIndex;
 					}
-					else if(this._minHorizontalScrollPosition == Number.NEGATIVE_INFINITY && this._horizontalScrollPosition < 0)
-					{
-						this._horizontalPageIndex = Math.floor(this._horizontalScrollPosition / this.actualPageWidth);
-					}
-					else if(this._maxHorizontalScrollPosition == Number.POSITIVE_INFINITY && this._horizontalScrollPosition >= 0)
-					{
-						this._horizontalPageIndex = Math.floor(this._horizontalScrollPosition / this.actualPageWidth);
-					}
 					else
 					{
-						var adjustedHorizontalScrollPosition:Number = this._horizontalScrollPosition - this._minHorizontalScrollPosition;
-						var unroundedPageIndex:Number = adjustedHorizontalScrollPosition / this.actualPageWidth;
-						var nextPageIndex:int = Math.ceil(unroundedPageIndex);
-						if(unroundedPageIndex !== nextPageIndex &&
-							MathUtil.isEquivalent(unroundedPageIndex, nextPageIndex, PAGE_INDEX_EPSILON))
+						if(this._minHorizontalScrollPosition == Number.NEGATIVE_INFINITY && this._horizontalScrollPosition < 0)
+						{
+							var unroundedPageIndex:Number = this._horizontalScrollPosition / this.actualPageWidth;
+						}
+						else if(this._maxHorizontalScrollPosition == Number.POSITIVE_INFINITY && this._horizontalScrollPosition >= 0)
+						{
+							unroundedPageIndex = this._horizontalScrollPosition / this.actualPageWidth;
+						}
+						else
+						{
+							var adjustedHorizontalScrollPosition:Number = this._horizontalScrollPosition - this._minHorizontalScrollPosition;
+							unroundedPageIndex = adjustedHorizontalScrollPosition / this.actualPageWidth;
+						}
+						var nearestPageIndex:int = Math.round(unroundedPageIndex);
+						if(unroundedPageIndex !== nearestPageIndex &&
+							MathUtil.isEquivalent(unroundedPageIndex, nearestPageIndex, PAGE_INDEX_EPSILON))
 						{
 							//we almost always want to round down, but a
-							//floating point math error may result in the page
-							//index being 1 too small in rare cases.
-							this._horizontalPageIndex = nextPageIndex;
+							//floating point math error, or a page width that
+							//isn't an integer (when snapping to pixels) could
+							//cause the page index to be off by one
+							this._horizontalPageIndex = nearestPageIndex;
 						}
 						else
 						{
@@ -3986,26 +3991,30 @@ package feathers.controls
 					{
 						this._verticalPageIndex = this._minVerticalPageIndex;
 					}
-					else if(this._minVerticalScrollPosition == Number.NEGATIVE_INFINITY && this._verticalScrollPosition < 0)
-					{
-						this._verticalPageIndex = Math.floor(this._verticalScrollPosition / this.actualPageHeight);
-					}
-					else if(this._maxVerticalScrollPosition == Number.POSITIVE_INFINITY && this._verticalScrollPosition >= 0)
-					{
-						this._verticalPageIndex = Math.floor(this._verticalScrollPosition / this.actualPageHeight);
-					}
 					else
 					{
-						var adjustedVerticalScrollPosition:Number = this._verticalScrollPosition - this._minVerticalScrollPosition;
-						unroundedPageIndex = adjustedVerticalScrollPosition / this.actualPageHeight;
-						nextPageIndex = Math.ceil(unroundedPageIndex);
-						if(unroundedPageIndex !== nextPageIndex &&
-							MathUtil.isEquivalent(unroundedPageIndex, nextPageIndex, PAGE_INDEX_EPSILON))
+						if(this._minVerticalScrollPosition == Number.NEGATIVE_INFINITY && this._verticalScrollPosition < 0)
+						{
+							unroundedPageIndex = this._verticalScrollPosition / this.actualPageHeight;
+						}
+						else if(this._maxVerticalScrollPosition == Number.POSITIVE_INFINITY && this._verticalScrollPosition >= 0)
+						{
+							unroundedPageIndex = this._verticalScrollPosition / this.actualPageHeight;
+						}
+						else
+						{
+							var adjustedVerticalScrollPosition:Number = this._verticalScrollPosition - this._minVerticalScrollPosition;
+							unroundedPageIndex = adjustedVerticalScrollPosition / this.actualPageHeight;
+						}
+						nearestPageIndex = Math.round(unroundedPageIndex);
+						if(unroundedPageIndex !== nearestPageIndex &&
+							MathUtil.isEquivalent(unroundedPageIndex, nearestPageIndex, PAGE_INDEX_EPSILON))
 						{
 							//we almost always want to round down, but a
-							//floating point math error may result in the page
-							//index being 1 too small in rare cases.
-							this._verticalPageIndex = nextPageIndex;
+							//floating point math error, or a page height that
+							//isn't an integer (when snapping to pixels) could
+							//cause the page index to be off by one
+							this._verticalPageIndex = nearestPageIndex;
 						}
 						else
 						{
@@ -4027,7 +4036,7 @@ package feathers.controls
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4041,7 +4050,7 @@ package feathers.controls
 				this.horizontalScrollBar.page = (this._maxHorizontalScrollPosition - this._minHorizontalScrollPosition) * this.actualPageWidth / this._viewPort.width;
 				this.horizontalScrollBar.step = this.actualHorizontalScrollStep;
 			}
-
+			
 			if(this.verticalScrollBar)
 			{
 				this.verticalScrollBar.minimum = this._minVerticalScrollPosition;
@@ -4051,14 +4060,14 @@ package feathers.controls
 				this.verticalScrollBar.step = this.actualVerticalScrollStep;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function showOrHideChildren():void
 		{
 			var childCount:int = this.numRawChildrenInternal;
-			if(this._touchBlocker)
+			if(this._touchBlocker !== null && this._touchBlocker.parent !== null)
 			{
 				//keep scroll bars below the touch blocker, if it exists
 				childCount--;
@@ -4086,8 +4095,8 @@ package feathers.controls
 			{
 				if(this._autoHideBackground)
 				{
-					this.currentBackgroundSkin.visible = this._viewPort.width < this.actualWidth ||
-						this._viewPort.height < this.actualHeight ||
+					this.currentBackgroundSkin.visible = this._viewPort.width <= this.actualWidth ||
+						this._viewPort.height <= this.actualHeight ||
 						this._horizontalScrollPosition < 0 ||
 						this._horizontalScrollPosition > this._maxHorizontalScrollPosition ||
 						this._verticalScrollPosition < 0 ||
@@ -4098,9 +4107,9 @@ package feathers.controls
 					this.currentBackgroundSkin.visible = true;
 				}
 			}
-
+			
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4111,7 +4120,7 @@ package feathers.controls
 				var scrollerWidth:Number = useActualBounds ? this.actualWidth : this._explicitWidth;
 				var totalWidth:Number = this._viewPort.width + this._leftViewPortOffset + this._rightViewPortOffset;
 				if(forceScrollBars || this._horizontalScrollPolicy == ScrollPolicy.ON ||
-					((totalWidth > scrollerWidth || totalWidth > this._maxWidth) &&
+					((totalWidth > scrollerWidth || totalWidth > this._explicitMaxWidth) &&
 						this._horizontalScrollPolicy != ScrollPolicy.OFF))
 				{
 					this._hasHorizontalScrollBar = true;
@@ -4130,7 +4139,7 @@ package feathers.controls
 				this._hasHorizontalScrollBar = false;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4141,7 +4150,7 @@ package feathers.controls
 				var scrollerHeight:Number = useActualBounds ? this.actualHeight : this._explicitHeight;
 				var totalHeight:Number = this._viewPort.height + this._topViewPortOffset + this._bottomViewPortOffset;
 				if(forceScrollBars || this._verticalScrollPolicy == ScrollPolicy.ON ||
-					((totalHeight > scrollerHeight || totalHeight > this._maxHeight) &&
+					((totalHeight > scrollerHeight || totalHeight > this._explicitMaxHeight) &&
 						this._verticalScrollPolicy != ScrollPolicy.OFF))
 				{
 					this._hasVerticalScrollBar = true;
@@ -4167,7 +4176,7 @@ package feathers.controls
 				this._hasVerticalScrollBar = false;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4191,7 +4200,7 @@ package feathers.controls
 				this.calculateViewPortOffsetsForFixedHorizontalScrollBar(forceScrollBars, useActualBounds);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4215,7 +4224,7 @@ package feathers.controls
 					this._touchBlocker = null;
 				}
 			}
-
+			
 			if((this._interactionMode == ScrollInteractionMode.MOUSE || this._interactionMode == ScrollInteractionMode.TOUCH_AND_SCROLL_BARS) &&
 				this._scrollBarDisplayMode == ScrollBarDisplayMode.FLOAT)
 			{
@@ -4240,90 +4249,102 @@ package feathers.controls
 				}
 			}
 		}
-
+		
 		/**
 		 * Positions and sizes children based on the actual width and height
 		 * values.
 		 */
 		protected function layoutChildren():void
 		{
-			if(this.currentBackgroundSkin)
+			var visibleWidth:Number = this.actualWidth - this._leftViewPortOffset - this._rightViewPortOffset;
+			var visibleHeight:Number = this.actualHeight - this._topViewPortOffset - this._bottomViewPortOffset;
+			
+			if(this.currentBackgroundSkin !== null)
 			{
 				this.currentBackgroundSkin.width = this.actualWidth;
 				this.currentBackgroundSkin.height = this.actualHeight;
 			}
-
-			if(this.horizontalScrollBar)
+			
+			if(this.horizontalScrollBar !== null)
 			{
 				this.horizontalScrollBar.validate();
 			}
-			if(this.verticalScrollBar)
+			if(this.verticalScrollBar !== null)
 			{
 				this.verticalScrollBar.validate();
 			}
-			if(this._touchBlocker)
+			if(this._touchBlocker !== null)
 			{
 				this._touchBlocker.x = this._leftViewPortOffset;
 				this._touchBlocker.y = this._topViewPortOffset;
-				this._touchBlocker.width = this._viewPort.visibleWidth;
-				this._touchBlocker.height = this._viewPort.visibleHeight;
+				this._touchBlocker.width = visibleWidth;
+				this._touchBlocker.height = visibleHeight;
 			}
-
-			this._viewPort.x = this._leftViewPortOffset - this._horizontalScrollPosition;
-			this._viewPort.y = this._topViewPortOffset - this._verticalScrollPosition;
-
-			if(this.horizontalScrollBar)
+			
+			if(this._snapScrollPositionsToPixels)
+			{
+				var pixelSize:Number = 1 / Starling.contentScaleFactor;
+				this._viewPort.x = Math.round((this._leftViewPortOffset - this._horizontalScrollPosition) / pixelSize) * pixelSize;
+				this._viewPort.y = Math.round((this._topViewPortOffset - this._verticalScrollPosition) / pixelSize) * pixelSize;
+			}
+			else
+			{
+				this._viewPort.x = this._leftViewPortOffset - this._horizontalScrollPosition;
+				this._viewPort.y = this._topViewPortOffset - this._verticalScrollPosition;
+			}
+			
+			if(this.horizontalScrollBar !== null)
 			{
 				this.horizontalScrollBar.x = this._leftViewPortOffset;
-				this.horizontalScrollBar.y = this._topViewPortOffset + this._viewPort.visibleHeight;
-				if(this._scrollBarDisplayMode != ScrollBarDisplayMode.FIXED)
+				this.horizontalScrollBar.y = this._topViewPortOffset + visibleHeight;
+				if(this._scrollBarDisplayMode !== ScrollBarDisplayMode.FIXED)
 				{
 					this.horizontalScrollBar.y -= this.horizontalScrollBar.height;
 					if((this._hasVerticalScrollBar || this._verticalScrollBarHideTween) && this.verticalScrollBar)
 					{
-						this.horizontalScrollBar.width = this._viewPort.visibleWidth - this.verticalScrollBar.width;
+						this.horizontalScrollBar.width = visibleWidth - this.verticalScrollBar.width;
 					}
 					else
 					{
-						this.horizontalScrollBar.width = this._viewPort.visibleWidth;
+						this.horizontalScrollBar.width = visibleWidth;
 					}
 				}
 				else
 				{
-					this.horizontalScrollBar.width = this._viewPort.visibleWidth;
+					this.horizontalScrollBar.width = visibleWidth;
 				}
 			}
-
-			if(this.verticalScrollBar)
+			
+			if(this.verticalScrollBar !== null)
 			{
-				if(this._verticalScrollBarPosition == RelativePosition.LEFT)
+				if(this._verticalScrollBarPosition === RelativePosition.LEFT)
 				{
 					this.verticalScrollBar.x = this._paddingLeft;
 				}
 				else
 				{
-					this.verticalScrollBar.x = this._leftViewPortOffset + this._viewPort.visibleWidth;
+					this.verticalScrollBar.x = this._leftViewPortOffset + visibleWidth;
 				}
 				this.verticalScrollBar.y = this._topViewPortOffset;
-				if(this._scrollBarDisplayMode != ScrollBarDisplayMode.FIXED)
+				if(this._scrollBarDisplayMode !== ScrollBarDisplayMode.FIXED)
 				{
 					this.verticalScrollBar.x -= this.verticalScrollBar.width;
 					if((this._hasHorizontalScrollBar || this._horizontalScrollBarHideTween) && this.horizontalScrollBar)
 					{
-						this.verticalScrollBar.height = this._viewPort.visibleHeight - this.horizontalScrollBar.height;
+						this.verticalScrollBar.height = visibleHeight - this.horizontalScrollBar.height;
 					}
 					else
 					{
-						this.verticalScrollBar.height = this._viewPort.visibleHeight;
+						this.verticalScrollBar.height = visibleHeight;
 					}
 				}
 				else
 				{
-					this.verticalScrollBar.height = this._viewPort.visibleHeight;
+					this.verticalScrollBar.height = visibleHeight;
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4331,6 +4352,7 @@ package feathers.controls
 		{
 			if(!this._clipContent)
 			{
+				this._viewPort.refreshMask();
 				return;
 			}
 			var clipWidth:Number = this.actualWidth - this._leftViewPortOffset - this._rightViewPortOffset;
@@ -4353,8 +4375,9 @@ package feathers.controls
 			mask.y = this._verticalScrollPosition;
 			mask.width = clipWidth;
 			mask.height = clipHeight;
+			this._viewPort.refreshMask();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4366,7 +4389,7 @@ package feathers.controls
 			}
 			return this.numChildren;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4378,7 +4401,7 @@ package feathers.controls
 			}
 			return this.addChild(child);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4390,7 +4413,7 @@ package feathers.controls
 			}
 			return this.addChildAt(child, index);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4402,7 +4425,7 @@ package feathers.controls
 			}
 			return this.removeChild(child, dispose);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4414,7 +4437,7 @@ package feathers.controls
 			}
 			return this.removeChildAt(index, dispose);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4427,7 +4450,7 @@ package feathers.controls
 			}
 			this.setChildIndex(child, index);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4459,7 +4482,7 @@ package feathers.controls
 			}
 			this.horizontalScrollPosition = position;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4491,7 +4514,7 @@ package feathers.controls
 			}
 			this.verticalScrollPosition = position;
 		}
-
+		
 		/**
 		 * Immediately throws the scroller to the specified position, with
 		 * optional animation. If you want to throw in only one direction, pass
@@ -4512,7 +4535,7 @@ package feathers.controls
 				}
 				if(this._horizontalAutoScrollTween)
 				{
-					Starling.juggler.remove(this._horizontalAutoScrollTween);
+					Starling.current.juggler.remove(this._horizontalAutoScrollTween);
 					this._horizontalAutoScrollTween = null;
 				}
 				if(this._horizontalScrollPosition != targetHorizontalScrollPosition)
@@ -4533,7 +4556,7 @@ package feathers.controls
 						//warning: if you try to set onUpdate here, it may be
 						//replaced elsewhere.
 						this._horizontalAutoScrollTween.onComplete = horizontalAutoScrollTween_onComplete;
-						Starling.juggler.add(this._horizontalAutoScrollTween);
+						Starling.current.juggler.add(this._horizontalAutoScrollTween);
 						this.refreshHorizontalAutoScrollTweenEndRatio();
 					}
 				}
@@ -4542,7 +4565,7 @@ package feathers.controls
 					this.finishScrollingHorizontally();
 				}
 			}
-
+			
 			if(targetVerticalScrollPosition === targetVerticalScrollPosition) //!isNaN
 			{
 				if(this._snapToPages && targetVerticalScrollPosition > this._minVerticalScrollPosition &&
@@ -4552,7 +4575,7 @@ package feathers.controls
 				}
 				if(this._verticalAutoScrollTween)
 				{
-					Starling.juggler.remove(this._verticalAutoScrollTween);
+					Starling.current.juggler.remove(this._verticalAutoScrollTween);
 					this._verticalAutoScrollTween = null;
 				}
 				if(this._verticalScrollPosition != targetVerticalScrollPosition)
@@ -4573,7 +4596,7 @@ package feathers.controls
 						//warning: if you try to set onUpdate here, it may be
 						//replaced elsewhere.
 						this._verticalAutoScrollTween.onComplete = verticalAutoScrollTween_onComplete;
-						Starling.juggler.add(this._verticalAutoScrollTween);
+						Starling.current.juggler.add(this._verticalAutoScrollTween);
 						this.refreshVerticalAutoScrollTweenEndRatio();
 					}
 				}
@@ -4582,13 +4605,13 @@ package feathers.controls
 					this.finishScrollingVertically();
 				}
 			}
-
+			
 			if(changedPosition && duration == 0)
 			{
 				this.completeScroll();
 			}
 		}
-
+		
 		/**
 		 * Immediately throws the scroller to the specified page index, with
 		 * optional animation. If you want to throw in only one direction, pass
@@ -4645,7 +4668,7 @@ package feathers.controls
 				this._verticalPageIndex = targetVerticalPageIndex;
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4653,7 +4676,7 @@ package feathers.controls
 		{
 			return (Math.log(MINIMUM_VELOCITY / Math.abs(pixelsPerMS)) / this._logDecelerationRate) / 1000;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4661,7 +4684,7 @@ package feathers.controls
 		{
 			return (pixelsPerMS - MINIMUM_VELOCITY) / this._logDecelerationRate;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4676,7 +4699,7 @@ package feathers.controls
 			{
 				targetHorizontalScrollPosition = this._maxHorizontalScrollPosition;
 			}
-
+			
 			this._isDraggingHorizontally = false;
 			if(targetHorizontalScrollPosition !== targetHorizontalScrollPosition) //isNaN
 			{
@@ -4693,7 +4716,7 @@ package feathers.controls
 				this.throwTo(targetHorizontalScrollPosition, NaN, this._elasticSnapDuration);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4708,7 +4731,7 @@ package feathers.controls
 			{
 				targetVerticalScrollPosition = this._maxVerticalScrollPosition;
 			}
-
+			
 			this._isDraggingVertically = false;
 			if(targetVerticalScrollPosition !== targetVerticalScrollPosition) //isNaN
 			{
@@ -4725,7 +4748,7 @@ package feathers.controls
 				this.throwTo(NaN, targetVerticalScrollPosition, this._elasticSnapDuration);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4796,14 +4819,14 @@ package feathers.controls
 				this.throwToPage(targetHorizontalPageIndex, -1, this._pageThrowDuration);
 				return;
 			}
-
+			
 			var absPixelsPerMS:Number = Math.abs(pixelsPerMS);
 			if(!this._snapToPages && absPixelsPerMS <= MINIMUM_VELOCITY)
 			{
 				this.finishScrollingHorizontally();
 				return;
 			}
-
+			
 			var duration:Number = this._fixedThrowDuration;
 			if(!this._useFixedThrowDuration)
 			{
@@ -4811,7 +4834,7 @@ package feathers.controls
 			}
 			this.throwTo(this._horizontalScrollPosition + this.calculateThrowDistance(pixelsPerMS), NaN, duration);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4882,14 +4905,14 @@ package feathers.controls
 				this.throwToPage(-1, targetVerticalPageIndex, this._pageThrowDuration);
 				return;
 			}
-
+			
 			var absPixelsPerMS:Number = Math.abs(pixelsPerMS);
 			if(!this._snapToPages && absPixelsPerMS <= MINIMUM_VELOCITY)
 			{
 				this.finishScrollingVertically();
 				return;
 			}
-
+			
 			var duration:Number = this._fixedThrowDuration;
 			if(!this._useFixedThrowDuration)
 			{
@@ -4897,7 +4920,7 @@ package feathers.controls
 			}
 			this.throwTo(NaN, this._verticalScrollPosition + this.calculateThrowDistance(pixelsPerMS), duration);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4917,12 +4940,12 @@ package feathers.controls
 						this._horizontalScrollPosition = this._maxHorizontalScrollPosition;
 					}
 				}
-				Starling.juggler.remove(this._horizontalAutoScrollTween);
+				Starling.current.juggler.remove(this._horizontalAutoScrollTween);
 				this._horizontalAutoScrollTween = null;
 				this.finishScrollingHorizontally();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4942,12 +4965,12 @@ package feathers.controls
 						this._verticalScrollPosition = this._maxVerticalScrollPosition;
 					}
 				}
-				Starling.juggler.remove(this._verticalAutoScrollTween);
+				Starling.current.juggler.remove(this._verticalAutoScrollTween);
 				this._verticalAutoScrollTween = null;
 				this.finishScrollingVertically();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -4990,7 +5013,7 @@ package feathers.controls
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5033,7 +5056,7 @@ package feathers.controls
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5057,10 +5080,10 @@ package feathers.controls
 				this._horizontalScrollBarHideTween.fadeTo(0);
 				this._horizontalScrollBarHideTween.delay = delay;
 				this._horizontalScrollBarHideTween.onComplete = horizontalScrollBarHideTween_onComplete;
-				Starling.juggler.add(this._horizontalScrollBarHideTween);
+				Starling.current.juggler.add(this._horizontalScrollBarHideTween);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5084,10 +5107,10 @@ package feathers.controls
 				this._verticalScrollBarHideTween.fadeTo(0);
 				this._verticalScrollBarHideTween.delay = delay;
 				this._verticalScrollBarHideTween.onComplete = verticalScrollBarHideTween_onComplete;
-				Starling.juggler.add(this._verticalScrollBarHideTween);
+				Starling.current.juggler.add(this._verticalScrollBarHideTween);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5099,12 +5122,12 @@ package feathers.controls
 			}
 			if(this._horizontalScrollBarHideTween)
 			{
-				Starling.juggler.remove(this._horizontalScrollBarHideTween);
+				Starling.current.juggler.remove(this._horizontalScrollBarHideTween);
 				this._horizontalScrollBarHideTween = null;
 			}
 			this.horizontalScrollBar.alpha = 1;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5116,12 +5139,12 @@ package feathers.controls
 			}
 			if(this._verticalScrollBarHideTween)
 			{
-				Starling.juggler.remove(this._verticalScrollBarHideTween);
+				Starling.current.juggler.remove(this._verticalScrollBarHideTween);
 				this._verticalScrollBarHideTween = null;
 			}
 			this.verticalScrollBar.alpha = 1;
 		}
-
+		
 		/**
 		 * If scrolling hasn't already started, prepares the scroller to scroll
 		 * and dispatches <code>FeathersEventType.SCROLL_START</code>.
@@ -5139,7 +5162,7 @@ package feathers.controls
 			}
 			this.dispatchEventWith(FeathersEventType.SCROLL_START);
 		}
-
+		
 		/**
 		 * Prepares the scroller for normal interaction and dispatches
 		 * <code>FeathersEventType.SCROLL_COMPLETE</code>.
@@ -5164,7 +5187,7 @@ package feathers.controls
 			this.validate();
 			this.dispatchEventWith(FeathersEventType.SCROLL_COMPLETE);
 		}
-
+		
 		/**
 		 * Scrolls to a pending scroll position, if required.
 		 */
@@ -5195,7 +5218,7 @@ package feathers.controls
 			this.hasPendingHorizontalPageIndex = false;
 			this.hasPendingVerticalPageIndex = false;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5215,14 +5238,14 @@ package feathers.controls
 			this.hideHorizontalScrollBar(this._revealScrollBarsDuration);
 			this.hideVerticalScrollBar(this._revealScrollBarsDuration);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function viewPort_resizeHandler(event:Event):void
 		{
 			if(this.ignoreViewPortResizing ||
-				(this._viewPort.width == this._lastViewPortWidth && this._viewPort.height == this._lastViewPortHeight))
+				(this._viewPort.width === this._lastViewPortWidth && this._viewPort.height === this._lastViewPortHeight))
 			{
 				return;
 			}
@@ -5237,7 +5260,7 @@ package feathers.controls
 				this.invalidate(INVALIDATION_FLAG_SIZE);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5245,7 +5268,7 @@ package feathers.controls
 		{
 			this.invalidate(INVALIDATION_FLAG_STYLES);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5253,7 +5276,7 @@ package feathers.controls
 		{
 			this.verticalScrollPosition = this.verticalScrollBar.value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5261,7 +5284,7 @@ package feathers.controls
 		{
 			this.horizontalScrollPosition = this.horizontalScrollBar.value;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5269,7 +5292,7 @@ package feathers.controls
 		{
 			if(this._horizontalAutoScrollTween)
 			{
-				Starling.juggler.remove(this._horizontalAutoScrollTween);
+				Starling.current.juggler.remove(this._horizontalAutoScrollTween);
 				this._horizontalAutoScrollTween = null;
 			}
 			this._isDraggingHorizontally = false;
@@ -5280,7 +5303,7 @@ package feathers.controls
 				this.startScroll();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5290,7 +5313,7 @@ package feathers.controls
 			this.dispatchEventWith(FeathersEventType.END_INTERACTION);
 			this.completeScroll();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5298,7 +5321,7 @@ package feathers.controls
 		{
 			if(this._verticalAutoScrollTween)
 			{
-				Starling.juggler.remove(this._verticalAutoScrollTween);
+				Starling.current.juggler.remove(this._verticalAutoScrollTween);
 				this._verticalAutoScrollTween = null;
 			}
 			this._isDraggingVertically = false;
@@ -5309,7 +5332,7 @@ package feathers.controls
 				this.startScroll();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5319,7 +5342,7 @@ package feathers.controls
 			this.dispatchEventWith(FeathersEventType.END_INTERACTION);
 			this.completeScroll();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5331,7 +5354,7 @@ package feathers.controls
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 			this.finishScrollingHorizontally();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5343,7 +5366,7 @@ package feathers.controls
 			this.invalidate(INVALIDATION_FLAG_SCROLL);
 			this.finishScrollingVertically();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5351,7 +5374,7 @@ package feathers.controls
 		{
 			this._horizontalScrollBarHideTween = null;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5359,7 +5382,7 @@ package feathers.controls
 		{
 			this._verticalScrollBarHideTween = null;
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5374,20 +5397,20 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			//any began touch is okay here. we don't need to check all touches.
 			var touch:Touch = event.getTouch(this, TouchPhase.BEGAN);
 			if(!touch)
 			{
 				return;
 			}
-
+			
 			if(this._interactionMode == ScrollInteractionMode.TOUCH_AND_SCROLL_BARS &&
 				(event.interactsWith(DisplayObject(this.horizontalScrollBar)) || event.interactsWith(DisplayObject(this.verticalScrollBar))))
 			{
 				return;
 			}
-
+			
 			touch.getLocation(this, HELPER_POINT);
 			var touchX:Number = HELPER_POINT.x;
 			var touchY:Number = HELPER_POINT.y;
@@ -5397,18 +5420,18 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			var exclusiveTouch:ExclusiveTouch = ExclusiveTouch.forStage(this.stage);
 			if(exclusiveTouch.getClaim(touch.id))
 			{
 				//already claimed
 				return;
 			}
-
+			
 			//if the scroll policy is off, we shouldn't stop this animation
 			if(this._horizontalAutoScrollTween && this._horizontalScrollPolicy != ScrollPolicy.OFF)
 			{
-				Starling.juggler.remove(this._horizontalAutoScrollTween);
+				Starling.current.juggler.remove(this._horizontalAutoScrollTween);
 				this._horizontalAutoScrollTween = null;
 				if(this._isScrolling)
 				{
@@ -5418,7 +5441,7 @@ package feathers.controls
 			}
 			if(this._verticalAutoScrollTween && this._verticalScrollPolicy != ScrollPolicy.OFF)
 			{
-				Starling.juggler.remove(this._verticalAutoScrollTween);
+				Starling.current.juggler.remove(this._verticalAutoScrollTween);
 				this._verticalAutoScrollTween = null;
 				if(this._isScrolling)
 				{
@@ -5426,7 +5449,7 @@ package feathers.controls
 					this._isDraggingVertically = true;
 				}
 			}
-
+			
 			this._touchPointID = touch.id;
 			this._velocityX = 0;
 			this._velocityY = 0;
@@ -5438,14 +5461,14 @@ package feathers.controls
 			this._startHorizontalScrollPosition = this._horizontalScrollPosition;
 			this._startVerticalScrollPosition = this._verticalScrollPosition;
 			this._isScrollingStopped = false;
-
+			
 			this.addEventListener(Event.ENTER_FRAME, scroller_enterFrameHandler);
-
+			
 			//we need to listen on the stage because if we scroll the bottom or
 			//right edge past the top of the scroller, it gets stuck and we stop
 			//receiving touch events for "this".
 			this.stage.addEventListener(TouchEvent.TOUCH, stage_touchHandler);
-
+			
 			if(this._isScrolling && (this._isDraggingHorizontally || this._isDraggingVertically))
 			{
 				exclusiveTouch.claimTouch(this._touchPointID, this);
@@ -5455,7 +5478,7 @@ package feathers.controls
 				exclusiveTouch.addEventListener(Event.CHANGE, exclusiveTouch_changeHandler);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5539,7 +5562,7 @@ package feathers.controls
 				this.updateVerticalScrollFromTouchPosition(this._currentTouchY);
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5550,7 +5573,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			if(touch.phase == TouchPhase.MOVED)
 			{
 				//we're saving these to use in the enter frame handler because
@@ -5583,12 +5606,12 @@ package feathers.controls
 					isFinishingVertically = true;
 					this.finishScrollingVertically();
 				}
-
+				
 				if(isFinishingHorizontally && isFinishingVertically)
 				{
 					return;
 				}
-
+				
 				if(!isFinishingHorizontally && this._isDraggingHorizontally)
 				{
 					//take the average for more accuracy
@@ -5607,7 +5630,7 @@ package feathers.controls
 				{
 					this.hideHorizontalScrollBar();
 				}
-
+				
 				if(!isFinishingVertically && this._isDraggingVertically)
 				{
 					sum = this._velocityY * CURRENT_VELOCITY_WEIGHT;
@@ -5627,7 +5650,7 @@ package feathers.controls
 				}
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5642,14 +5665,14 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			this._touchPointID = -1;
 			this.removeEventListener(Event.ENTER_FRAME, scroller_enterFrameHandler);
 			this.stage.removeEventListener(TouchEvent.TOUCH, stage_touchHandler);
 			exclusiveTouch.removeEventListener(Event.CHANGE, exclusiveTouch_changeHandler);
 			this.dispatchEventWith(FeathersEventType.END_INTERACTION);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5665,7 +5688,7 @@ package feathers.controls
 			{
 				return;
 			}
-
+			
 			var nativeScaleFactor:Number = 1;
 			if(Starling.current.supportHighResolutions)
 			{
@@ -5673,8 +5696,8 @@ package feathers.controls
 			}
 			var starlingViewPort:Rectangle = Starling.current.viewPort;
 			var scaleFactor:Number = nativeScaleFactor / Starling.contentScaleFactor;
-			HELPER_POINT.x = (event.stageX - starlingViewPort.x) * scaleFactor;
-			HELPER_POINT.y = (event.stageY - starlingViewPort.y) * scaleFactor;
+			HELPER_POINT.x = (ArtificialMouse.mouseX2D - starlingViewPort.x) * scaleFactor;
+			HELPER_POINT.y = (ArtificialMouse.mouseY2D - starlingViewPort.y) * scaleFactor;
 			if(this.contains(this.stage.hitTest(HELPER_POINT)))
 			{
 				this.globalToLocal(HELPER_POINT, HELPER_POINT);
@@ -5724,22 +5747,7 @@ package feathers.controls
 				this.throwTo(targetHorizontalScrollPosition, targetVerticalScrollPosition, this._mouseWheelScrollDuration);
 			}
 		}
-
-		/**
-		 * @private
-		 */
-		protected function nativeStage_orientationChangeHandler(event:flash.events.Event):void
-		{
-			if(this._touchPointID < 0)
-			{
-				return;
-			}
-			this._startTouchX = this._previousTouchX = this._currentTouchX;
-			this._startTouchY = this._previousTouchY = this._currentTouchY;
-			this._startHorizontalScrollPosition = this._horizontalScrollPosition;
-			this._startVerticalScrollPosition = this._verticalScrollPosition;
-		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5750,7 +5758,7 @@ package feathers.controls
 				this._horizontalScrollBarTouchPointID = -1;
 				return;
 			}
-
+			
 			var displayHorizontalScrollBar:DisplayObject = DisplayObject(event.currentTarget);
 			if(this._horizontalScrollBarTouchPointID >= 0)
 			{
@@ -5759,7 +5767,7 @@ package feathers.controls
 				{
 					return;
 				}
-
+				
 				this._horizontalScrollBarTouchPointID = -1;
 				touch.getLocation(displayHorizontalScrollBar, HELPER_POINT);
 				var isInBounds:Boolean = this.horizontalScrollBar.hitTest(HELPER_POINT) !== null;
@@ -5786,12 +5794,12 @@ package feathers.controls
 					this.revealHorizontalScrollBar();
 					return;
 				}
-
+				
 				//end hover
 				this.hideHorizontalScrollBar();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5802,7 +5810,7 @@ package feathers.controls
 				this._verticalScrollBarTouchPointID = -1;
 				return;
 			}
-
+			
 			var displayVerticalScrollBar:DisplayObject = DisplayObject(event.currentTarget);
 			if(this._verticalScrollBarTouchPointID >= 0)
 			{
@@ -5811,7 +5819,7 @@ package feathers.controls
 				{
 					return;
 				}
-
+				
 				this._verticalScrollBarTouchPointID = -1;
 				touch.getLocation(displayVerticalScrollBar, HELPER_POINT);
 				var isInBounds:Boolean = this.verticalScrollBar.hitTest(HELPER_POINT) !== null;
@@ -5838,28 +5846,26 @@ package feathers.controls
 					this.revealVerticalScrollBar();
 					return;
 				}
-
+				
 				//end hover
 				this.hideVerticalScrollBar();
 			}
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function scroller_addedToStageHandler(event:Event):void
 		{
 			Starling.current.nativeStage.addEventListener(MouseEvent.MOUSE_WHEEL, nativeStage_mouseWheelHandler, false, 0, true);
-			Starling.current.nativeStage.addEventListener("orientationChange", nativeStage_orientationChangeHandler, false, 0, true);
 		}
-
+		
 		/**
 		 * @private
 		 */
 		protected function scroller_removedFromStageHandler(event:Event):void
 		{
 			Starling.current.nativeStage.removeEventListener(MouseEvent.MOUSE_WHEEL, nativeStage_mouseWheelHandler);
-			Starling.current.nativeStage.removeEventListener("orientationChange", nativeStage_orientationChangeHandler);
 			if(this._touchPointID >= 0)
 			{
 				var exclusiveTouch:ExclusiveTouch = ExclusiveTouch.forStage(this.stage);
@@ -5880,15 +5886,15 @@ package feathers.controls
 			this.stage.removeEventListener(TouchEvent.TOUCH, stage_touchHandler);
 			if(this._verticalAutoScrollTween)
 			{
-				Starling.juggler.remove(this._verticalAutoScrollTween);
+				Starling.current.juggler.remove(this._verticalAutoScrollTween);
 				this._verticalAutoScrollTween = null;
 			}
 			if(this._horizontalAutoScrollTween)
 			{
-				Starling.juggler.remove(this._horizontalAutoScrollTween);
+				Starling.current.juggler.remove(this._horizontalAutoScrollTween);
 				this._horizontalAutoScrollTween = null;
 			}
-
+			
 			//if we stopped the animation while the list was outside the scroll
 			//bounds, then let's account for that
 			var oldHorizontalScrollPosition:Number = this._horizontalScrollPosition;
@@ -5916,7 +5922,7 @@ package feathers.controls
 			}
 			this.completeScroll();
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5925,7 +5931,7 @@ package feathers.controls
 			super.focusInHandler(event);
 			this.stage.addEventListener(KeyboardEvent.KEY_DOWN, stage_keyDownHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */
@@ -5934,7 +5940,7 @@ package feathers.controls
 			super.focusOutHandler(event);
 			this.stage.removeEventListener(KeyboardEvent.KEY_DOWN, stage_keyDownHandler);
 		}
-
+		
 		/**
 		 * @private
 		 */

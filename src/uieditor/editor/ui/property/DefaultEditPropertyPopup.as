@@ -8,8 +8,10 @@ package uieditor.editor.ui.property
 	import starling.events.Event;
 	
 	import uieditor.editor.UIEditorApp;
+	import uieditor.editor.UIEditorScreen;
 	import uieditor.editor.data.TemplateData;
 	import uieditor.editor.ui.inspector.PropertyPanel;
+	import uieditor.editor.ui.inspector.UIMapperUtil;
 	import uieditor.engine.util.ParamUtil;
 
 	public class DefaultEditPropertyPopup extends AbstractPropertyPopup
@@ -54,6 +56,7 @@ package uieditor.editor.ui.property
 			for each ( var clsName : String in _supportedClass )
 			{
 				var param : Object = ParamUtil.getParamByClassName( TemplateData.editor_template, clsName );
+				UIMapperUtil.processParamsWithFonts( param as Array, UIEditorScreen.instance.getBitmapFontNames());
 				_paramDict[ clsName ] = param;
 			}
 		}
@@ -73,15 +76,19 @@ package uieditor.editor.ui.property
 				clsName = "null";
 
 			_classPicker.selectedIndex = _supportedClass.indexOf( clsName );
+
 			_propertyPanel = new PropertyPanel( _target, _paramDict[ clsName ]);
 
 			addChild( _classPicker );
+			
+			createCustom();
+			
 			addChild( _propertyPanel );
 
 			_classPicker.addEventListener( Event.CHANGE, onClassPicker );
 		}
 
-		private function onClassPicker( event : Event ) : void
+		protected function onClassPicker( event : Event ) : void
 		{
 			var selected : String = _classPicker.selectedItem as String;
 
@@ -92,6 +99,8 @@ package uieditor.editor.ui.property
 			else
 			{
 				_target = UIEditorApp.instance.currentDocumentEditor.uiBuilder.createUIElement({ cls: selected, customParams: {}}).object;
+				
+				initDefault();
 			}
 
 			_owner[ _targetParam.name ] = _target;
@@ -111,6 +120,16 @@ package uieditor.editor.ui.property
 				_owner[ _targetParam.name ] = _oldTarget;
 				_onComplete = null;
 			}
+		}
+		
+		protected function createCustom():void
+		{
+			
+		}
+		
+		protected function initDefault():void
+		{
+			
 		}
 	}
 }

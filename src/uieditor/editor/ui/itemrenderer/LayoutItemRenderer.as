@@ -1,7 +1,6 @@
 package uieditor.editor.ui.itemrenderer
 {
 	import feathers.controls.Button;
-	import feathers.controls.Label;
 	import feathers.controls.LayoutGroup;
 	import feathers.controls.renderers.DefaultListItemRenderer;
 	import feathers.dragDrop.DragData;
@@ -9,8 +8,10 @@ package uieditor.editor.ui.itemrenderer
 	import feathers.dragDrop.IDragSource;
 	import feathers.dragDrop.IDropTarget;
 	import feathers.events.DragDropEvent;
+	import feathers.layout.HorizontalAlign;
 	import feathers.layout.HorizontalLayout;
-
+	import feathers.layout.VerticalAlign;
+	
 	import starling.display.DisplayObject;
 	import starling.display.DisplayObjectContainer;
 	import starling.display.Image;
@@ -19,7 +20,7 @@ package uieditor.editor.ui.itemrenderer
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
-
+	
 	import uieditor.editor.UIEditorApp;
 	import uieditor.editor.data.EmbedAsset;
 	import uieditor.editor.history.MoveLayerOperation;
@@ -42,15 +43,17 @@ package uieditor.editor.ui.itemrenderer
 		private var _lockButton : Button;
 		private var _expandButton : Button;
 
-		private var _spaceText : Label;
+		private var _spaceImage : Image;
 
 		private var _dropLine : Quad;
 
 		public function LayoutItemRenderer()
 		{
 			super();
+			
 			createIconGroup();
-			_iconFunction = layoutIconFunction;
+			
+			iconFunction = layoutIconFunction;
 
 			addEventListener( TouchEvent.TOUCH, onTouch );
 			addEventListener( DragDropEvent.DRAG_ENTER, onDragEnter );
@@ -62,8 +65,11 @@ package uieditor.editor.ui.itemrenderer
 		private function createIconGroup() : void
 		{
 			_group = new LayoutGroup();
-			_group.layout = new HorizontalLayout();
-			( _group.layout as HorizontalLayout ).gap = 2;
+			var layout : HorizontalLayout = new HorizontalLayout();
+			layout.horizontalAlign = HorizontalAlign.LEFT;
+			layout.verticalAlign = VerticalAlign.MIDDLE;
+			layout.gap = 1;
+			_group.layout = layout;
 
 			_showButton = new Button();
 			_showButton.addEventListener( Event.TRIGGERED, _clickShowBtn );
@@ -73,8 +79,8 @@ package uieditor.editor.ui.itemrenderer
 			_lockButton.addEventListener( Event.TRIGGERED, _clickLockBtn );
 			_group.addChild( _lockButton );
 
-			_spaceText = new Label();
-			_group.addChild( _spaceText );
+			_spaceImage = new Image( EmbedAsset.getEditorTextureAtlas().getTexture( "space" ));
+			_group.addChild( _spaceImage );
 
 			_expandButton = new Button();
 			_expandButton.addEventListener( Event.TRIGGERED, _clickExpandBtn );
@@ -108,7 +114,7 @@ package uieditor.editor.ui.itemrenderer
 			refreshLockButton();
 			refreshExpandButton();
 			if ( item )
-				_spaceText.text = item.prefix;
+				_spaceImage.width = item.prefix.length * 4;
 			return _group;
 		}
 
@@ -121,7 +127,9 @@ package uieditor.editor.ui.itemrenderer
 			refreshExpandButton();
 
 			if ( value )
-				_spaceText.text = value.prefix;
+				_spaceImage.width = value.prefix.length * 4;
+
+			_group.invalidate();
 		}
 
 		private var expandImage : Image;
